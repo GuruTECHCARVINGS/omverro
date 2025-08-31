@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Bulk Processing Center — Buyer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .toast { transition: transform .25s ease, opacity .25s ease; }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50 p-8">
+  <main class="max-w-7xl mx-auto">
+    <header class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-2xl font-bold">Bulk Processing Center</h1>
+        <p class="text-sm text-gray-600">Process multiple RFQs / quotes at once — approve, reject or export batches.</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="BuyerDashboard.html" class="px-4 py-2 bg-white rounded-lg shadow border text-sm">Back to Dashboard</a>
+      </div>
+    </header>
+
+    <!-- Controls -->
+    <section class="bg-white p-4 rounded-lg shadow mb-6">
+      <div class="flex flex-wrap items-center gap-3">
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium">Search</label>
+          <input id="search" type="search" placeholder="Search RFQ ID, item, supplier" class="px-3 py-2 border rounded-lg" />
+        </div>
+
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium">Status</label>
+          <select id="filterStatus" class="px-3 py-2 border rounded-lg">
+            <option value="">All</option>
+            <option value="pending">Pending</option>
+            <option value="quoted">Quoted</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+
+        <div class="ml-auto flex items-center gap-2">
+          <button id="btnExport" class="px-4 py-2 bg-white border rounded-lg hover:bg-gray-50">Export CSV</button>
+          <button id="btnReject" class="px-4 py-2 bg-red-600 text-white rounded-lg">Bulk Reject</button>
+          <button id="btnApprove" class="px-4 py-2 bg-green-600 text-white rounded-lg">Bulk Approve</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Table -->
+    <section class="bg-white rounded-lg shadow overflow-hidden">
+      <div class="p-4 border-b">
+        <label class="flex items-center gap-2">
+          <input id="selectAll" type="checkbox" class="w-4 h-4" />
+          <span class="text-sm text-gray-700">Select all visible</span>
+        </label>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left table-auto">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="p-3 text-sm">&nbsp;</th>
+              <th class="p-3 text-sm">RFQ ID</th>
+              <th class="p-3 text-sm">Item</th>
+              <th class="p-3 text-sm">Qty</th>
+              <th class="p-3 text-sm">Supplier</th>
+              <th class="p-3 text-sm">Due Date</th>
+              <th class="p-3 text-sm">Price</th>
+              <th class="p-3 text-sm">Status</th>
+              <th class="p-3 text-sm">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <!-- rows injected by JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Sample legend / notes -->
+    <div class="mt-4 text-sm text-gray-600">Tip: pick rows then click Bulk Approve / Reject to update statuses. Export will download visible rows.</div>
+  </main>
+
+  <!-- Toast container -->
+  <div id="toasts" class="fixed top-6 right-6 space-y-3 z-50"></div>
+
+  <script>
+    // Sample data
+    const sample = [
+      { id: 'RFQ-1001', item: 'Office Chairs', qty: 25, supplier: 'FurniCo', due: '2025-09-12', price: 12500, status: 'pending' },
+      { id: 'RFQ-1002', item: 'LED Monitors', qty: 40, supplier: 'ScreenWorks', due: '2025-08-24', price: 64000, status: 'quoted' },
+      { id: 'RFQ-1003', item: 'Ethernet Cables', qty: 500, supplier: 'CableFast', due: '2025-09-02', price: 4000, status: 'pending' },
+      { id: 'RFQ-1004', item: 'Standing Desks', qty: 10, supplier: 'DeskMakers', due: '2025-08-30', price: 45000, status: 'quoted' },
+      { id: 'RFQ-1005', item: 'Projectors', qty: 6, supplier: 'BrightView', due: '2025-09-10', price: 90000, status: 'approved' },
+      { id: 'RFQ-1006', item: 'Network Switch', qty: 4, supplier: 'NetCore', due: '2025-08-28', price: 56000, status: 'pending' },
+      { id: 'RFQ-1007', item: 'Packaging Kits', qty: 200, supplier: 'PackRight', due: '2025-09-15', price: 8000, status: 'quoted' },
+      { id: 'RFQ-1008', item: 'Safety Helmets', qty: 150, supplier: 'SafeGear', due: '2025-09-01', price: 15000, status: 'rejected' }
+    ];
+
+    const tableBody = document.getElementById('tableBody');
+    const selectAll = document.getElementById('selectAll');
+    const searchInput = document.getElementById('search');
+    const filterStatus = document.getElementById('filterStatus');
+
+    let rows = [...sample];
+
+    function render() {
+      const q = searchInput.value.trim().toLowerCase();
+      const status = filterStatus.value;
+      tableBody.innerHTML = '';
+
+      rows.filter(r => {
+        const matchesQ = !q || [r.id, r.item, r.supplier].join(' ').toLowerCase().includes(q);
+        const matchesStatus = !status || r.status === status;
+        return matchesQ && matchesStatus;
+      }).forEach((r, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = idx % 2 === 0 ? '' : 'bg-gray-50';
+        tr.innerHTML = `
+          <td class="p-3"><input data-id="${r.id}" type="checkbox" class="row-chk w-4 h-4" /></td>
+          <td class="p-3 text-sm font-medium">${r.id}</td>
+          <td class="p-3 text-sm">${r.item}</td>
+          <td class="p-3 text-sm">${r.qty}</td>
+          <td class="p-3 text-sm">${r.supplier}</td>
+          <td class="p-3 text-sm">${r.due}</td>
+          <td class="p-3 text-sm">₹${r.price.toLocaleString()}</td>
+          <td class="p-3 text-sm">${statusBadge(r.status)}</td>
+          <td class="p-3 text-sm"><button data-id="${r.id}" class="process-btn px-3 py-1 bg-gray-100 rounded">Process</button></td>
+        `;
+        tableBody.appendChild(tr);
+      });
+
+      // hooks
+      document.querySelectorAll('.process-btn').forEach(b => b.addEventListener('click', (e) => processSingle(e.target.dataset.id)));
+      document.querySelectorAll('.row-chk').forEach(cb => cb.addEventListener('change', updateSelectAllState));
+      updateSelectAllState();
+    }
+
+    function statusBadge(s) {
+      const map = {
+        pending: '<span class="px-2 py-1 rounded text-sm bg-yellow-100 text-yellow-800">Pending</span>',
+        quoted: '<span class="px-2 py-1 rounded text-sm bg-blue-100 text-blue-800">Quoted</span>',
+        approved: '<span class="px-2 py-1 rounded text-sm bg-green-100 text-green-800">Approved</span>',
+        rejected: '<span class="px-2 py-1 rounded text-sm bg-red-100 text-red-800">Rejected</span>'
+      };
+      return map[s] || s;
+    }
+
+    function updateSelectAllState() {
+      const visible = Array.from(document.querySelectorAll('.row-chk'));
+      if (visible.length === 0) { selectAll.checked = false; selectAll.indeterminate = false; return; }
+      const checked = visible.filter(c => c.checked).length;
+      selectAll.checked = checked === visible.length;
+      selectAll.indeterminate = checked > 0 && checked < visible.length;
+    }
+
+    selectAll.addEventListener('change', () => {
+      document.querySelectorAll('.row-chk').forEach(cb => cb.checked = selectAll.checked);
+    });
+
+    searchInput.addEventListener('input', render);
+    filterStatus.addEventListener('change', render);
+
+    function pickSelected() {
+      return Array.from(document.querySelectorAll('.row-chk:checked')).map(cb => cb.dataset.id);
+    }
+
+    async function bulkUpdate(newStatus) {
+      const ids = pickSelected();
+      if (ids.length === 0) return showToast('No rows selected', 'error');
+      // simulate processing delay
+      showToast(`${newStatus.charAt(0).toUpperCase()+newStatus.slice(1)} started for ${ids.length} items`, 'info');
+      await new Promise(r => setTimeout(r, 700));
+      rows = rows.map(r => ids.includes(r.id) ? {...r, status: newStatus} : r);
+      render();
+      showToast(`Bulk ${newStatus} completed for ${ids.length} items`, 'success');
+    }
+
+    function processSingle(id) {
+      showToast(`Processing ${id}...`, 'info');
+      setTimeout(() => {
+        rows = rows.map(r => r.id === id ? {...r, status: 'approved'} : r);
+        render();
+        showToast(`${id} approved`, 'success');
+      }, 600);
+    }
+
+    document.getElementById('btnApprove').addEventListener('click', () => bulkUpdate('approved'));
+    document.getElementById('btnReject').addEventListener('click', () => bulkUpdate('rejected'));
+
+    // Export visible rows to CSV
+    document.getElementById('btnExport').addEventListener('click', () => {
+      const rowsVisible = Array.from(document.querySelectorAll('tbody tr')).map(tr => {
+        const cells = tr.querySelectorAll('td');
+        return [cells[1].textContent.trim(), cells[2].textContent.trim(), cells[3].textContent.trim(), cells[4].textContent.trim(), cells[5].textContent.trim(), cells[6].textContent.trim(), cells[7].textContent.trim()];
+      });
+      const header = ['RFQ ID','Item','Qty','Supplier','Due Date','Price','Status'];
+      const csv = [header, ...rowsVisible].map(r => r.map(c => '"'+c.replace(/"/g,'""')+'"').join(',')).join('\n');
+      const blob = new Blob([csv], {type: 'text/csv'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'bulk-export.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      showToast('Export started', 'info');
+    });
+
+    // Simple toast helper
+    function showToast(message, type='info') {
+      const el = document.createElement('div');
+      el.className = `toast px-4 py-2 rounded-lg shadow-lg text-sm ${type==='success'?'bg-green-600 text-white':type==='error'?'bg-red-600 text-white':'bg-blue-600 text-white'}`;
+      el.textContent = message;
+      document.getElementById('toasts').appendChild(el);
+      setTimeout(() => { el.style.opacity = '1'; el.style.transform = 'translateY(0)'; }, 50);
+      setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateY(-8px)'; setTimeout(()=>el.remove(),300); }, 3000);
+    }
+
+    // initial render
+    render();
+  </script>
+</body>
+</html>
