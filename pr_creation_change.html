@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PR Creation & Change - Buyer Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .pr-card:hover { transform: translateY(-2px); transition: all 0.3s ease; }
+        .pr-item-row:hover { background-color: #f8fafc; }
+        .required-field::after { content: "*"; color: #dc2626; margin-left: 2px; }
+        .gradient-blue { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+        .gradient-green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .gradient-purple { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+        .gradient-orange { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        
+        .tab-button.active {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+        
+        .validation-error {
+            border-color: #dc2626 !important;
+            background-color: #fef2f2;
+        }
+        
+        .success-animation {
+            animation: successPulse 0.6s ease-in-out;
+        }
+        
+        @keyframes successPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .animate-counter { animation: counter 1.5s ease-in-out; }
+        @keyframes counter {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <button onclick="navigateToBuyerDashboard()" class="mr-4 p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200" title="Back to Buyer Dashboard (Alt+B)">
+                        <i class="fas fa-arrow-left text-gray-600"></i>
+                    </button>
+                    <h1 class="text-xl font-semibold text-gray-900">PR Creation & Change</h1>
+                    <span id="prStatusBadge" class="ml-3 px-3 py-1 text-sm font-medium rounded-full hidden">
+                        <i class="fas fa-file-alt mr-1"></i><span id="prStatusText">Draft</span>
+                    </span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-500">August 2025</span>
+                    <button onclick="saveDraft()" class="px-4 py-2 gradient-orange text-white rounded-lg hover:opacity-90" id="saveDraftBtn">
+                        <i class="fas fa-save mr-2"></i>Save Draft
+                    </button>
+                    <button onclick="submitPR()" class="px-4 py-2 gradient-blue text-white rounded-lg hover:opacity-90" id="submitPRBtn">
+                        <i class="fas fa-paper-plane mr-2"></i>Submit PR
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Breadcrumb Navigation -->
+        <nav class="flex mb-6" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li class="inline-flex items-center">
+                    <button onclick="navigateToBuyerDashboard()" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors duration-200">
+                        <i class="fas fa-home w-4 h-4 mr-2"></i>
+                        Buyer Dashboard
+                    </button>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <i class="fas fa-chevron-right w-4 h-4 text-gray-400 mx-1"></i>
+                        <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">PR Creation & Change</span>
+                    </div>
+                </li>
+            </ol>
+        </nav>
+
+        <!-- PR Overview Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <!-- Total PRs -->
+            <div class="bg-white rounded-xl shadow-sm p-6 pr-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Total PRs</p>
+                        <p class="text-3xl font-bold text-gray-900 animate-counter">24</p>
+                        <p class="text-sm text-blue-600">+3 this week</p>
+                    </div>
+                    <div class="p-3 bg-blue-100 rounded-full">
+                        <i class="fas fa-file-alt text-blue-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Draft PRs -->
+            <div class="bg-white rounded-xl shadow-sm p-6 pr-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Draft PRs</p>
+                        <p class="text-3xl font-bold text-orange-600 animate-counter">6</p>
+                        <p class="text-sm text-orange-600">Needs completion</p>
+                    </div>
+                    <div class="p-3 bg-orange-100 rounded-full">
+                        <i class="fas fa-edit text-orange-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Approval -->
+            <div class="bg-white rounded-xl shadow-sm p-6 pr-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Pending Approval</p>
+                        <p class="text-3xl font-bold text-purple-600 animate-counter">8</p>
+                        <p class="text-sm text-purple-600">In review process</p>
+                    </div>
+                    <div class="p-3 bg-purple-100 rounded-full">
+                        <i class="fas fa-clock text-purple-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Value -->
+            <div class="bg-white rounded-xl shadow-sm p-6 pr-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Total PR Value</p>
+                        <p class="text-3xl font-bold text-green-600 animate-counter">₹12.5L</p>
+                        <p class="text-sm text-green-600">This month</p>
+                    </div>
+                    <div class="p-3 bg-green-100 rounded-full">
+                        <i class="fas fa-rupee-sign text-green-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="mb-8">
+            <div class="border-b border-gray-200">
+                <nav class="-mb-px flex space-x-8">
+                    <button onclick="switchTab('create')" id="createTab" class="tab-button active py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200">
+                        <i class="fas fa-plus mr-2"></i>Create New PR
+                    </button>
+                    <button onclick="switchTab('manage')" id="manageTab" class="tab-button py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-sm transition-colors duration-200">
+                        <i class="fas fa-edit mr-2"></i>Manage Existing PRs
+                    </button>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Create PR Tab Content -->
+        <div id="createPRContent" class="tab-content">
+            <form id="prForm" onsubmit="handlePRSubmission(event)">
+                <!-- PR Header Information -->
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-6 pr-card">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900">
+                            <i class="fas fa-info-circle mr-2 text-blue-600"></i>PR Header Information
+                        </h3>
+                        <span class="text-sm text-gray-500">Fields marked with <span class="text-red-600">*</span> are required</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- PR Number -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">PR Number</label>
+                            <input type="text" id="prNumber" class="w-full rounded-md border-gray-300 bg-gray-50" value="PR-2025-001234" readonly>
+                            <p class="text-xs text-gray-500 mt-1">Auto-generated upon creation</p>
+                        </div>
+
+                        <!-- PR Title -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2 required-field">PR Title</label>
+                            <input type="text" id="prTitle" class="w-full rounded-md border-gray-300" placeholder="Enter PR title" required maxlength="100">
+                        </div>
+
+                        <!-- Department -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2 required-field">Department</label>
+                            <select id="department" class="w-full rounded-md border-gray-300" required>
+                                <option value="">Select Department</option>
+                                <option value="IT">Information Technology</option>
+                                <option value="HR">Human Resources</option>
+                                <option value="Finance">Finance & Accounting</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Operations">Operations</option>
+                                <option value="Facilities">Facilities Management</option>
+                                <option value="Legal">Legal</option>
+                            </select>
+                        </div>
+
+                        <!-- Requestor -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2 required-field">Requestor</label>
+                            <input type="text" id="requestor" class="w-full rounded-md border-gray-300" placeholder="Enter requestor name" required>
+                        </div>
+
+                        <!-- Cost Center -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2 required-field">Cost Center</label>
+                            <input type="text" id="costCenter" class="w-full rounded-md border-gray-300" placeholder="e.g. CC-2025-001" required pattern="CC-\d{4}-\d{3}">
+                        </div>
+
+                        <!-- Priority -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2 required-field">Priority</label>
+                            <select id="priority" class="w-full rounded-md border-gray-300" required>
+                                <option value="">Select Priority</option>
+                                <option value="Low">Low</option>
+                                <option value="Medium" selected>Medium</option>
+                                <option value="High">High</option>
+                                <option value="Urgent">Urgent</option>
+                            </select>
+                        </div>
+
+                        <!-- Required Date -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2 required-field">Required Date</label>
+                            <input type="date" id="requiredDate" class="w-full rounded-md border-gray-300" required>
+                        </div>
+
+                        <!-- Budget -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2 required-field">Estimated Budget (₹)</label>
+                            <input type="number" id="estimatedBudget" class="w-full rounded-md border-gray-300" placeholder="0.00" min="0" step="0.01" required>
+                        </div>
+
+                        <!-- Currency -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Currency</label>
+                            <select id="currency" class="w-full rounded-md border-gray-300">
+                                <option value="INR" selected>INR (₹)</option>
+                                <option value="USD">USD ($)</option>
+                                <option value="EUR">EUR (€)</option>
+                                <option value="GBP">GBP (£)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mt-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2 required-field">Business Justification</label>
+                        <textarea id="businessJustification" class="w-full rounded-md border-gray-300" rows="3" placeholder="Enter business justification and detailed description..." required maxlength="500"></textarea>
+                        <p class="text-xs text-gray-500 mt-1">Maximum 500 characters</p>
+                    </div>
+                </div>
+
+                <!-- PR Items -->
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-6 pr-card">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900">
+                            <i class="fas fa-shopping-cart mr-2 text-green-600"></i>PR Items
+                        </h3>
+                        <button type="button" onclick="addPRItem()" class="px-4 py-2 gradient-green text-white rounded-lg hover:opacity-90">
+                            <i class="fas fa-plus mr-2"></i>Add Item
+                        </button>
+                    </div>
+
+                    <!-- Items Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item #</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider required-field">Description</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider required-field">Quantity</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider required-field">Unit Price (₹)</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total (₹)</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="prItemsTable" class="bg-white divide-y divide-gray-200">
+                                <!-- Sample Item -->
+                                <tr class="pr-item-row" data-item="1">
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">001</td>
+                                    <td class="px-4 py-4">
+                                        <input type="text" class="item-description w-full border-0 bg-transparent focus:ring-0" placeholder="Item description" required>
+                                    </td>
+                                    <td class="px-4 py-4">
+                                        <select class="item-category w-full border-0 bg-transparent focus:ring-0">
+                                            <option value="">Select Category</option>
+                                            <option value="IT Hardware">IT Hardware</option>
+                                            <option value="Software">Software</option>
+                                            <option value="Office Supplies">Office Supplies</option>
+                                            <option value="Services">Services</option>
+                                            <option value="Equipment">Equipment</option>
+                                            <option value="Maintenance">Maintenance</option>
+                                        </select>
+                                    </td>
+                                    <td class="px-4 py-4">
+                                        <input type="number" class="item-quantity w-full border-0 bg-transparent focus:ring-0" min="1" step="1" required onchange="calculateItemTotal(this)">
+                                    </td>
+                                    <td class="px-4 py-4">
+                                        <select class="item-unit w-full border-0 bg-transparent focus:ring-0">
+                                            <option value="Each">Each</option>
+                                            <option value="Piece">Piece</option>
+                                            <option value="Set">Set</option>
+                                            <option value="Hour">Hour</option>
+                                            <option value="Day">Day</option>
+                                            <option value="Month">Month</option>
+                                            <option value="Year">Year</option>
+                                        </select>
+                                    </td>
+                                    <td class="px-4 py-4">
+                                        <input type="number" class="item-unitprice w-full border-0 bg-transparent focus:ring-0" min="0" step="0.01" required onchange="calculateItemTotal(this)">
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        <span class="item-total">₹0.00</span>
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <button type="button" onclick="removePRItem(1)" class="text-red-600 hover:text-red-900">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot class="bg-gray-50">
+                                <tr>
+                                    <td colspan="6" class="px-4 py-3 text-right font-semibold text-gray-900">Total Amount:</td>
+                                    <td class="px-4 py-3 font-bold text-lg text-gray-900" id="totalAmount">₹0.00</td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Vendor Information -->
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-6 pr-card">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-6">
+                        <i class="fas fa-building mr-2 text-purple-600"></i>Vendor Information (Optional)
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Preferred Vendor -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Preferred Vendor</label>
+                            <select id="preferredVendor" class="w-full rounded-md border-gray-300">
+                                <option value="">Select Preferred Vendor</option>
+                                <option value="TechCorp Solutions">TechCorp Solutions</option>
+                                <option value="Global Manufacturing Co">Global Manufacturing Co</option>
+                                <option value="Innovative Systems Ltd">Innovative Systems Ltd</option>
+                                <option value="Premier Services Inc">Premier Services Inc</option>
+                                <option value="Other">Other (Specify in notes)</option>
+                            </select>
+                        </div>
+
+                        <!-- Vendor Contact -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Vendor Contact Person</label>
+                            <input type="text" id="vendorContact" class="w-full rounded-md border-gray-300" placeholder="Enter contact person name">
+                        </div>
+
+                        <!-- Vendor Email -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Vendor Email</label>
+                            <input type="email" id="vendorEmail" class="w-full rounded-md border-gray-300" placeholder="vendor@company.com">
+                        </div>
+
+                        <!-- Vendor Phone -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Vendor Phone</label>
+                            <input type="tel" id="vendorPhone" class="w-full rounded-md border-gray-300" placeholder="+91 XXXXX XXXXX">
+                        </div>
+                    </div>
+
+                    <!-- Vendor Notes -->
+                    <div class="mt-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Vendor Selection Notes</label>
+                        <textarea id="vendorNotes" class="w-full rounded-md border-gray-300" rows="2" placeholder="Additional notes about vendor selection..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Approval Information -->
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-6 pr-card">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-6">
+                        <i class="fas fa-user-check mr-2 text-blue-600"></i>Approval Information
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Manager Approval -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Direct Manager</label>
+                            <input type="text" id="directManager" class="w-full rounded-md border-gray-300" placeholder="Manager name for approval">
+                        </div>
+
+                        <!-- Finance Approval -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Finance Approver</label>
+                            <select id="financeApprover" class="w-full rounded-md border-gray-300">
+                                <option value="">Select Finance Approver</option>
+                                <option value="Sarah Wilson">Sarah Wilson - Finance Director</option>
+                                <option value="Michael Chen">Michael Chen - CFO</option>
+                                <option value="Auto-Assign">Auto-Assign Based on Amount</option>
+                            </select>
+                        </div>
+
+                        <!-- Special Instructions -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Special Instructions for Approvers</label>
+                            <textarea id="approverInstructions" class="w-full rounded-md border-gray-300" rows="2" placeholder="Any special instructions or urgency notes for approvers..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attachments -->
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-6 pr-card">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-6">
+                        <i class="fas fa-paperclip mr-2 text-yellow-600"></i>Attachments
+                    </h3>
+                    
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6">
+                        <div class="text-center">
+                            <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                            <p class="text-lg font-medium text-gray-900 mb-2">Upload Supporting Documents</p>
+                            <p class="text-sm text-gray-500 mb-4">Drag and drop files here, or click to select</p>
+                            <input type="file" id="attachments" class="hidden" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
+                            <button type="button" onclick="document.getElementById('attachments').click()" class="px-4 py-2 gradient-blue text-white rounded-lg hover:opacity-90">
+                                <i class="fas fa-plus mr-2"></i>Select Files
+                            </button>
+                        </div>
+                        <div id="attachmentsList" class="mt-4 space-y-2 hidden">
+                            <!-- Uploaded files will appear here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="bg-white rounded-xl shadow-sm p-6 pr-card">
+                    <div class="flex items-center justify-between">
+                        <div class="text-sm text-gray-600">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            Your PR will be saved automatically as you work. Use "Submit PR" to send for approval.
+                        </div>
+                        <div class="flex space-x-4">
+                            <button type="button" onclick="resetForm()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                                <i class="fas fa-undo mr-2"></i>Reset Form
+                            </button>
+                            <button type="button" onclick="saveDraft()" class="px-6 py-3 gradient-orange text-white rounded-lg hover:opacity-90">
+                                <i class="fas fa-save mr-2"></i>Save Draft
+                            </button>
+                            <button type="submit" class="px-6 py-3 gradient-blue text-white rounded-lg hover:opacity-90">
+                                <i class="fas fa-paper-plane mr-2"></i>Submit PR
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Manage PRs Tab Content -->
+        <div id="managePRContent" class="tab-content hidden">
+            <!-- PR Search and Filter -->
+            <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">
+                        <i class="fas fa-search mr-2 text-blue-600"></i>Search & Filter PRs
+                    </h3>
+                    <button onclick="refreshPRList()" class="px-4 py-2 gradient-blue text-white rounded-lg hover:opacity-90">
+                        <i class="fas fa-sync-alt mr-2"></i>Refresh
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <input type="text" id="searchPR" class="w-full rounded-md border-gray-300" placeholder="Search by PR number or title...">
+                    </div>
+                    <div>
+                        <select id="filterStatus" class="w-full rounded-md border-gray-300" onchange="filterPRs()">
+                            <option value="">All Status</option>
+                            <option value="Draft">Draft</option>
+                            <option value="Submitted">Submitted</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Rejected">Rejected</option>
+                        </select>
+                    </div>
+                    <div>
+                        <select id="filterDepartment" class="w-full rounded-md border-gray-300" onchange="filterPRs()">
+                            <option value="">All Departments</option>
+                            <option value="IT">Information Technology</option>
+                            <option value="HR">Human Resources</option>
+                            <option value="Finance">Finance & Accounting</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Operations">Operations</option>
+                        </select>
+                    </div>
+                    <div>
+                        <input type="date" id="filterDate" class="w-full rounded-md border-gray-300" onchange="filterPRs()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- PR List -->
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">
+                        <i class="fas fa-list mr-2 text-green-600"></i>Existing Purchase Requests
+                    </h3>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PR Number</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Requestor</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="prListTable" class="bg-white divide-y divide-gray-200">
+                            <!-- Sample PRs will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentPRId = null;
+        let prItemCounter = 1;
+        let isEditMode = false;
+        
+        // Sample PR data for management
+        const samplePRs = [
+            {
+                id: 'PR-2025-001234',
+                title: 'IT Equipment Procurement',
+                department: 'IT',
+                requestor: 'John Smith',
+                amount: 245000,
+                status: 'Draft',
+                date: '2025-08-24',
+                priority: 'Medium',
+                items: [
+                    { description: 'Dell Laptops', category: 'IT Hardware', quantity: 10, unit: 'Each', unitPrice: 45000, total: 450000 }
+                ]
+            },
+            {
+                id: 'PR-2025-001235',
+                title: 'Office Furniture Upgrade',
+                department: 'HR',
+                requestor: 'Sarah Wilson',
+                amount: 125000,
+                status: 'Submitted',
+                date: '2025-08-23',
+                priority: 'Low',
+                items: []
+            },
+            {
+                id: 'PR-2025-001236',
+                title: 'Marketing Campaign Software',
+                department: 'Marketing',
+                requestor: 'Michael Chen',
+                amount: 85000,
+                status: 'Approved',
+                date: '2025-08-22',
+                priority: 'High',
+                items: []
+            },
+            {
+                id: 'PR-2025-001237',
+                title: 'Server Maintenance Contract',
+                department: 'IT',
+                requestor: 'David Johnson',
+                amount: 350000,
+                status: 'Rejected',
+                date: '2025-08-21',
+                priority: 'Urgent',
+                items: []
+            }
+        ];
+
+        // Navigation Functions
+        function navigateToBuyerDashboard() {
+            try {
+                if (hasUnsavedChanges()) {
+                    if (confirm('You have unsaved changes. Are you sure you want to leave?')) {
+                        // Show loading notification
+                        showNotification('Returning to Buyer Dashboard...', 'info');
+                        
+                        // Navigate to buyer dashboard after brief delay
+                        setTimeout(() => {
+                            window.location.href = 'BuyerDashboard.html';
+                        }, 500);
+                    }
+                } else {
+                    // Show loading notification
+                    showNotification('Returning to Buyer Dashboard...', 'info');
+                    
+                    // Navigate to buyer dashboard after brief delay
+                    setTimeout(() => {
+                        window.location.href = 'BuyerDashboard.html';
+                    }, 500);
+                }
+            } catch (error) {
+                console.error('Navigation error:', error);
+                // Fallback navigation methods
+                try {
+                    window.history.back();
+                } catch (fallbackError) {
+                    alert('Unable to navigate back. Please use browser back button or click on Buyer Dashboard in navigation.');
+                }
+            }
+        }
+
+        // Tab Management
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            
+            // Show/hide content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+            document.getElementById(tabName + 'PRContent').classList.remove('hidden');
+            
+            if (tabName === 'manage') {
+                loadPRList();
+            }
+        }
+
+        // PR Item Management
+        function addPRItem() {
+            prItemCounter++;
+            const tbody = document.getElementById('prItemsTable');
+            const newRow = document.createElement('tr');
+            newRow.className = 'pr-item-row';
+            newRow.setAttribute('data-item', prItemCounter);
+            
+            newRow.innerHTML = `
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">${String(prItemCounter).padStart(3, '0')}</td>
+                <td class="px-4 py-4">
+                    <input type="text" class="item-description w-full border-0 bg-transparent focus:ring-0" placeholder="Item description" required>
+                </td>
+                <td class="px-4 py-4">
+                    <select class="item-category w-full border-0 bg-transparent focus:ring-0">
+                        <option value="">Select Category</option>
+                        <option value="IT Hardware">IT Hardware</option>
+                        <option value="Software">Software</option>
+                        <option value="Office Supplies">Office Supplies</option>
+                        <option value="Services">Services</option>
+                        <option value="Equipment">Equipment</option>
+                        <option value="Maintenance">Maintenance</option>
+                    </select>
+                </td>
+                <td class="px-4 py-4">
+                    <input type="number" class="item-quantity w-full border-0 bg-transparent focus:ring-0" min="1" step="1" required onchange="calculateItemTotal(this)">
+                </td>
+                <td class="px-4 py-4">
+                    <select class="item-unit w-full border-0 bg-transparent focus:ring-0">
+                        <option value="Each">Each</option>
+                        <option value="Piece">Piece</option>
+                        <option value="Set">Set</option>
+                        <option value="Hour">Hour</option>
+                        <option value="Day">Day</option>
+                        <option value="Month">Month</option>
+                        <option value="Year">Year</option>
+                    </select>
+                </td>
+                <td class="px-4 py-4">
+                    <input type="number" class="item-unitprice w-full border-0 bg-transparent focus:ring-0" min="0" step="0.01" required onchange="calculateItemTotal(this)">
+                </td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <span class="item-total">₹0.00</span>
+                </td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <button type="button" onclick="removePRItem(${prItemCounter})" class="text-red-600 hover:text-red-900">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            
+            tbody.appendChild(newRow);
+            showNotification('New item added to PR', 'success');
+        }
+
+        function removePRItem(itemNumber) {
+            if (confirm('Remove this item from the PR?')) {
+                const row = document.querySelector(`[data-item="${itemNumber}"]`);
+                if (row) {
+                    row.remove();
+                    calculateTotalAmount();
+                    showNotification('Item removed from PR', 'info');
+                }
+            }
+        }
+
+        function calculateItemTotal(input) {
+            const row = input.closest('tr');
+            const quantity = parseFloat(row.querySelector('.item-quantity').value) || 0;
+            const unitPrice = parseFloat(row.querySelector('.item-unitprice').value) || 0;
+            const total = quantity * unitPrice;
+            
+            row.querySelector('.item-total').textContent = `₹${total.toFixed(2)}`;
+            calculateTotalAmount();
+        }
+
+        function calculateTotalAmount() {
+            let total = 0;
+            document.querySelectorAll('.item-total').forEach(span => {
+                const amount = parseFloat(span.textContent.replace('₹', '').replace(',', '')) || 0;
+                total += amount;
+            });
+            
+            document.getElementById('totalAmount').textContent = `₹${total.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+            
+            // Update estimated budget if empty
+            const budgetField = document.getElementById('estimatedBudget');
+            if (!budgetField.value || parseFloat(budgetField.value) === 0) {
+                budgetField.value = total.toFixed(2);
+            }
+        }
+
+        // Form Management
+        function handlePRSubmission(event) {
+            event.preventDefault();
+            
+            if (validatePRForm()) {
+                submitPR();
+            }
+        }
+
+        function validatePRForm() {
+            const requiredFields = [
+                'prTitle', 'department', 'requestor', 'costCenter', 
+                'priority', 'requiredDate', 'estimatedBudget', 'businessJustification'
+            ];
+            
+            let isValid = true;
+            const errors = [];
+            
+            // Clear previous validation styles
+            document.querySelectorAll('.validation-error').forEach(el => {
+                el.classList.remove('validation-error');
+            });
+            
+            // Check required fields
+            requiredFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (!field.value.trim()) {
+                    field.classList.add('validation-error');
+                    errors.push(`${fieldId.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} is required`);
+                    isValid = false;
+                }
+            });
+            
+            // Check if at least one item is present
+            const itemRows = document.querySelectorAll('#prItemsTable tr[data-item]');
+            if (itemRows.length === 0) {
+                errors.push('At least one PR item is required');
+                isValid = false;
+            }
+            
+            // Validate items
+            itemRows.forEach((row, index) => {
+                const description = row.querySelector('.item-description').value;
+                const quantity = row.querySelector('.item-quantity').value;
+                const unitPrice = row.querySelector('.item-unitprice').value;
+                
+                if (!description || !quantity || !unitPrice) {
+                    errors.push(`Item ${index + 1}: Description, quantity, and unit price are required`);
+                    isValid = false;
+                }
+            });
+            
+            // Show validation errors
+            if (!isValid) {
+                showNotification(`Validation failed: ${errors.join(', ')}`, 'error');
+            }
+            
+            return isValid;
+        }
+
+        function saveDraft() {
+            if (!validateBasicFields()) {
+                return;
+            }
+            
+            const prData = collectFormData();
+            prData.status = 'Draft';
+            
+            // Simulate saving to backend
+            localStorage.setItem(`pr_draft_${prData.prNumber}`, JSON.stringify(prData));
+            
+            showNotification('PR saved as draft successfully!', 'success');
+            updatePRStatus('Draft');
+        }
+
+        function submitPR() {
+            if (!validatePRForm()) {
+                return;
+            }
+            
+            const prData = collectFormData();
+            prData.status = 'Submitted';
+            prData.submittedDate = new Date().toISOString().split('T')[0];
+            
+            // Simulate submission to backend
+            localStorage.setItem(`pr_${prData.prNumber}`, JSON.stringify(prData));
+            
+            showNotification('PR submitted successfully for approval!', 'success');
+            updatePRStatus('Submitted');
+            
+            // Add success animation
+            document.getElementById('prForm').classList.add('success-animation');
+            setTimeout(() => {
+                document.getElementById('prForm').classList.remove('success-animation');
+            }, 600);
+        }
+
+        function validateBasicFields() {
+            const basicFields = ['prTitle', 'department', 'requestor'];
+            
+            for (let fieldId of basicFields) {
+                const field = document.getElementById(fieldId);
+                if (!field.value.trim()) {
+                    field.classList.add('validation-error');
+                    showNotification(`${fieldId.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} is required for saving`, 'warning');
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function collectFormData() {
+            const formData = {
+                prNumber: document.getElementById('prNumber').value,
+                title: document.getElementById('prTitle').value,
+                department: document.getElementById('department').value,
+                requestor: document.getElementById('requestor').value,
+                costCenter: document.getElementById('costCenter').value,
+                priority: document.getElementById('priority').value,
+                requiredDate: document.getElementById('requiredDate').value,
+                estimatedBudget: parseFloat(document.getElementById('estimatedBudget').value) || 0,
+                currency: document.getElementById('currency').value,
+                businessJustification: document.getElementById('businessJustification').value,
+                preferredVendor: document.getElementById('preferredVendor').value,
+                vendorContact: document.getElementById('vendorContact').value,
+                vendorEmail: document.getElementById('vendorEmail').value,
+                vendorPhone: document.getElementById('vendorPhone').value,
+                vendorNotes: document.getElementById('vendorNotes').value,
+                directManager: document.getElementById('directManager').value,
+                financeApprover: document.getElementById('financeApprover').value,
+                approverInstructions: document.getElementById('approverInstructions').value,
+                items: [],
+                createdDate: new Date().toISOString().split('T')[0]
+            };
+            
+            // Collect items
+            document.querySelectorAll('#prItemsTable tr[data-item]').forEach(row => {
+                const item = {
+                    description: row.querySelector('.item-description').value,
+                    category: row.querySelector('.item-category').value,
+                    quantity: parseFloat(row.querySelector('.item-quantity').value) || 0,
+                    unit: row.querySelector('.item-unit').value,
+                    unitPrice: parseFloat(row.querySelector('.item-unitprice').value) || 0,
+                    total: parseFloat(row.querySelector('.item-total').textContent.replace('₹', '').replace(',', '')) || 0
+                };
+                
+                if (item.description) {
+                    formData.items.push(item);
+                }
+            });
+            
+            return formData;
+        }
+
+        function resetForm() {
+            if (confirm('This will clear all form data. Are you sure?')) {
+                document.getElementById('prForm').reset();
+                
+                // Clear PR items except first row
+                const tbody = document.getElementById('prItemsTable');
+                const rows = tbody.querySelectorAll('tr[data-item]');
+                for (let i = 1; i < rows.length; i++) {
+                    rows[i].remove();
+                }
+                
+                // Reset first row
+                if (rows.length > 0) {
+                    const firstRow = rows[0];
+                    firstRow.querySelectorAll('input, select').forEach(input => input.value = '');
+                    firstRow.querySelector('.item-total').textContent = '₹0.00';
+                }
+                
+                // Reset counters
+                prItemCounter = 1;
+                currentPRId = null;
+                isEditMode = false;
+                
+                // Reset total
+                document.getElementById('totalAmount').textContent = '₹0.00';
+                
+                // Clear status
+                updatePRStatus(null);
+                
+                showNotification('Form has been reset', 'info');
+            }
+        }
+
+        function updatePRStatus(status) {
+            const statusBadge = document.getElementById('prStatusBadge');
+            const statusText = document.getElementById('prStatusText');
+            
+            if (status) {
+                statusBadge.classList.remove('hidden');
+                statusText.textContent = status;
+                
+                // Update badge color
+                statusBadge.className = statusBadge.className.replace(/bg-\w+-100 text-\w+-800/g, '');
+                
+                switch (status) {
+                    case 'Draft':
+                        statusBadge.classList.add('bg-gray-100', 'text-gray-800');
+                        break;
+                    case 'Submitted':
+                        statusBadge.classList.add('bg-blue-100', 'text-blue-800');
+                        break;
+                    case 'Approved':
+                        statusBadge.classList.add('bg-green-100', 'text-green-800');
+                        break;
+                    case 'Rejected':
+                        statusBadge.classList.add('bg-red-100', 'text-red-800');
+                        break;
+                }
+            } else {
+                statusBadge.classList.add('hidden');
+            }
+        }
+
+        // PR Management Functions
+        function loadPRList() {
+            const tbody = document.getElementById('prListTable');
+            tbody.innerHTML = '';
+            
+            samplePRs.forEach(pr => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${pr.id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${pr.title}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${pr.department}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${pr.requestor}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹${pr.amount.toLocaleString('en-IN')}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(pr.status)}">
+                            ${pr.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(pr.date).toLocaleDateString('en-IN')}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button onclick="editPR('${pr.id}')" class="text-blue-600 hover:text-blue-900 mr-2" ${pr.status === 'Approved' ? 'disabled title="Cannot edit approved PR"' : ''}>
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="viewPR('${pr.id}')" class="text-green-600 hover:text-green-900 mr-2">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button onclick="duplicatePR('${pr.id}')" class="text-purple-600 hover:text-purple-900 mr-2">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button onclick="deletePR('${pr.id}')" class="text-red-600 hover:text-red-900" ${pr.status === 'Submitted' || pr.status === 'Approved' ? 'disabled title="Cannot delete submitted/approved PR"' : ''}>
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        function getStatusClass(status) {
+            switch (status) {
+                case 'Draft': return 'bg-gray-100 text-gray-800';
+                case 'Submitted': return 'bg-blue-100 text-blue-800';
+                case 'Approved': return 'bg-green-100 text-green-800';
+                case 'Rejected': return 'bg-red-100 text-red-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        function editPR(prId) {
+            const pr = samplePRs.find(p => p.id === prId);
+            if (!pr) return;
+            
+            if (pr.status === 'Approved') {
+                showNotification('Cannot edit approved PR', 'warning');
+                return;
+            }
+            
+            // Load PR data into form
+            document.getElementById('prNumber').value = pr.id;
+            document.getElementById('prTitle').value = pr.title;
+            document.getElementById('department').value = pr.department;
+            document.getElementById('requestor').value = pr.requestor;
+            document.getElementById('priority').value = pr.priority;
+            document.getElementById('estimatedBudget').value = pr.amount;
+            
+            // Switch to create tab
+            switchTab('create');
+            
+            // Update form state
+            currentPRId = prId;
+            isEditMode = true;
+            updatePRStatus(pr.status);
+            
+            showNotification(`Loaded PR ${prId} for editing`, 'info');
+        }
+
+        function viewPR(prId) {
+            const pr = samplePRs.find(p => p.id === prId);
+            if (!pr) return;
+            
+            const viewHTML = `
+                <div class="max-w-4xl mx-auto">
+                    <div class="bg-white p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-semibold text-gray-900">${pr.title}</h3>
+                            <span class="px-3 py-1 rounded-full text-sm font-medium ${getStatusClass(pr.status)}">
+                                ${pr.status}
+                            </span>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <h4 class="font-medium text-gray-900 mb-3">PR Details</h4>
+                                <div class="space-y-2 text-sm">
+                                    <div><strong>PR Number:</strong> ${pr.id}</div>
+                                    <div><strong>Department:</strong> ${pr.department}</div>
+                                    <div><strong>Requestor:</strong> ${pr.requestor}</div>
+                                    <div><strong>Priority:</strong> ${pr.priority}</div>
+                                    <div><strong>Date Created:</strong> ${new Date(pr.date).toLocaleDateString('en-IN')}</div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-medium text-gray-900 mb-3">Financial Information</h4>
+                                <div class="space-y-2 text-sm">
+                                    <div><strong>Total Amount:</strong> ₹${pr.amount.toLocaleString('en-IN')}</div>
+                                    <div><strong>Currency:</strong> INR</div>
+                                    <div><strong>Status:</strong> ${pr.status}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="border-t pt-4">
+                            <div class="flex justify-end space-x-3">
+                                <button onclick="editPR('${pr.id}')" class="px-4 py-2 gradient-blue text-white rounded-lg hover:opacity-90">
+                                    <i class="fas fa-edit mr-2"></i>Edit PR
+                                </button>
+                                <button onclick="duplicatePR('${pr.id}')" class="px-4 py-2 gradient-purple text-white rounded-lg hover:opacity-90">
+                                    <i class="fas fa-copy mr-2"></i>Duplicate
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            showModal(`PR Details - ${pr.id}`, viewHTML);
+        }
+
+        function duplicatePR(prId) {
+            const pr = samplePRs.find(p => p.id === prId);
+            if (!pr) return;
+            
+            if (confirm(`Create a copy of PR ${prId}?`)) {
+                // Generate new PR number
+                const newPRNumber = `PR-2025-${String(Date.now()).slice(-6)}`;
+                
+                // Load PR data into form with new PR number
+                document.getElementById('prNumber').value = newPRNumber;
+                document.getElementById('prTitle').value = `Copy of ${pr.title}`;
+                document.getElementById('department').value = pr.department;
+                document.getElementById('requestor').value = pr.requestor;
+                document.getElementById('priority').value = pr.priority;
+                document.getElementById('estimatedBudget').value = pr.amount;
+                
+                // Switch to create tab
+                switchTab('create');
+                
+                // Reset form state
+                currentPRId = null;
+                isEditMode = false;
+                updatePRStatus('Draft');
+                
+                showNotification(`Created copy of PR ${prId}`, 'success');
+            }
+        }
+
+        function deletePR(prId) {
+            const pr = samplePRs.find(p => p.id === prId);
+            if (!pr) return;
+            
+            if (pr.status === 'Submitted' || pr.status === 'Approved') {
+                showNotification('Cannot delete submitted or approved PR', 'warning');
+                return;
+            }
+            
+            if (confirm(`Delete PR ${prId}? This action cannot be undone.`)) {
+                // Remove from sample data
+                const index = samplePRs.findIndex(p => p.id === prId);
+                if (index > -1) {
+                    samplePRs.splice(index, 1);
+                    loadPRList();
+                    showNotification(`PR ${prId} deleted successfully`, 'success');
+                }
+            }
+        }
+
+        function refreshPRList() {
+            loadPRList();
+            showNotification('PR list refreshed', 'info');
+        }
+
+        function filterPRs() {
+            const statusFilter = document.getElementById('filterStatus').value;
+            const departmentFilter = document.getElementById('filterDepartment').value;
+            const dateFilter = document.getElementById('filterDate').value;
+            
+            // This would typically filter the data from backend
+            // For demo, we'll just reload the list
+            loadPRList();
+            
+            if (statusFilter || departmentFilter || dateFilter) {
+                showNotification('Filters applied to PR list', 'info');
+            }
+        }
+
+        // Utility Functions
+        function showModal(title, content) {
+            const modalHTML = `
+                <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" onclick="closeModal()">
+                    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white max-h-screen overflow-y-auto" onclick="event.stopPropagation()">
+                        <div class="flex items-center justify-between pb-3 border-b border-gray-200">
+                            <h3 class="text-lg font-semibold">${title}</h3>
+                            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="mt-4">
+                            ${content}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+
+        function closeModal() {
+            const modal = document.querySelector('.fixed.inset-0.z-50');
+            if (modal) modal.remove();
+        }
+
+        function showNotification(message, type = 'info') {
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                warning: 'bg-yellow-500',
+                info: 'bg-blue-500'
+            };
+            
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-opacity duration-300`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        function hasUnsavedChanges() {
+            // Check if PR is currently being saved or submitted
+            if (document.getElementById('saveDraftBtn').disabled || document.getElementById('submitPRBtn').disabled) {
+                return false; // Don't prevent navigation if saving/submitting
+            }
+            
+            // Simple check - in real app this would be more sophisticated
+            const formData = collectFormData();
+            return (formData.title && formData.title.trim()) || 
+                   (formData.department && formData.department.trim()) || 
+                   (formData.requestor && formData.requestor.trim()) ||
+                   (formData.businessJustification && formData.businessJustification.trim()) ||
+                   formData.items.length > 0;
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set minimum date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('requiredDate').min = today;
+            
+            // Add keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (e.altKey && e.key === 'b') {
+                    e.preventDefault();
+                    navigateToBuyerDashboard();
+                }
+                if (e.ctrlKey && e.key === 's') {
+                    e.preventDefault();
+                    saveDraft();
+                }
+                if (e.key === 'Escape') {
+                    closeModal();
+                }
+            });
+            
+            // Add hover effects to cards
+            document.querySelectorAll('.pr-card').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.classList.add('shadow-lg');
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.classList.remove('shadow-lg');
+                });
+            });
+            
+            // File upload handler
+            document.getElementById('attachments').addEventListener('change', function(e) {
+                const files = Array.from(e.target.files);
+                const attachmentsList = document.getElementById('attachmentsList');
+                
+                if (files.length > 0) {
+                    attachmentsList.classList.remove('hidden');
+                    attachmentsList.innerHTML = '';
+                    
+                    files.forEach((file, index) => {
+                        const fileDiv = document.createElement('div');
+                        fileDiv.className = 'flex items-center justify-between p-2 bg-gray-50 rounded';
+                        fileDiv.innerHTML = `
+                            <div class="flex items-center">
+                                <i class="fas fa-file text-gray-500 mr-2"></i>
+                                <span class="text-sm text-gray-700">${file.name}</span>
+                                <span class="text-xs text-gray-500 ml-2">(${(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+                            </div>
+                            <button type="button" onclick="removeAttachment(${index})" class="text-red-600 hover:text-red-800">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        `;
+                        attachmentsList.appendChild(fileDiv);
+                    });
+                }
+            });
+            
+            // Auto-save functionality (every 30 seconds)
+            setInterval(() => {
+                if (hasUnsavedChanges() && validateBasicFields()) {
+                    saveDraft();
+                }
+            }, 30000);
+            
+            // Initialize form validation
+            document.querySelectorAll('input[required], select[required], textarea[required]').forEach(field => {
+                field.addEventListener('blur', function() {
+                    if (this.value.trim()) {
+                        this.classList.remove('validation-error');
+                    }
+                });
+            });
+            
+            showNotification('PR Creation & Change system initialized', 'info');
+            
+            // Show keyboard shortcut hint on first load
+            setTimeout(() => {
+                showNotification('Tip: Use Alt+B to navigate back to Buyer Dashboard', 'info');
+            }, 3000);
+        });
+
+        function removeAttachment(index) {
+            // This would remove the attachment from the file input
+            showNotification('Attachment removed', 'info');
+        }
+    </script>
+</body>
+</html>

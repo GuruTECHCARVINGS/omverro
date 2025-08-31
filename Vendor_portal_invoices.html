@@ -1,0 +1,396 @@
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <title>Vendor Invoices</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --primary-purple-light: #8e24aa;
+      --primary-purple-dark: #6a1b9a;
+      --background-light-gray: #fafafa;
+      --input-bg-white: #ffffff;
+      --input-border-gray: #d1c4e9;
+      --text-dark-gray: #212121;
+      --text-purple: #6a1b9a;
+      --card-shadow: rgba(110, 24, 154, 0.15);
+    }
+    /* Custom scrollbar for table */
+    ::-webkit-scrollbar {
+      height: 8px;
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--background-light-gray);
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: var(--primary-purple-dark);
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body class="bg-[var(--background-light-gray)] font-sans text-[var(--text-dark-gray)] min-h-screen flex flex-col">
+  <!-- Header -->
+  <header
+    class="flex items-center bg-gradient-to-r from-[var(--primary-purple-dark)] to-[var(--primary-purple-light)] px-4 sm:px-8 py-3 text-white select-none shadow-lg"
+  >
+    <button aria-label="Back" class="mr-3 text-white text-xl hover:text-purple-300 transition">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    <span class="font-extrabold text-lg sm:text-xl whitespace-nowrap drop-shadow-md">
+      Vendor Invoices
+    </span>
+    <button aria-label="Dropdown" class="ml-1 text-white text-sm hover:text-purple-300 transition">
+      <i class="fas fa-caret-down"></i>
+    </button>
+    <div class="flex-grow"></div>
+    <button aria-label="Search" class="mr-5 text-white text-xl hover:text-purple-300 transition">
+      <i class="fas fa-search"></i>
+    </button>
+    <div
+      aria-label="User initials ME"
+      class="flex items-center justify-center bg-white bg-opacity-20 backdrop-blur-sm rounded-full w-9 h-9 text-white font-semibold text-base shadow-md cursor-pointer hover:bg-opacity-40 transition"
+      title="User ME"
+    >
+      ME
+    </div>
+  </header>
+
+  <!-- Summary Cards -->
+  <section class="px-4 sm:px-8 py-6 grid grid-cols-1 sm:grid-cols-3 gap-6 bg-[var(--background-light-gray)]">
+    <div class="bg-white rounded-xl shadow-[0_4px_15px_var(--card-shadow)] p-5 flex flex-col justify-between hover:shadow-[0_6px_20px_var(--primary-purple-light)] transition cursor-pointer">
+      <div class="flex items-center justify-between mb-3">
+        <div class="text-[var(--primary-purple-dark)] text-2xl font-bold">8</div>
+        <div class="bg-[var(--primary-purple-light)] text-white rounded-full p-2 shadow-lg">
+          <i class="fas fa-file-invoice-dollar text-xl"></i>
+        </div>
+      </div>
+      <div class="text-sm font-semibold text-gray-600">Total Invoices</div>
+    </div>
+    <div class="bg-white rounded-xl shadow-[0_4px_15px_var(--card-shadow)] p-5 flex flex-col justify-between hover:shadow-[0_6px_20px_var(--primary-purple-light)] transition cursor-pointer">
+      <div class="flex items-center justify-between mb-3">
+        <div class="text-green-600 text-2xl font-bold">5</div>
+        <div class="bg-green-400 text-white rounded-full p-2 shadow-lg">
+          <i class="fas fa-check-circle text-xl"></i>
+        </div>
+      </div>
+      <div class="text-sm font-semibold text-gray-600">Paid Invoices</div>
+    </div>
+    <div class="bg-white rounded-xl shadow-[0_4px_15px_var(--card-shadow)] p-5 flex flex-col justify-between hover:shadow-[0_6px_20px_var(--primary-purple-light)] transition cursor-pointer">
+      <div class="flex items-center justify-between mb-3">
+        <div class="text-red-600 text-2xl font-bold">3</div>
+        <div class="bg-red-400 text-white rounded-full p-2 shadow-lg">
+          <i class="fas fa-exclamation-triangle text-xl"></i>
+        </div>
+      </div>
+      <div class="text-sm font-semibold text-gray-600">Pending Invoices</div>
+    </div>
+  </section>
+
+  <!-- Search and filter bar -->
+  <section
+    class="flex flex-wrap items-center gap-2 px-4 sm:px-8 py-3 border-b border-gray-300 bg-[var(--background-light-gray)]"
+  >
+    <div
+      class="flex items-center rounded-lg px-3 py-2 w-full sm:w-[320px] bg-[var(--input-bg-white)] border border-[var(--input-border-gray)] shadow-sm focus-within:ring-2 focus-within:ring-[var(--primary-purple-light)] transition"
+    >
+      <input
+        aria-label="Search in Reference"
+        class="flex-grow text-sm placeholder-gray-500 focus:outline-none text-[var(--text-dark-gray)] bg-[var(--input-bg-white)]"
+        placeholder="Search in Reference..."
+        type="text"
+      />
+      <button aria-label="Search" class="text-[var(--primary-purple-dark)] text-lg sm:text-xl hover:text-[var(--primary-purple-light)] transition">
+        <i class="fas fa-search"></i>
+      </button>
+      <button aria-label="Refresh" class="ml-3 text-[var(--primary-purple-dark)] text-lg sm:text-xl hover:text-[var(--primary-purple-light)] transition">
+        <i class="fas fa-sync-alt"></i>
+      </button>
+    </div>
+    <button
+      aria-label="Dropdown"
+      class="border border-[var(--input-border-gray)] rounded-lg px-3 py-2 text-sm text-[var(--primary-purple-dark)] bg-[var(--input-bg-white)] shadow-sm hover:bg-[var(--primary-purple-light)] hover:text-white transition"
+      title="More options"
+    >
+      <i class="fas fa-caret-down"></i>
+    </button>
+    <button
+      aria-label="Status"
+      class="text-sm text-[var(--primary-purple-dark)] flex items-center cursor-pointer hover:text-[var(--primary-purple-light)] transition"
+      title="Filter by Status"
+    >
+      Status
+      <i class="fas fa-caret-down ml-1"></i>
+    </button>
+    <button
+      aria-label="Filter"
+      class="text-sm text-[var(--primary-purple-dark)] flex items-center cursor-pointer hover:text-[var(--primary-purple-light)] transition"
+    >
+      <i class="fas fa-filter"></i>
+    </button>
+    <button
+      aria-label="Undo"
+      class="text-sm text-[var(--primary-purple-dark)] flex items-center cursor-pointer hover:text-[var(--primary-purple-light)] transition"
+    >
+      <i class="fas fa-undo"></i>
+    </button>
+  </section>
+
+  <!-- Table -->
+  <section class="overflow-x-auto flex-grow px-4 sm:px-8 py-6">
+    <table
+      class="min-w-full border-separate border-spacing-y-2 text-left text-sm text-[var(--text-dark-gray)] shadow-lg rounded-lg overflow-hidden"
+    >
+      <thead>
+        <tr class="bg-[var(--primary-purple-light)] text-white">
+          <th class="pl-4 py-3 font-semibold w-[20%]">Invoice Number</th>
+          <th class="py-3 font-semibold w-[15%]">Status</th>
+          <th class="py-3 font-semibold w-[15%]">Document Date</th>
+          <th class="py-3 font-semibold w-[20%]">Payment Terms</th>
+          <th class="py-3 font-semibold w-[10%]">Document Id</th>
+          <th class="py-3 font-semibold w-[10%] text-right pr-4">Amount</th>
+          <th class="py-3 font-semibold w-[10%] relative">
+            Currency
+            <button id="currencyToggle" aria-label="Toggle currency options" class="absolute right-2 top-1/2 -translate-y-1/2 text-white hover:text-gray-200 transition">
+              <i class="fas fa-caret-down"></i>
+            </button>
+            <div id="currencyDropdown" class="hidden absolute right-0 mt-8 w-24 bg-white border border-gray-300 rounded shadow-lg z-50">
+              <ul>
+                <li class="px-4 py-2 hover:bg-[var(--primary-purple-light)] hover:text-white cursor-pointer">INR</li>
+                <li class="px-4 py-2 hover:bg-[var(--primary-purple-light)] hover:text-white cursor-pointer">USD</li>
+                <li class="px-4 py-2 hover:bg-[var(--primary-purple-light)] hover:text-white cursor-pointer">EUR</li>
+              </ul>
+            </div>
+          </th>
+          <th class="w-8"></th>
+        </tr>
+      </thead>
+      <tbody id="invoiceTableBody">
+        <tr class="bg-white border border-[var(--input-border-gray)] rounded-lg shadow-sm hover:shadow-md transition cursor-pointer" data-amount="1642.2" data-currency="EUR">
+          <td class="pl-4 py-3 text-[var(--text-dark-gray)]">1001</td>
+          <td class="py-3">
+            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 text-[var(--primary-purple-dark)] font-semibold text-xs shadow-inner select-none">
+              <i class="fas fa-spinner fa-spin"></i> In Process
+            </span>
+          </td>
+          <td class="py-3">03/11/2016</td>
+          <td class="py-3"></td>
+          <td class="py-3">14</td>
+          <td class="py-3 text-right pr-4 font-mono amount-cell">1,642.20</td>
+          <td class="py-3 currency-cell">EUR</td>
+          <td class="pr-4 text-gray-400 text-lg cursor-pointer">
+            <i class="fas fa-chevron-right"></i>
+          </td>
+        </tr>
+        <tr class="bg-white border border-[var(--input-border-gray)] rounded-lg shadow-sm hover:shadow-md transition cursor-pointer" data-amount="730" data-currency="USD">
+          <td class="pl-4 py-3 text-[var(--text-purple)] underline font-semibold">
+            4500000650-1
+          </td>
+          <td class="py-3">
+            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 text-[var(--primary-purple-dark)] font-semibold text-xs shadow-inner select-none">
+              <i class="fas fa-spinner fa-spin"></i> In Process
+            </span>
+          </td>
+          <td class="py-3">03/08/2018</td>
+          <td class="py-3 text-[var(--primary-purple-dark)] font-semibold">
+            PAYABLE IMMEDIATELY DUE NET
+          </td>
+          <td class="py-3">643</td>
+          <td class="py-3 text-right pr-4 font-mono amount-cell">730.00</td>
+          <td class="py-3 currency-cell">USD</td>
+          <td class="pr-4 text-gray-400 text-lg cursor-pointer">
+            <i class="fas fa-chevron-right"></i>
+          </td>
+        </tr>
+        <tr class="bg-white border border-[var(--input-border-gray)] rounded-lg shadow-sm hover:shadow-md transition cursor-pointer" data-amount="730" data-currency="USD">
+          <td class="pl-4 py-3 text-[var(--text-purple)] underline font-semibold">
+            4500000651
+          </td>
+          <td class="py-3">
+            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 text-green-700 font-semibold text-xs shadow-inner select-none">
+              <i class="fas fa-check-circle"></i> Paid
+            </span>
+          </td>
+          <td class="py-3">03/19/2018</td>
+          <td class="py-3 text-[var(--primary-purple-dark)] font-semibold">
+            PAYABLE IMMEDIATELY DUE NET
+          </td>
+          <td class="py-3">730</td>
+          <td class="py-3 text-right pr-4 font-mono amount-cell">730.00</td>
+          <td class="py-3 currency-cell">USD</td>
+          <td class="pr-4 text-gray-400 text-lg cursor-pointer">
+            <i class="fas fa-chevron-right"></i>
+          </td>
+        </tr>
+        <tr class="bg-white border border-[var(--input-border-gray)] rounded-lg shadow-sm hover:shadow-md transition cursor-pointer" data-amount="730" data-currency="USD">
+          <td class="pl-4 py-3 text-[var(--text-purple)] underline font-semibold">
+            4500000651
+          </td>
+          <td class="py-3">
+            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 text-[var(--primary-purple-dark)] font-semibold text-xs shadow-inner select-none">
+              <i class="fas fa-spinner fa-spin"></i> In Process
+            </span>
+          </td>
+          <td class="py-3">03/12/2018</td>
+          <td class="py-3 text-[var(--primary-purple-dark)] font-semibold">
+            PAYABLE IMMEDIATELY DUE NET
+          </td>
+          <td class="py-3">683</td>
+          <td class="py-3 text-right pr-4 font-mono amount-cell">730.00</td>
+          <td class="py-3 currency-cell">USD</td>
+          <td class="pr-4 text-gray-400 text-lg cursor-pointer">
+            <i class="fas fa-chevron-right"></i>
+          </td>
+        </tr>
+        <tr class="bg-white border border-[var(--input-border-gray)] rounded-lg shadow-sm hover:shadow-md transition cursor-pointer" data-amount="1456.3" data-currency="EUR">
+          <td class="pl-4 py-3 text-[var(--text-purple)] underline font-semibold">
+            AGRMT. #318
+          </td>
+          <td class="py-3">
+            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 text-[var(--primary-purple-dark)] font-semibold text-xs shadow-inner select-none">
+              <i class="fas fa-spinner fa-spin"></i> In Process
+            </span>
+          </td>
+          <td class="py-3">03/26/2016</td>
+          <td class="py-3 text-[var(--primary-purple-dark)] font-semibold">
+            PAYABLE IMMEDIATELY DUE NET
+          </td>
+          <td class="py-3">30</td>
+          <td class="py-3 text-right pr-4 font-mono amount-cell">1,456.30</td>
+          <td class="py-3 currency-cell">EUR</td>
+          <td class="pr-4 text-gray-400 text-lg cursor-pointer">
+            <i class="fas fa-chevron-right"></i>
+          </td>
+        </tr>
+        <tr class="bg-white border border-[var(--input-border-gray)] rounded-lg shadow-sm hover:shadow-md transition cursor-pointer" data-amount="2310" data-currency="USD">
+          <td class="pl-4 py-3 text-[var(--text-purple)] underline font-semibold">
+            AGRMT. #514
+          </td>
+          <td class="py-3">
+            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 text-[var(--primary-purple-dark)] font-semibold text-xs shadow-inner select-none">
+              <i class="fas fa-spinner fa-spin"></i> In Process
+            </span>
+          </td>
+          <td class="py-3">03/25/2016</td>
+          <td class="py-3 text-[var(--primary-purple-dark)] font-semibold">
+            PAYABLE IMMEDIATELY DUE NET
+          </td>
+          <td class="py-3">32</td>
+          <td class="py-3 text-right pr-4 font-mono">2,310.00</td>
+          <td class="py-3 currency-cell">USD</td>
+          <td class="pr-4 text-gray-400 text-lg cursor-pointer">
+            <i class="fas fa-chevron-right"></i>
+          </td>
+        </tr>
+        <tr class="bg-white border border-[var(--input-border-gray)] rounded-lg shadow-sm hover:shadow-md transition cursor-pointer" data-amount="100" data-currency="EUR">
+          <td class="pl-4 py-3 text-[var(--text-dark-gray)]">1002</td>
+          <td class="py-3">
+            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 text-green-700 font-semibold text-xs shadow-inner select-none">
+              <i class="fas fa-check-circle"></i> Received
+            </span>
+          </td>
+          <td class="py-3">03/04/2016</td>
+          <td class="py-3 text-[var(--primary-purple-dark)] font-semibold">
+            PAYABLE IMMEDIATELY DUE NET
+          </td>
+          <td class="py-3">2</td>
+          <td class="py-3 text-right pr-4 font-mono">100.00</td>
+          <td class="py-3 currency-cell">EUR</td>
+          <td class="pr-4 text-gray-400 text-lg cursor-pointer">
+            <i class="fas fa-chevron-right"></i>
+          </td>
+        </tr>
+        <tr class="bg-white border border-[var(--input-border-gray)] rounded-lg shadow-sm hover:shadow-md transition cursor-pointer" data-amount="100" data-currency="EUR">
+          <td class="pl-4 py-3 text-[var(--text-dark-gray)]">1003</td>
+          <td class="py-3">
+            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 text-[var(--primary-purple-dark)] font-semibold text-xs shadow-inner select-none">
+              <i class="fas fa-spinner fa-spin"></i> In Process
+            </span>
+          </td>
+          <td class="py-3">03/04/2016</td>
+          <td class="py-3 text-[var(--primary-purple-dark)] font-semibold">
+            PAYABLE IMMEDIATELY DUE NET
+          </td>
+          <td class="py-3">1</td>
+          <td class="py-3 text-right pr-4 font-mono">100.00</td>
+          <td class="py-3 currency-cell">EUR</td>
+          <td class="pr-4 text-gray-400 text-lg cursor-pointer">
+            <i class="fas fa-chevron-right"></i>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <script>
+    const currencyToggle = document.getElementById('currencyToggle');
+    const currencyDropdown = document.getElementById('currencyDropdown');
+    const invoiceTableBody = document.getElementById('invoiceTableBody');
+
+    // Exchange rates relative to EUR
+    const exchangeRates = {
+      EUR: 1,
+      USD: 1.1,
+      INR: 90,
+    };
+
+    // Current selected currency
+    let selectedCurrency = 'EUR';
+
+    // Format number with commas and 2 decimals
+    function formatAmount(amount) {
+      return amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // Update all amounts based on selected currency
+    function updateAmounts() {
+      const rows = invoiceTableBody.querySelectorAll('tr');
+      rows.forEach(row => {
+        const baseAmount = parseFloat(row.getAttribute('data-amount'));
+        const baseCurrency = row.getAttribute('data-currency');
+        const amountCell = row.querySelector('.amount-cell');
+        const currencyCell = row.querySelector('.currency-cell');
+
+        // Convert base amount to EUR first, then to selected currency
+        const amountInEUR = baseAmount / exchangeRates[baseCurrency];
+        const convertedAmount = amountInEUR * exchangeRates[selectedCurrency];
+
+        amountCell.textContent = formatAmount(convertedAmount);
+        currencyCell.textContent = selectedCurrency;
+      });
+    }
+
+    currencyToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      currencyDropdown.classList.toggle('hidden');
+    });
+
+    // Close dropdown if clicked outside
+    document.addEventListener('click', () => {
+      if (!currencyDropdown.classList.contains('hidden')) {
+        currencyDropdown.classList.add('hidden');
+      }
+    });
+
+    // Handle currency selection
+    currencyDropdown.querySelectorAll('li').forEach((item) => {
+      item.addEventListener('click', () => {
+        const newCurrency = item.textContent.trim();
+        if (newCurrency !== selectedCurrency) {
+          selectedCurrency = newCurrency;
+          updateAmounts();
+        }
+        currencyDropdown.classList.add('hidden');
+      });
+    });
+
+    // Initialize amounts on page load
+    updateAmounts();
+  </script>
+</body>
+</html>

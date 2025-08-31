@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Products & Inventory Management - Vendor Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    
+    .hover-lift {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .hover-lift:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    }
+    
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .status-high-stock {
+      background: linear-gradient(135deg, #48bb78, #38a169);
+      color: white;
+    }
+    
+    .status-medium-stock {
+      background: linear-gradient(135deg, #ed8936, #dd6b20);
+      color: white;
+    }
+    
+    .status-low-stock {
+      background: linear-gradient(135deg, #f56565, #e53e3e);
+      color: white;
+    }
+    
+    .status-out-stock {
+      background: linear-gradient(135deg, #4a5568, #2d3748);
+      color: white;
+    }
+    
+    .search-input {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .filter-btn {
+      transition: all 0.3s ease;
+    }
+    
+    .filter-btn.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      transform: translateY(-1px);
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed top-4 right-4 z-50 hidden">
+    <div class="glass-card px-6 py-4 rounded-xl shadow-lg">
+      <div class="flex items-center gap-3">
+        <i id="toast-icon" class="text-lg"></i>
+        <span id="toast-message" class="font-medium"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Navigation -->
+  <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+    <div class="px-6 py-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-4">
+          <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center">
+            <i class="fas fa-boxes text-white"></i>
+          </div>
+          <div>
+            <h1 class="font-bold text-xl text-gray-800">Vendor Portal</h1>
+            <p class="text-sm text-gray-500">Products & Inventory Management</p>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-6">
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="p-6 custom-scrollbar overflow-y-auto">
+    <!-- Header Section -->
+    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900">Products & Inventory Dashboard</h1>
+        <p class="text-gray-600 mt-1">Monitor your stock levels, sales performance, and inventory valuation</p>
+      </div>
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button onclick="openAddProductModal()" class="gradient-bg text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all flex items-center gap-2">
+          <i class="fas fa-plus"></i>
+          Add New Product
+        </button>
+        <button class="bg-green-600 text-white px-6 py-3 rounded-xl hover:bg-green-700 transition-all flex items-center gap-2">
+          <i class="fas fa-download"></i>
+          Export Inventory
+        </button>
+      </div>
+    </div>
+
+    <!-- Key Performance Indicators -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-6 mb-8">
+      <div class="glass-card p-6 rounded-2xl hover-lift">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+            <i class="fas fa-cubes text-blue-600"></i>
+          </div>
+          <span class="text-green-500 text-sm font-medium">↗ 12%</span>
+        </div>
+        <p class="text-gray-600 text-sm font-medium">Total Products</p>
+        <p class="text-2xl font-bold text-gray-900">2,487</p>
+        <p class="text-xs text-gray-500 mt-1">Active SKUs</p>
+      </div>
+
+      <div class="glass-card p-6 rounded-2xl hover-lift">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+            <i class="fas fa-rupee-sign text-purple-600"></i>
+          </div>
+          <span class="text-green-500 text-sm font-medium">↗ 8%</span>
+        </div>
+        <p class="text-gray-600 text-sm font-medium">Inventory Value</p>
+        <p class="text-2xl font-bold text-purple-600">₹58.4L</p>
+        <p class="text-xs text-gray-500 mt-1">Current stock value</p>
+      </div>
+
+      <div class="glass-card p-6 rounded-2xl hover-lift">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+            <i class="fas fa-chart-line text-green-600"></i>
+          </div>
+          <span class="text-green-500 text-sm font-medium">↗ 24%</span>
+        </div>
+        <p class="text-gray-600 text-sm font-medium">Units Sold (MTD)</p>
+        <p class="text-2xl font-bold text-green-600">23,456</p>
+        <p class="text-xs text-gray-500 mt-1">This month</p>
+      </div>
+
+      <div class="glass-card p-6 rounded-2xl hover-lift">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+            <i class="fas fa-exclamation-triangle text-orange-600"></i>
+          </div>
+          <span class="text-orange-500 text-sm font-medium">Alert</span>
+        </div>
+        <p class="text-gray-600 text-sm font-medium">Low Stock Items</p>
+        <p class="text-2xl font-bold text-orange-600">89</p>
+        <p class="text-xs text-gray-500 mt-1">Need reorder</p>
+      </div>
+
+      <div class="glass-card p-6 rounded-2xl hover-lift">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
+            <i class="fas fa-coins text-indigo-600"></i>
+          </div>
+          <span class="text-indigo-500 text-sm font-medium">↗ 18%</span>
+        </div>
+        <p class="text-gray-600 text-sm font-medium">Monthly Revenue</p>
+        <p class="text-2xl font-bold text-indigo-600">₹18.2L</p>
+        <p class="text-xs text-gray-500 mt-1">From inventory</p>
+      </div>
+
+      <div class="glass-card p-6 rounded-2xl hover-lift">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+            <i class="fas fa-times-circle text-red-600"></i>
+          </div>
+          <span class="text-red-500 text-sm font-medium">Critical</span>
+        </div>
+        <p class="text-gray-600 text-sm font-medium">Out of Stock</p>
+        <p class="text-2xl font-bold text-red-600">15</p>
+        <p class="text-xs text-gray-500 mt-1">Urgent restock</p>
+      </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="glass-card p-6 rounded-2xl mb-8">
+      <div class="flex flex-col lg:flex-row gap-4 items-center justify-between">
+        <div class="flex flex-col sm:flex-row gap-4 items-center w-full lg:w-auto">
+          <div class="relative w-full sm:w-80">
+            <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            <input 
+              type="text" 
+              id="searchInput"
+              placeholder="Search by product name, SKU, or category..."
+              class="search-input pl-12 pr-4 py-3 w-full rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              onkeyup="filterProducts()"
+            >
+          </div>
+          <select id="categoryFilter" onchange="filterProducts()" class="search-input px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-48">
+            <option value="">All Categories</option>
+            <option value="Servers">Servers</option>
+            <option value="Industrial Automation">Industrial Automation</option>
+            <option value="Networking">Networking</option>
+            <option value="Electrical">Electrical</option>
+            <option value="Electronics">Electronics</option>
+            <option value="IT Hardware">IT Hardware</option>
+            <option value="Software">Software</option>
+          </select>
+        </div>
+        
+        <div class="flex gap-2 flex-wrap">
+          <button class="filter-btn active px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="filterByStock('all')">All Stock</button>
+          <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="filterByStock('high')">High Stock</button>
+          <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="filterByStock('medium')">Medium Stock</button>
+          <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="filterByStock('low')">Low Stock</button>
+          <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="filterByStock('out')">Out of Stock</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Products Table -->
+    <div class="glass-card rounded-2xl overflow-hidden">
+      <div class="p-6 border-b border-gray-200">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-xl font-semibold text-gray-900">Product Inventory</h2>
+            <p class="text-gray-600 text-sm mt-1">Complete overview of your product catalog and stock levels</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-sm text-gray-600">
+              Showing <span id="resultsCount">15</span> of 2,487 products
+            </span>
+            <div class="flex gap-2">
+              <button class="p-2 rounded-lg hover:bg-gray-100" title="Refresh Data">
+                <i class="fas fa-sync-alt text-gray-600"></i>
+              </button>
+              <button class="p-2 rounded-lg hover:bg-gray-100" title="Column Settings">
+                <i class="fas fa-cog text-gray-600"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="text-left py-4 px-6 font-medium text-gray-700 min-w-[280px]">Product Information</th>
+              <th class="text-left py-4 px-6 font-medium text-gray-700 min-w-[120px]">SKU/Category</th>
+              <th class="text-center py-4 px-6 font-medium text-gray-700 min-w-[120px]">Available Stock</th>
+              <th class="text-center py-4 px-6 font-medium text-gray-700 min-w-[120px]">Total Inventory</th>
+              <th class="text-center py-4 px-6 font-medium text-gray-700 min-w-[120px]">Units Sold</th>
+              <th class="text-center py-4 px-6 font-medium text-gray-700 min-w-[140px]">Unit Price</th>
+              <th class="text-center py-4 px-6 font-medium text-gray-700 min-w-[140px]">Revenue Generated</th>
+              <th class="text-center py-4 px-6 font-medium text-gray-700 min-w-[120px]">Stock Status</th>
+              <th class="text-center py-4 px-6 font-medium text-gray-700 min-w-[140px]">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="productsTableBody">
+            <!-- Products will be populated by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="flex flex-col sm:flex-row justify-between items-center px-6 py-4 border-t border-gray-200 gap-4">
+        <div class="text-sm text-gray-600">
+          Showing 1 to 15 of 2,487 products
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100 disabled:opacity-50" disabled>Previous</button>
+          <button class="px-3 py-2 rounded-lg text-sm bg-indigo-600 text-white">1</button>
+          <button class="px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100">2</button>
+          <button class="px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100">3</button>
+          <span class="px-2 text-gray-400">...</span>
+          <button class="px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100">166</button>
+          <button class="px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100">Next</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Add Product Modal -->
+  <div id="addProductModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="glass-card rounded-2xl shadow-2xl w-full max-w-4xl max-h-screen overflow-y-auto">
+        <div class="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+          <div class="flex justify-between items-center">
+            <div>
+              <h2 class="text-2xl font-bold text-gray-800">Add New Product</h2>
+              <p class="text-gray-600">Enter product details and inventory information</p>
+            </div>
+            <button onclick="closeAddProductModal()" class="p-2 rounded-xl hover:bg-gray-100 transition-colors">
+              <i class="fas fa-times text-gray-600"></i>
+            </button>
+          </div>
+        </div>
+        
+        <form class="p-6 space-y-6">
+          <!-- Basic Product Information -->
+          <div class="bg-gray-50 rounded-xl p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Basic Information</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Product Name *</label>
+                <input type="text" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Enter product name">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">SKU Code</label>
+                <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-100" placeholder="Auto-generated" readonly>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                <select required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                  <option value="">Select Category</option>
+                  <option value="Electronics">Electronics</option>
+                  <option value="Software">Software</option>
+                  <option value="Hardware">Hardware</option>
+                  <option value="Accessories">Accessories</option>
+                  <option value="Services">Services</option>
+                  <option value="Office Supplies">Office Supplies</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Brand/Manufacturer</label>
+                <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Enter brand name">
+              </div>
+            </div>
+            <div class="mt-6">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Product Description</label>
+              <textarea rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Detailed product description"></textarea>
+            </div>
+          </div>
+
+          <!-- Pricing & Inventory -->
+          <div class="bg-gray-50 rounded-xl p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Pricing & Inventory</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Unit Price (₹) *</label>
+                <input type="number" required step="0.01" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="0.00">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Cost Price (₹)</label>
+                <input type="number" step="0.01" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="0.00">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Profit Margin (%)</label>
+                <input type="number" step="0.01" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-100" placeholder="Auto-calculated" readonly>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Initial Stock Quantity *</label>
+                <input type="number" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="0">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Minimum Stock Level</label>
+                <input type="number" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="0">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Maximum Stock Level</label>
+                <input type="number" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="0">
+              </div>
+            </div>
+          </div>
+
+          <!-- Additional Details -->
+          <div class="bg-gray-50 rounded-xl p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Additional Details</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Weight (kg)</label>
+                <input type="number" step="0.01" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="0.00">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Dimensions (L×W×H cm)</label>
+                <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g., 30×20×10">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Supplier/Vendor</label>
+                <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Supplier name">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Warranty Period</label>
+                <select class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                  <option value="">No Warranty</option>
+                  <option value="6m">6 Months</option>
+                  <option value="1y">1 Year</option>
+                  <option value="2y">2 Years</option>
+                  <option value="3y">3 Years</option>
+                  <option value="5y">5 Years</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-end gap-3 pt-6 border-t border-gray-200">
+            <button type="button" onclick="closeAddProductModal()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors">
+              Cancel
+            </button>
+            <button type="submit" class="px-6 py-3 gradient-bg text-white rounded-xl hover:shadow-lg transition-all">
+              <i class="fas fa-plus mr-2"></i>Add Product
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Real-time industry products for IT, servers, electronics, electrical, and industrial use
+    const products = [
+      {
+        id: 1,
+        name: "Dell PowerEdge R750 2U Rack Server",
+        sku: "DELL-PE-R750-001",
+        category: "Servers",
+        brand: "Dell",
+        availableStock: 8,
+        totalInventory: 25,
+        unitsSold: 17,
+        unitPrice: 285000,
+        costPrice: 228000,
+        revenueGenerated: 4845000,
+        minStock: 5,
+        maxStock: 30,
+        status: "low",
+        weight: 28.5,
+        dimensions: "43.4×48.3×8.89",
+        supplier: "Dell Technologies",
+        warranty: "3y",
+        image: "🖥️"
+      },
+      {
+        id: 2,
+        name: "Siemens S7-1200 PLC Controller CPU 1214C",
+        sku: "SIE-S7-1214C-002",
+        category: "Industrial Automation",
+        brand: "Siemens",
+        availableStock: 45,
+        totalInventory: 60,
+        unitsSold: 15,
+        unitPrice: 35000,
+        costPrice: 28000,
+        revenueGenerated: 525000,
+        minStock: 20,
+        maxStock: 80,
+        status: "medium",
+        weight: 0.8,
+        dimensions: "11×10×7.5",
+        supplier: "Siemens AG",
+        warranty: "2y",
+        image: "🔧"
+      },
+      {
+        id: 3,
+        name: "Cisco Catalyst 2960X 48-Port Managed Switch",
+        sku: "CSC-2960X-48-003",
+        category: "Networking",
+        brand: "Cisco",
+        availableStock: 0,
+        totalInventory: 30,
+        unitsSold: 30,
+        unitPrice: 125000,
+        costPrice: 100000,
+        revenueGenerated: 3750000,
+        minStock: 8,
+        maxStock: 40,
+        status: "out",
+        weight: 6.5,
+        dimensions: "44.5×44×4.4",
+        supplier: "Cisco Systems",
+        warranty: "5y",
+        image: "🔌"
+      },
+      {
+        id: 4,
+        name: "Schneider Electric VFD ATV320U75N4 7.5HP Drive",
+        sku: "SCH-ATV320-7.5-004",
+        category: "Electrical",
+        brand: "Schneider Electric",
+        availableStock: 156,
+        totalInventory: 180,
+        unitsSold: 24,
+        unitPrice: 45000,
+        costPrice: 36000,
+        revenueGenerated: 1080000,
+        minStock: 30,
+        maxStock: 200,
+        status: "high",
+        weight: 4.2,
+        dimensions: "20×12×15.8",
+        supplier: "Schneider Electric",
+        warranty: "2y",
+        image: "⚡"
+      },
+      {
+        id: 5,
+        name: "ABB IRB 1600 Industrial Robot 6-Axis",
+        sku: "ABB-IRB1600-005",
+        category: "Industrial Automation",
+        brand: "ABB",
+        availableStock: 2,
+        totalInventory: 5,
+        unitsSold: 3,
+        unitPrice: 1250000,
+        costPrice: 1000000,
+        revenueGenerated: 3750000,
+        minStock: 2,
+        maxStock: 8,
+        status: "medium",
+        weight: 290,
+        dimensions: "165×75×180",
+        supplier: "ABB Robotics",
+        warranty: "1y",
+        image: "🤖"
+      },
+      {
+        id: 6,
+        name: "VMware vSphere Enterprise Plus License",
+        sku: "VM-VSPH-ENT-006",
+        category: "Software",
+        brand: "VMware",
+        availableStock: 12,
+        totalInventory: 50,
+        unitsSold: 38,
+        unitPrice: 185000,
+        costPrice: 148000,
+        revenueGenerated: 7030000,
+        minStock: 15,
+        maxStock: 75,
+        status: "low",
+        weight: 0,
+        dimensions: "Digital",
+        supplier: "VMware Inc.",
+        warranty: "1y",
+        image: "☁️"
+      },
+      {
+        id: 7,
+        name: "Honeywell Falcon X3+ Handheld Computer Scanner",
+        sku: "HON-FX3P-007",
+        category: "Electronics",
+        brand: "Honeywell",
+        availableStock: 234,
+        totalInventory: 300,
+        unitsSold: 66,
+        unitPrice: 28500,
+        costPrice: 22800,
+        revenueGenerated: 1881000,
+        minStock: 50,
+        maxStock: 350,
+        status: "high",
+        weight: 0.42,
+        dimensions: "19.3×8.9×16.8",
+        supplier: "Honeywell International",
+        warranty: "3y",
+        image: "�"
+      },
+      {
+        id: 8,
+        name: "Fluke 1587 FC Insulation Multimeter",
+        sku: "FLU-1587FC-008",
+        category: "Electrical",
+        brand: "Fluke",
+        availableStock: 67,
+        totalInventory: 80,
+        unitsSold: 13,
+        unitPrice: 65000,
+        costPrice: 52000,
+        revenueGenerated: 845000,
+        minStock: 25,
+        maxStock: 100,
+        status: "high",
+        weight: 0.8,
+        dimensions: "22×10.5×5.3",
+        supplier: "Fluke Corporation",
+        warranty: "3y",
+        image: "�"
+      },
+      {
+        id: 9,
+        name: "HPE ProLiant DL380 Gen10 Plus Server",
+        sku: "HPE-DL380G10P-009",
+        category: "Servers",
+        brand: "HPE",
+        availableStock: 0,
+        totalInventory: 15,
+        unitsSold: 15,
+        unitPrice: 325000,
+        costPrice: 260000,
+        revenueGenerated: 4875000,
+        minStock: 3,
+        maxStock: 20,
+        status: "out",
+        weight: 32.8,
+        dimensions: "43.46×68.58×8.69",
+        supplier: "Hewlett Packard Enterprise",
+        warranty: "3y",
+        image: "�"
+      },
+      {
+        id: 10,
+        name: "SICK LMS511 2D Laser Scanner Safety System",
+        sku: "SICK-LMS511-010",
+        category: "Industrial Automation",
+        brand: "SICK",
+        availableStock: 89,
+        totalInventory: 120,
+        unitsSold: 31,
+        unitPrice: 185000,
+        costPrice: 148000,
+        revenueGenerated: 5735000,
+        minStock: 20,
+        maxStock: 150,
+        status: "high",
+        weight: 1.1,
+        dimensions: "15.9×15.9×12.5",
+        supplier: "SICK AG",
+        warranty: "2y",
+        image: "📡"
+      },
+      {
+        id: 11,
+        name: "Mitsubishi Q Series PLC QJ71E71-100 Module",
+        sku: "MIT-QJ71E71-011",
+        category: "Industrial Automation",
+        brand: "Mitsubishi Electric",
+        availableStock: 78,
+        totalInventory: 100,
+        unitsSold: 22,
+        unitPrice: 48500,
+        costPrice: 38800,
+        revenueGenerated: 1067000,
+        minStock: 25,
+        maxStock: 120,
+        status: "high",
+        weight: 0.35,
+        dimensions: "9.8×4.2×8.7",
+        supplier: "Mitsubishi Electric",
+        warranty: "2y",
+        image: "🔌"
+      },
+      {
+        id: 12,
+        name: "Rockwell Allen-Bradley PowerFlex 525 AC Drive",
+        sku: "RAB-PF525-25HP-012",
+        category: "Electrical",
+        brand: "Rockwell Automation",
+        availableStock: 43,
+        totalInventory: 75,
+        unitsSold: 32,
+        unitPrice: 85000,
+        costPrice: 68000,
+        revenueGenerated: 2720000,
+        minStock: 20,
+        maxStock: 100,
+        status: "medium",
+        weight: 12.5,
+        dimensions: "32×16×23",
+        supplier: "Rockwell Automation",
+        warranty: "2y",
+        image: "⚙️"
+      },
+      {
+        id: 13,
+        name: "Omron CJ2M CPU32 PLC Main Unit",
+        sku: "OMR-CJ2M-CPU32-013",
+        category: "Industrial Automation",
+        brand: "Omron",
+        availableStock: 124,
+        totalInventory: 150,
+        unitsSold: 26,
+        unitPrice: 42000,
+        costPrice: 33600,
+        revenueGenerated: 1092000,
+        minStock: 30,
+        maxStock: 180,
+        status: "high",
+        weight: 0.58,
+        dimensions: "9×10×8.7",
+        supplier: "Omron Corporation",
+        warranty: "2y",
+        image: "🎛️"
+      },
+      {
+        id: 14,
+        name: "Phoenix Contact TRIO-PS/1AC/24DC/10 Power Supply",
+        sku: "PHX-TRIO-PS-10A-014",
+        category: "Electrical",
+        brand: "Phoenix Contact",
+        availableStock: 8,
+        totalInventory: 40,
+        unitsSold: 32,
+        unitPrice: 12500,
+        costPrice: 10000,
+        revenueGenerated: 400000,
+        minStock: 15,
+        maxStock: 60,
+        status: "low",
+        weight: 0.6,
+        dimensions: "17.5×9×11.4",
+        supplier: "Phoenix Contact",
+        warranty: "2y",
+        image: "🔋"
+      },
+      {
+        id: 15,
+        name: "Pepperl+Fuchs UC500-30GM-IUR2-V15 Ultrasonic Sensor",
+        sku: "PF-UC500-30GM-015",
+        category: "Industrial Automation",
+        brand: "Pepperl+Fuchs",
+        availableStock: 186,
+        totalInventory: 250,
+        unitsSold: 64,
+        unitPrice: 18500,
+        costPrice: 14800,
+        revenueGenerated: 1184000,
+        minStock: 40,
+        maxStock: 300,
+        status: "high",
+        weight: 0.18,
+        dimensions: "5×3×11.5",
+        supplier: "Pepperl+Fuchs",
+        warranty: "2y",
+        image: "📶"
+      },
+      {
+        id: 16,
+        name: "Intel Xeon Gold 6248R Server Processor",
+        sku: "INT-XEON-6248R-016",
+        category: "IT Hardware",
+        brand: "Intel",
+        availableStock: 23,
+        totalInventory: 40,
+        unitsSold: 17,
+        unitPrice: 125000,
+        costPrice: 100000,
+        revenueGenerated: 2125000,
+        minStock: 10,
+        maxStock: 60,
+        status: "medium",
+        weight: 0.05,
+        dimensions: "5.6×4.5×0.3",
+        supplier: "Intel Corporation",
+        warranty: "3y",
+        image: "�"
+      },
+      {
+        id: 17,
+        name: "Legrand UPS Daker DK Plus 10000VA Online UPS",
+        sku: "LEG-DK-10KVA-017",
+        category: "Electrical",
+        brand: "Legrand",
+        availableStock: 0,
+        totalInventory: 12,
+        unitsSold: 12,
+        unitPrice: 185000,
+        costPrice: 148000,
+        revenueGenerated: 2220000,
+        minStock: 3,
+        maxStock: 18,
+        status: "out",
+        weight: 85,
+        dimensions: "44×70×22",
+        supplier: "Legrand Group",
+        warranty: "2y",
+        image: "�"
+      },
+      {
+        id: 18,
+        name: "Keyence CV-X100F Vision System Controller",
+        sku: "KEY-CVX100F-018",
+        category: "Industrial Automation",
+        brand: "Keyence",
+        availableStock: 34,
+        totalInventory: 50,
+        unitsSold: 16,
+        unitPrice: 245000,
+        costPrice: 196000,
+        revenueGenerated: 3920000,
+        minStock: 15,
+        maxStock: 75,
+        status: "medium",
+        weight: 2.2,
+        dimensions: "30×24×12",
+        supplier: "Keyence Corporation",
+        warranty: "2y",
+        image: "📷"
+      },
+      {
+        id: 19,
+        name: "Hikvision DS-2CD2347G2-LU 4MP IP Camera",
+        sku: "HIK-2CD2347G2-019",
+        category: "Electronics",
+        brand: "Hikvision",
+        availableStock: 267,
+        totalInventory: 350,
+        unitsSold: 83,
+        unitPrice: 15500,
+        costPrice: 12400,
+        revenueGenerated: 1286500,
+        minStock: 60,
+        maxStock: 400,
+        status: "high",
+        weight: 0.8,
+        dimensions: "11×11×24.1",
+        supplier: "Hikvision Digital",
+        warranty: "2y",
+        image: "�"
+      },
+      {
+        id: 20,
+        name: "Schneider Electric Modicon M580 CPU Module",
+        sku: "SCH-M580-CPU-020",
+        category: "Industrial Automation",
+        brand: "Schneider Electric",
+        availableStock: 12,
+        totalInventory: 25,
+        unitsSold: 13,
+        unitPrice: 165000,
+        costPrice: 132000,
+        revenueGenerated: 2145000,
+        minStock: 8,
+        maxStock: 35,
+        status: "low",
+        weight: 1.5,
+        dimensions: "12.5×11.5×14",
+        supplier: "Schneider Electric",
+        warranty: "2y",
+        image: "🏭"
+      }
+    ];
+
+    let filteredProducts = [...products];
+
+    function renderProducts() {
+      const tbody = document.getElementById('productsTableBody');
+      tbody.innerHTML = '';
+
+      filteredProducts.forEach(product => {
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-gray-50 transition-colors border-b border-gray-100';
+        
+        // Calculate metrics
+        const soldPercentage = ((product.unitsSold / product.totalInventory) * 100).toFixed(1);
+        const profitMargin = (((product.unitPrice - product.costPrice) / product.unitPrice) * 100).toFixed(1);
+        
+        // Determine status
+        let statusClass, statusText;
+        switch(product.status) {
+          case 'high':
+            statusClass = 'status-high-stock';
+            statusText = 'High Stock';
+            break;
+          case 'medium':
+            statusClass = 'status-medium-stock';
+            statusText = 'Medium Stock';
+            break;
+          case 'low':
+            statusClass = 'status-low-stock';
+            statusText = 'Low Stock';
+            break;
+          case 'out':
+            statusClass = 'status-out-stock';
+            statusText = 'Out of Stock';
+            break;
+        }
+
+        row.innerHTML = `
+          <td class="py-4 px-6">
+            <div class="flex items-center gap-3">
+              <div class="text-2xl">${product.image}</div>
+              <div class="min-w-0 flex-1">
+                <p class="font-semibold text-gray-900 truncate">${product.name}</p>
+                <p class="text-sm text-gray-500">${product.brand}</p>
+                <p class="text-xs text-gray-400 mt-1">Profit: ${profitMargin}% | Weight: ${product.weight}kg</p>
+              </div>
+            </div>
+          </td>
+          <td class="py-4 px-6">
+            <div>
+              <span class="text-gray-900 font-mono text-sm block mb-1">${product.sku}</span>
+              <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">${product.category}</span>
+            </div>
+          </td>
+          <td class="py-4 px-6 text-center">
+            <div>
+              <span class="font-bold text-lg ${product.availableStock <= product.minStock ? 'text-red-600' : 'text-gray-900'}">${product.availableStock}</span>
+              <div class="text-xs text-gray-500">available</div>
+              ${product.availableStock <= product.minStock ? '<div class="text-xs text-red-500 font-medium">REORDER!</div>' : ''}
+            </div>
+          </td>
+          <td class="py-4 px-6 text-center">
+            <div>
+              <span class="font-semibold text-gray-900">${product.totalInventory}</span>
+              <div class="text-xs text-gray-500">total</div>
+            </div>
+          </td>
+          <td class="py-4 px-6 text-center">
+            <div>
+              <span class="font-bold text-green-600">${product.unitsSold}</span>
+              <div class="text-xs text-green-500">${soldPercentage}% sold</div>
+            </div>
+          </td>
+          <td class="py-4 px-6 text-center">
+            <div>
+              <span class="font-bold text-gray-900">₹${product.unitPrice.toLocaleString()}</span>
+              <div class="text-xs text-gray-500">per unit</div>
+            </div>
+          </td>
+          <td class="py-4 px-6 text-center">
+            <div>
+              <span class="font-bold text-blue-600">₹${(product.revenueGenerated / 100000).toFixed(1)}L</span>
+              <div class="text-xs text-blue-500">lifetime</div>
+            </div>
+          </td>
+          <td class="py-4 px-6 text-center">
+            <span class="px-3 py-1 rounded-full text-sm font-medium ${statusClass}">${statusText}</span>
+          </td>
+          <td class="py-4 px-6 text-center">
+            <div class="flex items-center justify-center gap-1">
+              <button onclick="viewProduct(${product.id})" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View Details">
+                <i class="fas fa-eye text-sm"></i>
+              </button>
+              <button onclick="editProduct(${product.id})" class="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Edit Product">
+                <i class="fas fa-edit text-sm"></i>
+              </button>
+              <button onclick="reorderProduct(${product.id})" class="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors" title="Reorder">
+                <i class="fas fa-shopping-cart text-sm"></i>
+              </button>
+            </div>
+          </td>
+        `;
+        
+        tbody.appendChild(row);
+      });
+
+      document.getElementById('resultsCount').textContent = filteredProducts.length;
+    }
+
+    function filterProducts() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const categoryFilter = document.getElementById('categoryFilter').value;
+      
+      filteredProducts = products.filter(product => {
+        const matchesSearch = product.name.toLowerCase().includes(searchTerm) ||
+                            product.sku.toLowerCase().includes(searchTerm) ||
+                            product.category.toLowerCase().includes(searchTerm) ||
+                            product.brand.toLowerCase().includes(searchTerm);
+        
+        const matchesCategory = !categoryFilter || product.category === categoryFilter;
+        
+        return matchesSearch && matchesCategory;
+      });
+      
+      renderProducts();
+    }
+
+    function filterByStock(status) {
+      // Remove active class from all filter buttons
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      // Add active class to clicked button
+      event.target.classList.add('active');
+      
+      if (status === 'all') {
+        filteredProducts = [...products];
+      } else {
+        filteredProducts = products.filter(product => product.status === status);
+      }
+      
+      renderProducts();
+    }
+
+    function openAddProductModal() {
+      document.getElementById('addProductModal').classList.remove('hidden');
+    }
+
+    function closeAddProductModal() {
+      document.getElementById('addProductModal').classList.add('hidden');
+    }
+
+    function viewProduct(id) {
+      const product = products.find(p => p.id === id);
+      const soldPercentage = ((product.unitsSold / product.totalInventory) * 100).toFixed(1);
+      const profitMargin = (((product.unitPrice - product.costPrice) / product.unitPrice) * 100).toFixed(1);
+      
+      showToast(`${product.name}: ${product.availableStock} available, ${product.unitsSold} sold (${soldPercentage}%), Revenue: ₹${(product.revenueGenerated/100000).toFixed(1)}L, Profit: ${profitMargin}%`, 'success', 'fas fa-info-circle text-blue-500');
+    }
+
+    function editProduct(id) {
+      const product = products.find(p => p.id === id);
+      showToast(`Opening editor for ${product.name}`, 'info', 'fas fa-edit text-green-500');
+    }
+
+    function reorderProduct(id) {
+      const product = products.find(p => p.id === id);
+      const suggestedQty = Math.max(product.maxStock - product.availableStock, product.minStock * 2);
+      const estimatedCost = suggestedQty * product.costPrice;
+      
+      if (confirm(`Reorder ${product.name}?\nSuggested Quantity: ${suggestedQty} units\nEstimated Cost: ₹${estimatedCost.toLocaleString()}\n\nCreate purchase order?`)) {
+        showToast(`Purchase order created: ${suggestedQty} units of ${product.name} - Cost: ₹${estimatedCost.toLocaleString()}`, 'success', 'fas fa-shopping-cart text-purple-500');
+      }
+    }
+
+    function showToast(message, type = 'info', iconClass = 'fas fa-info-circle text-blue-500') {
+      const toast = document.getElementById('toast');
+      const icon = document.getElementById('toast-icon');
+      const messageEl = document.getElementById('toast-message');
+      
+      icon.className = iconClass;
+      messageEl.textContent = message;
+      
+      toast.classList.remove('hidden');
+      
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 4000);
+    }
+
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', function() {
+      renderProducts();
+    });
+  </script>
+</body>
+</html>

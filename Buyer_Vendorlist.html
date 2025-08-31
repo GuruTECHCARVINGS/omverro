@@ -1,0 +1,2090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Suppliers Management - Buyer Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    
+    .status-badge {
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .status-active { background-color: #dcfce7; color: #166534; }
+    .status-inactive { background-color: #fee2e2; color: #991b1b; }
+    .status-pending { background-color: #fef3c7; color: #92400e; }
+    .status-suspended { background-color: #f3f4f6; color: #374151; }
+    
+    .performance-excellent { color: #059669; }
+    .performance-good { color: #0891b2; }
+    .performance-average { color: #ca8a04; }
+    .performance-poor { color: #dc2626; }
+    
+    .fade-in {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .hover-scale { transition: transform 0.2s ease-in-out; }
+    .hover-scale:hover { transform: scale(1.02); }
+    
+    /* Custom scrollbar */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 3px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    .rating-stars .star {
+      color: #d1d5db;
+      transition: color 0.2s ease-in-out;
+    }
+    .rating-stars .star.filled {
+      color: #f59e0b;
+    }
+
+    /* View toggle button styling */
+    #tableViewBtn.active,
+    #cardViewBtn.active {
+      background-color: white;
+      color: #111827;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    #tableViewBtn:not(.active),
+    #cardViewBtn:not(.active) {
+      color: #6b7280;
+    }
+
+    #tableViewBtn:not(.active):hover,
+    #cardViewBtn:not(.active):hover {
+      color: #111827;
+    }
+  </style>
+</head>
+<<body class="bg-gray-50 min-h-screen">
+  <!-- Header -->
+  <header class="bg-white shadow-sm border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center space-x-4">
+          <button onclick="history.back()" class="text-gray-600 hover:text-gray-900 transition-colors">
+            <i class="fas fa-arrow-left text-lg"></i>
+          </button>
+          <h1 class="text-2xl font-semibold text-gray-900">Suppliers Management</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+          <button onclick="exportSuppliers()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2">
+            <i class="fas fa-download"></i>
+            <span>Export</span>
+          </button>
+          <button onclick="openModal('addSupplierModal')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2">
+            <i class="fas fa-plus"></i>
+            <span>Add Supplier</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- KPI Dashboard -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white rounded-xl shadow-sm p-6 hover-scale">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Total Suppliers</p>
+            <p class="text-3xl font-bold text-gray-900 mt-1">127</p>
+            <p class="text-sm text-blue-600 mt-1">
+              <i class="fas fa-info-circle"></i> Active partnerships
+            </p>
+          </div>
+          <div class="bg-blue-100 p-3 rounded-lg">
+            <i class="fas fa-building text-blue-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm p-6 hover-scale">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Active Suppliers</p>
+            <p class="text-3xl font-bold text-green-600 mt-1">95</p>
+            <p class="text-sm text-gray-500 mt-1">75% of total</p>
+          </div>
+          <div class="bg-green-100 p-3 rounded-lg">
+            <i class="fas fa-check-circle text-green-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm p-6 hover-scale">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Pending Approval</p>
+            <p class="text-3xl font-bold text-yellow-600 mt-1">18</p>
+            <p class="text-sm text-yellow-600 mt-1">
+              <i class="fas fa-clock"></i> Awaiting review
+            </p>
+          </div>
+          <div class="bg-yellow-100 p-3 rounded-lg">
+            <i class="fas fa-hourglass-half text-yellow-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm p-6 hover-scale">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Top Rated</p>
+            <p class="text-3xl font-bold text-purple-600 mt-1">42</p>
+            <p class="text-sm text-gray-500 mt-1">4.5+ stars</p>
+          </div>
+          <div class="bg-purple-100 p-3 rounded-lg">
+            <i class="fas fa-star text-purple-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+        <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 flex-1">
+          <div class="flex-1">
+            <div class="relative">
+              <input 
+                type="text" 
+                id="searchInput"
+                placeholder="Search suppliers, categories, location..." 
+                class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onkeyup="filterSuppliers()"
+              >
+              <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+            </div>
+          </div>
+          
+          <select id="statusFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" onchange="filterSuppliers()">
+            <option value="">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="pending">Pending</option>
+            <option value="suspended">Suspended</option>
+          </select>
+
+          <select id="categoryFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" onchange="filterSuppliers()">
+            <option value="">All Categories</option>
+            <option value="manufacturing">Manufacturing</option>
+            <option value="technology">Technology</option>
+            <option value="logistics">Logistics</option>
+            <option value="raw-materials">Raw Materials</option>
+            <option value="services">Services</option>
+          </select>
+
+          <select id="ratingFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" onchange="filterSuppliers()">
+            <option value="">All Ratings</option>
+            <option value="5">5 Stars</option>
+            <option value="4">4+ Stars</option>
+            <option value="3">3+ Stars</option>
+            <option value="2">2+ Stars</option>
+          </select>
+        </div>
+        
+        <div class="flex space-x-2">
+          <button onclick="clearFilters()" class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors">
+            <i class="fas fa-times"></i> Clear
+          </button>
+          <!-- View Toggle -->
+          <div class="flex bg-gray-100 rounded-lg p-1">
+            <button id="tableViewBtn" onclick="toggleView('table')" class="flex items-center px-2 py-1 text-sm font-medium rounded-md transition-colors active">
+              <i class="fas fa-table mr-1"></i>Table
+            </button>
+            <button id="cardViewBtn" onclick="toggleView('card')" class="flex items-center px-2 py-1 text-sm font-medium rounded-md transition-colors">
+              <i class="fas fa-th-large mr-1"></i>Cards
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Suppliers Table/Cards -->
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+      <!-- Table View -->
+      <div id="tableView" class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('name')">
+                Supplier
+                <i class="fas fa-sort text-gray-400 ml-1"></i>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('category')">
+                Category
+                <i class="fas fa-sort text-gray-400 ml-1"></i>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('location')">
+                Location
+                <i class="fas fa-sort text-gray-400 ml-1"></i>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('rating')">
+                Rating
+                <i class="fas fa-sort text-gray-400 ml-1"></i>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('totalOrders')">
+                Total Orders
+                <i class="fas fa-sort text-gray-400 ml-1"></i>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('totalValue')">
+                Total Value
+                <i class="fas fa-sort text-gray-400 ml-1"></i>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200" id="suppliersTableBody">
+            <!-- Table rows will be populated by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Card View -->
+      <div id="cardView" class="hidden p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="suppliersCardContainer">
+          <!-- Cards will be populated by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+        <div class="flex-1 flex justify-between sm:hidden">
+          <button onclick="previousPage()" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+            Previous
+          </button>
+          <button onclick="nextPage()" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+            Next
+          </button>
+        </div>
+        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+          <div>
+            <p class="text-sm text-gray-700">
+              Showing <span class="font-medium" id="showingStart">1</span> to <span class="font-medium" id="showingEnd">10</span> of
+              <span class="font-medium" id="totalRecords">127</span> results
+            </p>
+          </div>
+          <div>
+            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+              <button onclick="previousPage()" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                <span class="sr-only">Previous</span>
+                <i class="fas fa-chevron-left"></i>
+              </button>
+              <div id="paginationNumbers" class="flex">
+                <!-- Pagination numbers will be generated by JavaScript -->
+              </div>
+              <button onclick="nextPage()" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                <span class="sr-only">Next</span>
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Supplier Details Modal -->
+  <div id="viewSupplierModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+    <div class="flex min-h-screen items-center justify-center p-4">
+      <div class="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar fade-in">
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+          <h3 class="text-xl font-semibold text-gray-900">Supplier Details</h3>
+          <button onclick="closeModal('viewSupplierModal')" class="text-gray-400 hover:text-gray-600 transition-colors">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+        <div class="p-6">
+          <div id="viewSupplierContent">
+            <!-- Content will be populated by JavaScript -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Supplier/Vendor Registration Modal -->
+  <div id="addSupplierModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+    <div class="flex min-h-screen items-center justify-center p-4">
+      <div class="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar fade-in">
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+          <h3 class="text-xl font-semibold text-gray-900">Vendor Registration</h3>
+          <button onclick="closeModal('addSupplierModal')" class="text-gray-400 hover:text-gray-600 transition-colors">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+        <form id="addSupplierForm" class="p-6">
+          <!-- Company Information Section -->
+          <div class="mb-8">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <i class="fas fa-building mr-2 text-blue-600"></i>Company Information
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Company Name*</label>
+                <input type="text" name="name" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter company name">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Company Registration Number*</label>
+                <input type="text" name="registrationNumber" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Registration/CIN Number">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">GST Number*</label>
+                <input type="text" name="gstNumber" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="GSTIN Number">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">PAN Number*</label>
+                <input type="text" name="panNumber" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="PAN Number">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Company Type*</label>
+                <select name="companyType" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  <option value="">Select Company Type</option>
+                  <option value="private-limited">Private Limited Company</option>
+                  <option value="public-limited">Public Limited Company</option>
+                  <option value="partnership">Partnership Firm</option>
+                  <option value="llp">Limited Liability Partnership (LLP)</option>
+                  <option value="proprietorship">Sole Proprietorship</option>
+                  <option value="cooperative">Cooperative Society</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Year of Establishment*</label>
+                <input type="number" name="yearEstablished" min="1900" max="2024" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="2020">
+              </div>
+            </div>
+          </div>
+
+          <!-- Business Details Section -->
+          <div class="mb-8">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <i class="fas fa-briefcase mr-2 text-green-600"></i>Business Details
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Primary Business Category*</label>
+                <select name="category" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  <option value="">Select Category</option>
+                  <option value="manufacturing">Manufacturing</option>
+                  <option value="technology">Technology</option>
+                  <option value="logistics">Logistics</option>
+                  <option value="raw-materials">Raw Materials</option>
+                  <option value="services">Services</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Number of Employees*</label>
+                <select name="employeeCount" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  <option value="">Select Employee Count</option>
+                  <option value="1-10">1-10</option>
+                  <option value="11-50">11-50</option>
+                  <option value="51-200">51-200</option>
+                  <option value="201-500">201-500</option>
+                  <option value="501-1000">501-1000</option>
+                  <option value="above-1000">Above 1000</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Website</label>
+                <input type="url" name="website" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://www.company.com">
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact Information Section -->
+          <div class="mb-8">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <i class="fas fa-user mr-2 text-purple-600"></i>Primary Contact Information
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Contact Person Name*</label>
+                <input type="text" name="contactPerson" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Full Name">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Designation*</label>
+                <input type="text" name="designation" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Managing Director, CEO, etc.">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Email Address*</label>
+                <input type="email" name="email" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="contact@company.com">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Mobile Number*</label>
+                <input type="tel" name="phone" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="+91 98765 43210">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Alternate Contact Number</label>
+                <input type="tel" name="alternatePhone" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="+91 98765 43210">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Skype/WhatsApp</label>
+                <input type="text" name="skypeWhatsapp" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Skype ID or WhatsApp Number">
+              </div>
+            </div>
+          </div>
+
+          <!-- Address Information Section -->
+          <div class="mb-8">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <i class="fas fa-map-marker-alt mr-2 text-red-600"></i>Address Information
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Registered Office Address*</label>
+                <textarea name="address" rows="3" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Complete registered office address..."></textarea>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">City*</label>
+                <input type="text" name="city" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="City">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">State*</label>
+                <select name="state" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  <option value="">Select State</option>
+                  <option value="Andhra Pradesh">Andhra Pradesh</option>
+                  <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                  <option value="Assam">Assam</option>
+                  <option value="Bihar">Bihar</option>
+                  <option value="Chhattisgarh">Chhattisgarh</option>
+                  <option value="Goa">Goa</option>
+                  <option value="Gujarat">Gujarat</option>
+                  <option value="Haryana">Haryana</option>
+                  <option value="Himachal Pradesh">Himachal Pradesh</option>
+                  <option value="Jharkhand">Jharkhand</option>
+                  <option value="Karnataka">Karnataka</option>
+                  <option value="Kerala">Kerala</option>
+                  <option value="Madhya Pradesh">Madhya Pradesh</option>
+                  <option value="Maharashtra">Maharashtra</option>
+                  <option value="Manipur">Manipur</option>
+                  <option value="Meghalaya">Meghalaya</option>
+                  <option value="Mizoram">Mizoram</option>
+                  <option value="Nagaland">Nagaland</option>
+                  <option value="Odisha">Odisha</option>
+                  <option value="Punjab">Punjab</option>
+                  <option value="Rajasthan">Rajasthan</option>
+                  <option value="Sikkim">Sikkim</option>
+                  <option value="Tamil Nadu">Tamil Nadu</option>
+                  <option value="Telangana">Telangana</option>
+                  <option value="Tripura">Tripura</option>
+                  <option value="Uttar Pradesh">Uttar Pradesh</option>
+                  <option value="Uttarakhand">Uttarakhand</option>
+                  <option value="West Bengal">West Bengal</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">PIN Code*</label>
+                <input type="text" name="pinCode" required pattern="[0-9]{6}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="400001">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Country*</label>
+                <input type="text" name="country" value="India" readonly class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50">
+              </div>
+            </div>
+          </div>
+
+          <!-- Banking Details Section -->
+          <div class="mb-8">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <i class="fas fa-university mr-2 text-indigo-600"></i>Banking Details
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Bank Name*</label>
+                <input type="text" name="bankName" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="State Bank of India">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Account Number*</label>
+                <input type="text" name="accountNumber" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Account Number">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">IFSC Code*</label>
+                <input type="text" name="ifscCode" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="SBIN0001234">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Account Holder Name*</label>
+                <input type="text" name="accountHolderName" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="As per bank records">
+              </div>
+            </div>
+          </div>
+
+          <!-- Certifications and Compliance Section -->
+          <div class="mb-8">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <i class="fas fa-certificate mr-2 text-yellow-600"></i>Certifications & Compliance
+            </h4>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Quality Certifications (Select all applicable)</label>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                  <label class="flex items-center">
+                    <input type="checkbox" name="certifications" value="ISO 9001" class="mr-2">
+                    <span class="text-sm">ISO 9001:2015</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input type="checkbox" name="certifications" value="ISO 14001" class="mr-2">
+                    <span class="text-sm">ISO 14001:2015</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input type="checkbox" name="certifications" value="ISO 45001" class="mr-2">
+                    <span class="text-sm">ISO 45001:2018</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input type="checkbox" name="certifications" value="TS 16949" class="mr-2">
+                    <span class="text-sm">TS 16949</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input type="checkbox" name="certifications" value="ISO 27001" class="mr-2">
+                    <span class="text-sm">ISO 27001</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input type="checkbox" name="certifications" value="CMMI" class="mr-2">
+                    <span class="text-sm">CMMI</span>
+                  </label>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Other Certifications</label>
+                <textarea name="otherCertifications" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="List any other relevant certifications..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Terms and Agreement Section -->
+          <div class="mb-6">
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-handshake mr-2 text-green-600"></i>Terms & Agreement
+              </h4>
+              <div class="space-y-3">
+                <label class="flex items-start">
+                  <input type="checkbox" name="agreeTerms" required class="mr-3 mt-1">
+                  <span class="text-sm text-gray-700">I agree to the <a href="#" class="text-blue-600 hover:underline">Terms and Conditions</a> and <a href="#" class="text-blue-600 hover:underline">Privacy Policy</a> of the procurement portal.</span>
+                </label>
+                <label class="flex items-start">
+                  <input type="checkbox" name="agreeAccuracy" required class="mr-3 mt-1">
+                  <span class="text-sm text-gray-700">I certify that all information provided is accurate and complete to the best of my knowledge.</span>
+                </label>
+                <label class="flex items-start">
+                  <input type="checkbox" name="agreeUpdates" class="mr-3 mt-1">
+                  <span class="text-sm text-gray-700">I agree to receive email notifications regarding my vendor registration status and important updates.</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+            <button type="button" onclick="closeModal('addSupplierModal')" class="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+              Cancel
+            </button>
+            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <i class="fas fa-paper-plane mr-2"></i>Submit Registration
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Supplier Modal -->
+  <div id="editSupplierModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+    <div class="flex min-h-screen items-center justify-center p-4">
+      <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar fade-in">
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+          <h3 class="text-xl font-semibold text-gray-900">Edit Supplier</h3>
+          <button onclick="closeModal('editSupplierModal')" class="text-gray-400 hover:text-gray-600 transition-colors">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+        <form id="editSupplierForm" class="p-6 space-y-6">
+          <div id="editSupplierContent">
+            <!-- Content will be populated by JavaScript -->
+          </div>
+          <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+            <button type="button" onclick="closeModal('editSupplierModal')" class="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+              Cancel
+            </button>
+            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <i class="fas fa-save mr-2"></i>Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vendor Approval Modal -->
+  <div id="vendorApprovalModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+    <div class="flex min-h-screen items-center justify-center p-4">
+      <div class="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar fade-in">
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+          <h3 class="text-xl font-semibold text-gray-900">Vendor Approval</h3>
+          <button onclick="closeModal('vendorApprovalModal')" class="text-gray-400 hover:text-gray-600 transition-colors">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+        <div class="p-6">
+          <div id="vendorApprovalContent">
+            <!-- Content will be populated by JavaScript -->
+          </div>
+          <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+            <button onclick="rejectVendor()" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+              <i class="fas fa-times mr-2"></i>Reject
+            </button>
+            <button onclick="approveVendor()" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+              <i class="fas fa-check mr-2"></i>Approve Vendor
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Credential Generation Modal -->
+  <div id="credentialModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+    <div class="flex min-h-screen items-center justify-center p-4">
+      <div class="bg-white rounded-xl shadow-xl max-w-lg w-full fade-in">
+        <div class="p-6">
+          <div class="text-center">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-check text-green-600 text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Vendor Approved Successfully!</h3>
+            <p class="text-gray-600 mb-6">Login credentials have been generated and sent to the vendor's email address.</p>
+            
+            <div class="bg-gray-50 p-4 rounded-lg mb-6">
+              <div class="text-left space-y-2">
+                <div class="flex justify-between">
+                  <span class="font-medium">Vendor ID:</span>
+                  <span id="generatedVendorId" class="font-mono text-blue-600"></span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="font-medium">Username:</span>
+                  <span id="generatedUsername" class="font-mono text-blue-600"></span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="font-medium">Password:</span>
+                  <span id="generatedPassword" class="font-mono text-blue-600"></span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="font-medium">Email Sent To:</span>
+                  <span id="vendorEmail" class="text-blue-600"></span>
+                </div>
+              </div>
+            </div>
+
+            <button onclick="closeModal('credentialModal'); refreshSupplierList();" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <i class="fas fa-check mr-2"></i>OK
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+    <div class="flex min-h-screen items-center justify-center p-4">
+      <div class="bg-white rounded-xl shadow-xl max-w-md w-full fade-in">
+        <div class="p-6 text-center">
+          <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-check text-green-600 text-2xl"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Success!</h3>
+          <p id="successMessage" class="text-gray-600 mb-6"></p>
+          <button onclick="closeModal('successModal')" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Sample supplier data with realistic Indian company names
+    let suppliersData = [
+      {
+        id: 1,
+        name: 'Bharat Heavy Engineering Ltd',
+        contactPerson: 'Rajesh Kumar',
+        email: 'rajesh@bharatengineering.com',
+        phone: '+91 98765 43210',
+        category: 'manufacturing',
+        location: 'Mumbai, Maharashtra',
+        address: '123 Industrial Area, Andheri East, Mumbai 400069',
+        status: 'active',
+        rating: 4.8,
+        totalOrders: 156,
+        totalValue: 12450000,
+        joinDate: '2022-03-15',
+        lastOrderDate: '2024-08-20',
+        performance: 'excellent',
+        certifications: ['ISO 9001', 'ISO 14001', 'OHSAS 18001'],
+        paymentTerms: 'Net 30',
+        deliveryRating: 4.9,
+        qualityRating: 4.7,
+        serviceRating: 4.8
+      },
+      {
+        id: 2,
+        name: 'Infotechnia Solutions Pvt Ltd',
+        contactPerson: 'Priya Sharma',
+        email: 'priya@infotechnia.in',
+        phone: '+91 87654 32109',
+        category: 'technology',
+        location: 'Bangalore, Karnataka',
+        address: '456 Tech Park, Electronic City, Bangalore 560100',
+        status: 'active',
+        rating: 4.6,
+        totalOrders: 89,
+        totalValue: 8750000,
+        joinDate: '2023-01-10',
+        lastOrderDate: '2024-08-25',
+        performance: 'good',
+        certifications: ['ISO 27001', 'CMMI Level 3'],
+        paymentTerms: 'Net 15',
+        deliveryRating: 4.5,
+        qualityRating: 4.7,
+        serviceRating: 4.6
+      },
+      {
+        id: 3,
+        name: 'Hindustan Cargo & Logistics',
+        contactPerson: 'Amit Patel',
+        email: 'amit@hindulogistics.com',
+        phone: '+91 76543 21098',
+        category: 'logistics',
+        location: 'Delhi, NCR',
+        address: '789 Logistics Hub, Gurgaon 122001',
+        status: 'active',
+        rating: 4.4,
+        totalOrders: 234,
+        totalValue: 15600000,
+        joinDate: '2021-08-20',
+        lastOrderDate: '2024-08-28',
+        performance: 'good',
+        certifications: ['ISO 9001', 'IATA Certification'],
+        paymentTerms: 'Net 45',
+        deliveryRating: 4.6,
+        qualityRating: 4.2,
+        serviceRating: 4.4
+      },
+      {
+        id: 4,
+        name: 'Sriram Steel & Alloys Ltd',
+        contactPerson: 'Suresh Reddy',
+        email: 'suresh@sriramsteel.com',
+        phone: '+91 65432 10987',
+        category: 'raw-materials',
+        location: 'Chennai, Tamil Nadu',
+        address: '321 Industrial Complex, Sriperumbudur, Chennai 602105',
+        status: 'pending',
+        rating: 4.2,
+        totalOrders: 67,
+        totalValue: 5400000,
+        joinDate: '2024-07-01',
+        lastOrderDate: '2024-08-15',
+        performance: 'average',
+        certifications: ['ISO 9001'],
+        paymentTerms: 'Net 30',
+        deliveryRating: 4.1,
+        qualityRating: 4.3,
+        serviceRating: 4.2
+      },
+      {
+        id: 5,
+        name: 'Mahindra Business Services',
+        contactPerson: 'Neha Gupta',
+        email: 'neha@mahindrabusiness.com',
+        phone: '+91 54321 09876',
+        category: 'services',
+        location: 'Pune, Maharashtra',
+        address: '654 Service Center, Hinjewadi, Pune 411057',
+        status: 'active',
+        rating: 4.9,
+        totalOrders: 123,
+        totalValue: 9800000,
+        joinDate: '2022-11-05',
+        lastOrderDate: '2024-08-27',
+        performance: 'excellent',
+        certifications: ['ISO 9001', 'ISO 20000'],
+        paymentTerms: 'Net 15',
+        deliveryRating: 4.9,
+        qualityRating: 4.9,
+        serviceRating: 5.0
+      },
+      {
+        id: 6,
+        name: 'Wipro Digital Technologies',
+        contactPerson: 'Vikram Singh',
+        email: 'vikram@wiprodigital.com',
+        phone: '+91 43210 98765',
+        category: 'technology',
+        location: 'Hyderabad, Telangana',
+        address: '987 Innovation Park, HITEC City, Hyderabad 500081',
+        status: 'inactive',
+        rating: 3.8,
+        totalOrders: 45,
+        totalValue: 3200000,
+        joinDate: '2023-05-12',
+        lastOrderDate: '2024-06-10',
+        performance: 'poor',
+        certifications: ['ISO 9001'],
+        paymentTerms: 'Net 30',
+        deliveryRating: 3.5,
+        qualityRating: 4.0,
+        serviceRating: 3.9
+      },
+      {
+        id: 7,
+        name: 'Tata Precision Manufacturing',
+        contactPerson: 'Deepika Rao',
+        email: 'deepika@tataprecision.com',
+        phone: '+91 32109 87654',
+        category: 'manufacturing',
+        location: 'Ahmedabad, Gujarat',
+        address: '111 Manufacturing Zone, Sanand, Ahmedabad 382110',
+        status: 'active',
+        rating: 4.7,
+        totalOrders: 198,
+        totalValue: 16750000,
+        joinDate: '2021-12-08',
+        lastOrderDate: '2024-08-26',
+        performance: 'excellent',
+        certifications: ['ISO 9001', 'TS 16949', 'ISO 14001'],
+        paymentTerms: 'Net 30',
+        deliveryRating: 4.8,
+        qualityRating: 4.6,
+        serviceRating: 4.7
+      },
+      {
+        id: 8,
+        name: 'Reliance Cargo Solutions',
+        contactPerson: 'Arjun Mehta',
+        email: 'arjun@reliancecargo.com',
+        phone: '+91 21098 76543',
+        category: 'logistics',
+        location: 'Kolkata, West Bengal',
+        address: '222 Port Area, Haldia, Kolkata 721602',
+        status: 'suspended',
+        rating: 3.2,
+        totalOrders: 78,
+        totalValue: 4100000,
+        joinDate: '2022-07-20',
+        lastOrderDate: '2024-05-15',
+        performance: 'poor',
+        certifications: ['Basic Safety Certification'],
+        paymentTerms: 'Advance Payment',
+        deliveryRating: 3.0,
+        qualityRating: 3.2,
+        serviceRating: 3.4
+      },
+      {
+        id: 9,
+        name: 'Godrej Process Equipment Ltd',
+        contactPerson: 'Kavita Joshi',
+        email: 'kavita@godrejprocess.com',
+        phone: '+91 91234 56789',
+        category: 'manufacturing',
+        location: 'Nashik, Maharashtra',
+        address: '345 Process Park, Ambad MIDC, Nashik 422010',
+        status: 'active',
+        rating: 4.5,
+        totalOrders: 142,
+        totalValue: 11200000,
+        joinDate: '2021-09-14',
+        lastOrderDate: '2024-08-23',
+        performance: 'good',
+        certifications: ['ISO 9001', 'ASME U Stamp', 'CE Marking'],
+        paymentTerms: 'Net 30',
+        deliveryRating: 4.4,
+        qualityRating: 4.6,
+        serviceRating: 4.5
+      },
+      {
+        id: 10,
+        name: 'HCL InfoSystems Ltd',
+        contactPerson: 'Rohit Agarwal',
+        email: 'rohit@hclinfosys.com',
+        phone: '+91 89012 34567',
+        category: 'technology',
+        location: 'Noida, Uttar Pradesh',
+        address: '567 IT Plaza, Sector 62, Noida 201309',
+        status: 'active',
+        rating: 4.3,
+        totalOrders: 76,
+        totalValue: 6800000,
+        joinDate: '2023-02-28',
+        lastOrderDate: '2024-08-21',
+        performance: 'good',
+        certifications: ['ISO 27001', 'SOC 2 Type II'],
+        paymentTerms: 'Net 15',
+        deliveryRating: 4.2,
+        qualityRating: 4.4,
+        serviceRating: 4.3
+      },
+      {
+        id: 11,
+        name: 'Jindal Stainless Steel Ltd',
+        contactPerson: 'Manish Jindal',
+        email: 'manish@jindalstainless.com',
+        phone: '+91 78901 23456',
+        category: 'raw-materials',
+        location: 'Jajpur, Odisha',
+        address: '789 Steel Complex, Duburi, Jajpur 755019',
+        status: 'active',
+        rating: 4.6,
+        totalOrders: 189,
+        totalValue: 18900000,
+        joinDate: '2020-11-22',
+        lastOrderDate: '2024-08-26',
+        performance: 'good',
+        certifications: ['ISO 9001', 'ISO 14001', 'OHSAS 18001'],
+        paymentTerms: 'Net 45',
+        deliveryRating: 4.7,
+        qualityRating: 4.5,
+        serviceRating: 4.6
+      },
+      {
+        id: 12,
+        name: 'Blue Dart Express Ltd',
+        contactPerson: 'Sanjay Desai',
+        email: 'sanjay@bluedart.com',
+        phone: '+91 67890 12345',
+        category: 'logistics',
+        location: 'Chennai, Tamil Nadu',
+        address: '123 Courier Hub, Guindy, Chennai 600032',
+        status: 'active',
+        rating: 4.7,
+        totalOrders: 312,
+        totalValue: 8450000,
+        joinDate: '2020-06-15',
+        lastOrderDate: '2024-08-28',
+        performance: 'excellent',
+        certifications: ['ISO 9001', 'IATA Certification', 'DGFT Registration'],
+        paymentTerms: 'Net 30',
+        deliveryRating: 4.8,
+        qualityRating: 4.6,
+        serviceRating: 4.7
+      },
+      {
+        id: 13,
+        name: 'Larsen & Toubro Construction',
+        contactPerson: 'Ravi Krishnan',
+        email: 'ravi@ltconstruction.com',
+        phone: '+91 56789 01234',
+        category: 'services',
+        location: 'Coimbatore, Tamil Nadu',
+        address: '456 Construction Plaza, Peelamedu, Coimbatore 641004',
+        status: 'active',
+        rating: 4.8,
+        totalOrders: 67,
+        totalValue: 25600000,
+        joinDate: '2021-04-10',
+        lastOrderDate: '2024-08-19',
+        performance: 'excellent',
+        certifications: ['ISO 9001', 'ISO 14001', 'OHSAS 18001'],
+        paymentTerms: 'Net 45',
+        deliveryRating: 4.9,
+        qualityRating: 4.7,
+        serviceRating: 4.8
+      },
+      {
+        id: 14,
+        name: 'Bajaj Auto Components Ltd',
+        contactPerson: 'Sneha Patil',
+        email: 'sneha@bajajauto.com',
+        phone: '+91 45678 90123',
+        category: 'manufacturing',
+        location: 'Aurangabad, Maharashtra',
+        address: '789 Auto Park, Waluj MIDC, Aurangabad 431136',
+        status: 'active',
+        rating: 4.4,
+        totalOrders: 203,
+        totalValue: 14200000,
+        joinDate: '2022-01-18',
+        lastOrderDate: '2024-08-24',
+        performance: 'good',
+        certifications: ['TS 16949', 'ISO 14001', 'ISO 45001'],
+        paymentTerms: 'Net 30',
+        deliveryRating: 4.3,
+        qualityRating: 4.5,
+        serviceRating: 4.4
+      },
+      {
+        id: 15,
+        name: 'Tech Mahindra Solutions',
+        contactPerson: 'Anil Kapoor',
+        email: 'anil@techmahindra.com',
+        phone: '+91 34567 89012',
+        category: 'technology',
+        location: 'Bhubaneswar, Odisha',
+        address: '234 Tech Tower, Infocity, Bhubaneswar 751024',
+        status: 'active',
+        rating: 4.5,
+        totalOrders: 94,
+        totalValue: 7300000,
+        joinDate: '2022-08-07',
+        lastOrderDate: '2024-08-22',
+        performance: 'good',
+        certifications: ['CMMI Level 5', 'ISO 27001', 'ISO 20000'],
+        paymentTerms: 'Net 20',
+        deliveryRating: 4.4,
+        qualityRating: 4.6,
+        serviceRating: 4.5
+      },
+      {
+        id: 16,
+        name: 'Vedanta Aluminium Ltd',
+        contactPerson: 'Rakesh Modi',
+        email: 'rakesh@vedantaaluminium.com',
+        phone: '+91 23456 78901',
+        category: 'raw-materials',
+        location: 'Jharsuguda, Odisha',
+        address: '567 Alumina Refinery, Jharsuguda 768202',
+        status: 'active',
+        rating: 4.3,
+        totalOrders: 156,
+        totalValue: 21400000,
+        joinDate: '2021-03-25',
+        lastOrderDate: '2024-08-20',
+        performance: 'good',
+        certifications: ['ISO 9001', 'ISO 14001', 'ASI Certification'],
+        paymentTerms: 'Net 60',
+        deliveryRating: 4.2,
+        qualityRating: 4.4,
+        serviceRating: 4.3
+      },
+      {
+        id: 17,
+        name: 'DTDC Express Ltd',
+        contactPerson: 'Pooja Nair',
+        email: 'pooja@dtdc.com',
+        phone: '+91 12345 67890',
+        category: 'logistics',
+        location: 'Kochi, Kerala',
+        address: '890 Express Center, Edappally, Kochi 682024',
+        status: 'pending',
+        rating: 4.1,
+        totalOrders: 167,
+        totalValue: 5200000,
+        joinDate: '2024-06-12',
+        lastOrderDate: '2024-08-25',
+        performance: 'average',
+        certifications: ['ISO 9001', 'Service Quality Certification'],
+        paymentTerms: 'Net 30',
+        deliveryRating: 4.0,
+        qualityRating: 4.2,
+        serviceRating: 4.1
+      },
+      {
+        id: 18,
+        name: 'KPMG Advisory Services',
+        contactPerson: 'Meera Srinivasan',
+        email: 'meera@kpmgadvisory.com',
+        phone: '+91 01234 56789',
+        category: 'services',
+        location: 'Hyderabad, Telangana',
+        address: '123 Advisory Plaza, Gachibowli, Hyderabad 500032',
+        status: 'active',
+        rating: 4.7,
+        totalOrders: 45,
+        totalValue: 18500000,
+        joinDate: '2022-05-30',
+        lastOrderDate: '2024-08-18',
+        performance: 'excellent',
+        certifications: ['ISO 9001', 'SOX Compliance', 'Data Privacy Certification'],
+        paymentTerms: 'Net 15',
+        deliveryRating: 4.8,
+        qualityRating: 4.6,
+        serviceRating: 4.7
+      },
+      {
+        id: 19,
+        name: 'Maruti Suzuki Components',
+        contactPerson: 'Sunil Yadav',
+        email: 'sunil@maruticomponents.com',
+        phone: '+91 90123 45678',
+        category: 'manufacturing',
+        location: 'Manesar, Haryana',
+        address: '456 Component Park, IMT Manesar, Gurgaon 122051',
+        status: 'active',
+        rating: 4.9,
+        totalOrders: 287,
+        totalValue: 22800000,
+        joinDate: '2020-09-12',
+        lastOrderDate: '2024-08-27',
+        performance: 'excellent',
+        certifications: ['TS 16949', 'ISO 14001', 'Lean Manufacturing'],
+        paymentTerms: 'Net 30',
+        deliveryRating: 4.9,
+        qualityRating: 4.8,
+        serviceRating: 4.9
+      },
+      {
+        id: 20,
+        name: 'Mindtree Digital Solutions',
+        contactPerson: 'Karthik Reddy',
+        email: 'karthik@mindtreedigital.com',
+        phone: '+91 89012 34567',
+        category: 'technology',
+        location: 'Pune, Maharashtra',
+        address: '789 Digital Campus, Hinjewadi Phase 2, Pune 411057',
+        status: 'inactive',
+        rating: 3.9,
+        totalOrders: 52,
+        totalValue: 4100000,
+        joinDate: '2023-11-08',
+        lastOrderDate: '2024-07-02',
+        performance: 'average',
+        certifications: ['CMMI Level 3', 'ISO 27001'],
+        paymentTerms: 'Net 30',
+        deliveryRating: 3.8,
+        qualityRating: 4.0,
+        serviceRating: 3.9
+      }
+    ];
+
+    let currentPage = 1;
+    let itemsPerPage = 10;
+    let filteredData = [...suppliersData];
+    let sortColumn = '';
+    let sortDirection = 'asc';
+    let isCardView = false;
+
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', function() {
+      // Set default table view
+      document.getElementById('tableViewBtn').classList.add('active');
+      document.getElementById('tableViewBtn').classList.add('bg-white', 'text-gray-900', 'shadow-sm');
+      
+      renderSuppliers();
+      updatePagination();
+    });
+
+    // Format currency in Indian Rupees
+    function formatCurrency(amount) {
+      return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(amount);
+    }
+
+    // Generate star rating HTML
+    function generateStars(rating) {
+      let stars = '';
+      for (let i = 1; i <= 5; i++) {
+        if (i <= rating) {
+          stars += '<i class="fas fa-star star filled"></i>';
+        } else if (i - 0.5 <= rating) {
+          stars += '<i class="fas fa-star-half-alt star filled"></i>';
+        } else {
+          stars += '<i class="fas fa-star star"></i>';
+        }
+      }
+      return `<div class="rating-stars inline-flex">${stars}</div>`;
+    }
+
+    // Get status badge class
+    function getStatusClass(status) {
+      return `status-${status}`;
+    }
+
+    // Get performance class
+    function getPerformanceClass(performance) {
+      return `performance-${performance}`;
+    }
+
+    // Render suppliers table
+    function renderSuppliersTable() {
+      const tbody = document.getElementById('suppliersTableBody');
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const pageData = filteredData.slice(startIndex, endIndex);
+
+      tbody.innerHTML = pageData.map(supplier => `
+        <tr class="hover:bg-gray-50 transition-colors">
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center">
+              <div class="flex-shrink-0 h-10 w-10">
+                <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                  <span class="text-blue-600 font-semibold">${supplier.name.charAt(0)}</span>
+                </div>
+              </div>
+              <div class="ml-4">
+                <div class="text-sm font-medium text-gray-900">${supplier.name}</div>
+                <div class="text-sm text-gray-500">${supplier.contactPerson}</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-900 capitalize">${supplier.category.replace('-', ' ')}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-900">${supplier.location}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center">
+              ${generateStars(supplier.rating)}
+              <span class="ml-2 text-sm text-gray-600">(${supplier.rating})</span>
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            ${supplier.totalOrders}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
+            ${formatCurrency(supplier.totalValue)}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="status-badge ${getStatusClass(supplier.status)}">
+              ${supplier.status.charAt(0).toUpperCase() + supplier.status.slice(1)}
+            </span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+            <div class="flex space-x-2">
+              <button onclick="viewSupplier(${supplier.id})" class="text-blue-600 hover:text-blue-900 transition-colors" title="View Details">
+                <i class="fas fa-eye"></i>
+              </button>
+              ${supplier.status === 'pending' && supplier.approvalStatus === 'pending' ? 
+                `<button onclick="approveVendorById(${supplier.id})" class="text-green-600 hover:text-green-900 transition-colors" title="Approve Vendor">
+                  <i class="fas fa-check-circle"></i>
+                </button>` : 
+                `<button onclick="editSupplier(${supplier.id})" class="text-green-600 hover:text-green-900 transition-colors" title="Edit">
+                  <i class="fas fa-edit"></i>
+                </button>`
+              }
+              <button onclick="contactSupplier(${supplier.id})" class="text-purple-600 hover:text-purple-900 transition-colors" title="Contact">
+                <i class="fas fa-phone"></i>
+              </button>
+              ${supplier.status !== 'pending' ? 
+                `<button onclick="toggleSupplierStatus(${supplier.id})" class="text-orange-600 hover:text-orange-900 transition-colors" title="Toggle Status">
+                  <i class="fas fa-power-off"></i>
+                </button>` : ''
+              }
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Render suppliers cards
+    function renderSuppliersCards() {
+      const container = document.getElementById('suppliersCardContainer');
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const pageData = filteredData.slice(startIndex, endIndex);
+
+      container.innerHTML = pageData.map(supplier => `
+        <div class="bg-white border border-gray-200 rounded-lg p-6 hover-scale cursor-pointer" onclick="viewSupplier(${supplier.id})">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center">
+              <div class="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                <span class="text-blue-600 font-semibold text-lg">${supplier.name.charAt(0)}</span>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900">${supplier.name}</h3>
+                <p class="text-sm text-gray-600">${supplier.contactPerson}</p>
+              </div>
+            </div>
+            <span class="status-badge ${getStatusClass(supplier.status)}">
+              ${supplier.status.charAt(0).toUpperCase() + supplier.status.slice(1)}
+            </span>
+          </div>
+          
+          <div class="space-y-2 mb-4">
+            <div class="flex justify-between">
+              <span class="text-sm text-gray-600">Category:</span>
+              <span class="text-sm font-medium capitalize">${supplier.category.replace('-', ' ')}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-sm text-gray-600">Location:</span>
+              <span class="text-sm font-medium">${supplier.location}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-sm text-gray-600">Total Orders:</span>
+              <span class="text-sm font-medium">${supplier.totalOrders}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-sm text-gray-600">Total Value:</span>
+              <span class="text-sm font-medium text-green-600">${formatCurrency(supplier.totalValue)}</span>
+            </div>
+          </div>
+          
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              ${generateStars(supplier.rating)}
+              <span class="ml-2 text-sm text-gray-600">(${supplier.rating})</span>
+            </div>
+            <div class="flex space-x-2">
+              ${supplier.status === 'pending' && supplier.approvalStatus === 'pending' ? 
+                `<button onclick="event.stopPropagation(); approveVendorById(${supplier.id})" class="text-green-600 hover:text-green-900 transition-colors" title="Approve Vendor">
+                  <i class="fas fa-check-circle"></i>
+                </button>` : 
+                `<button onclick="event.stopPropagation(); editSupplier(${supplier.id})" class="text-green-600 hover:text-green-900 transition-colors" title="Edit">
+                  <i class="fas fa-edit"></i>
+                </button>`
+              }
+              <button onclick="event.stopPropagation(); contactSupplier(${supplier.id})" class="text-purple-600 hover:text-purple-900 transition-colors" title="Contact">
+                <i class="fas fa-phone"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Main render function
+    function renderSuppliers() {
+      if (isCardView) {
+        document.getElementById('tableView').classList.add('hidden');
+        document.getElementById('cardView').classList.remove('hidden');
+        renderSuppliersCards();
+      } else {
+        document.getElementById('cardView').classList.add('hidden');
+        document.getElementById('tableView').classList.remove('hidden');
+        renderSuppliersTable();
+      }
+    }
+
+    // Toggle view between table and card
+    function toggleView(viewType) {
+      isCardView = viewType === 'card';
+      
+      // Update button states
+      document.getElementById('tableViewBtn').classList.toggle('active', !isCardView);
+      document.getElementById('cardViewBtn').classList.toggle('active', isCardView);
+      
+      // Update button styling
+      if (isCardView) {
+        document.getElementById('tableViewBtn').classList.remove('bg-white', 'text-gray-900', 'shadow-sm');
+        document.getElementById('tableViewBtn').classList.add('text-gray-600', 'hover:text-gray-900');
+        document.getElementById('cardViewBtn').classList.add('bg-white', 'text-gray-900', 'shadow-sm');
+        document.getElementById('cardViewBtn').classList.remove('text-gray-600', 'hover:text-gray-900');
+      } else {
+        document.getElementById('cardViewBtn').classList.remove('bg-white', 'text-gray-900', 'shadow-sm');
+        document.getElementById('cardViewBtn').classList.add('text-gray-600', 'hover:text-gray-900');
+        document.getElementById('tableViewBtn').classList.add('bg-white', 'text-gray-900', 'shadow-sm');
+        document.getElementById('tableViewBtn').classList.remove('text-gray-600', 'hover:text-gray-900');
+      }
+      
+      renderSuppliers();
+    }
+
+    // Clear all filters
+    function clearFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('statusFilter').value = '';
+      document.getElementById('categoryFilter').value = '';
+      document.getElementById('ratingFilter').value = '';
+      
+      filteredData = [...suppliersData];
+      currentPage = 1;
+      renderSuppliers();
+      updatePagination();
+    }
+
+    // Search functionality
+    function searchSuppliers() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      
+      filteredData = suppliersData.filter(supplier => 
+        supplier.name.toLowerCase().includes(searchTerm) ||
+        supplier.contactPerson.toLowerCase().includes(searchTerm) ||
+        supplier.email.toLowerCase().includes(searchTerm) ||
+        supplier.category.toLowerCase().includes(searchTerm) ||
+        supplier.location.toLowerCase().includes(searchTerm)
+      );
+      
+      currentPage = 1;
+      renderSuppliers();
+      updatePagination();
+    }
+
+    // Filter functionality
+    function filterSuppliers() {
+      const statusFilter = document.getElementById('statusFilter').value;
+      const categoryFilter = document.getElementById('categoryFilter').value;
+      const ratingFilter = document.getElementById('ratingFilter').value;
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      
+      filteredData = suppliersData.filter(supplier => {
+        const matchesSearch = !searchTerm || 
+          supplier.name.toLowerCase().includes(searchTerm) ||
+          supplier.contactPerson.toLowerCase().includes(searchTerm) ||
+          supplier.email.toLowerCase().includes(searchTerm) ||
+          supplier.category.toLowerCase().includes(searchTerm) ||
+          supplier.location.toLowerCase().includes(searchTerm);
+        
+        const matchesStatus = !statusFilter || supplier.status === statusFilter;
+        const matchesCategory = !categoryFilter || supplier.category === categoryFilter;
+        const matchesRating = !ratingFilter || supplier.rating >= parseFloat(ratingFilter);
+        
+        return matchesSearch && matchesStatus && matchesCategory && matchesRating;
+      });
+      
+      currentPage = 1;
+      renderSuppliers();
+      updatePagination();
+    }
+
+    // Sort functionality
+    function sortTable(column) {
+      if (sortColumn === column) {
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortColumn = column;
+        sortDirection = 'asc';
+      }
+      
+      filteredData.sort((a, b) => {
+        let aValue = a[column];
+        let bValue = b[column];
+        
+        if (typeof aValue === 'string') {
+          aValue = aValue.toLowerCase();
+          bValue = bValue.toLowerCase();
+        }
+        
+        if (sortDirection === 'asc') {
+          return aValue > bValue ? 1 : -1;
+        } else {
+          return aValue < bValue ? 1 : -1;
+        }
+      });
+      
+      renderSuppliers();
+      
+      // Update sort indicators
+      document.querySelectorAll('[data-sort]').forEach(th => {
+        th.classList.remove('sort-asc', 'sort-desc');
+        if (th.dataset.sort === column) {
+          th.classList.add(sortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
+        }
+      });
+    }
+
+    // Pagination
+    function updatePagination() {
+      const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+      const paginationContainer = document.getElementById('paginationContainer');
+      
+      let paginationHTML = '';
+      
+      // Previous button
+      if (currentPage > 1) {
+        paginationHTML += `<button onclick="goToPage(${currentPage - 1})" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"><i class="fas fa-chevron-left"></i></button>`;
+      }
+      
+      // Page numbers
+      for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+        const isActive = i === currentPage;
+        paginationHTML += `<button onclick="goToPage(${i})" class="px-3 py-2 ${isActive ? 'text-white bg-blue-600' : 'text-gray-700 bg-white'} border border-gray-300 rounded-lg hover:bg-blue-50 transition-colors">${i}</button>`;
+      }
+      
+      // Next button
+      if (currentPage < totalPages) {
+        paginationHTML += `<button onclick="goToPage(${currentPage + 1})" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"><i class="fas fa-chevron-right"></i></button>`;
+      }
+      
+      paginationContainer.innerHTML = paginationHTML;
+      
+      // Update showing info
+      const startIndex = (currentPage - 1) * itemsPerPage + 1;
+      const endIndex = Math.min(currentPage * itemsPerPage, filteredData.length);
+      document.getElementById('showingInfo').textContent = `Showing ${startIndex}-${endIndex} of ${filteredData.length} suppliers`;
+    }
+
+    function goToPage(page) {
+      currentPage = page;
+      renderSuppliers();
+      updatePagination();
+    }
+
+    // View supplier details
+    function viewSupplier(supplierId) {
+      const supplier = suppliersData.find(s => s.id === supplierId);
+      if (!supplier) return;
+      
+      const content = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Basic Information -->
+          <div class="space-y-4">
+            <div>
+              <h4 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                <i class="fas fa-building mr-2 text-blue-600"></i>Basic Information
+              </h4>
+              <div class="space-y-2">
+                <div><span class="font-medium">Company:</span> ${supplier.name}</div>
+                <div><span class="font-medium">Contact Person:</span> ${supplier.contactPerson}</div>
+                <div><span class="font-medium">Email:</span> <a href="mailto:${supplier.email}" class="text-blue-600 hover:underline">${supplier.email}</a></div>
+                <div><span class="font-medium">Phone:</span> <a href="tel:${supplier.phone}" class="text-blue-600 hover:underline">${supplier.phone}</a></div>
+                <div><span class="font-medium">Category:</span> <span class="capitalize">${supplier.category.replace('-', ' ')}</span></div>
+                <div><span class="font-medium">Location:</span> ${supplier.location}</div>
+                <div><span class="font-medium">Address:</span> ${supplier.address}</div>
+              </div>
+            </div>
+            
+            <div>
+              <h4 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                <i class="fas fa-certificate mr-2 text-green-600"></i>Certifications
+              </h4>
+              <div class="flex flex-wrap gap-2">
+                ${supplier.certifications.map(cert => `<span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">${cert}</span>`).join('')}
+              </div>
+            </div>
+          </div>
+          
+          <!-- Performance & Statistics -->
+          <div class="space-y-4">
+            <div>
+              <h4 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                <i class="fas fa-chart-line mr-2 text-purple-600"></i>Performance Metrics
+              </h4>
+              <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                  <span>Overall Rating:</span>
+                  <div class="flex items-center">
+                    ${generateStars(supplier.rating)}
+                    <span class="ml-2 font-medium">${supplier.rating}/5</span>
+                  </div>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span>Delivery Rating:</span>
+                  <div class="flex items-center">
+                    ${generateStars(supplier.deliveryRating)}
+                    <span class="ml-2 font-medium">${supplier.deliveryRating}/5</span>
+                  </div>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span>Quality Rating:</span>
+                  <div class="flex items-center">
+                    ${generateStars(supplier.qualityRating)}
+                    <span class="ml-2 font-medium">${supplier.qualityRating}/5</span>
+                  </div>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span>Service Rating:</span>
+                  <div class="flex items-center">
+                    ${generateStars(supplier.serviceRating)}
+                    <span class="ml-2 font-medium">${supplier.serviceRating}/5</span>
+                  </div>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span>Performance:</span>
+                  <span class="performance-badge performance-${supplier.performance}">
+                    ${supplier.performance.charAt(0).toUpperCase() + supplier.performance.slice(1)}
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h4 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                <i class="fas fa-chart-bar mr-2 text-indigo-600"></i>Business Statistics
+              </h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="bg-blue-50 p-3 rounded-lg">
+                  <div class="text-2xl font-bold text-blue-600">${supplier.totalOrders}</div>
+                  <div class="text-sm text-gray-600">Total Orders</div>
+                </div>
+                <div class="bg-green-50 p-3 rounded-lg">
+                  <div class="text-2xl font-bold text-green-600">${formatCurrency(supplier.totalValue)}</div>
+                  <div class="text-sm text-gray-600">Total Value</div>
+                </div>
+                <div class="bg-purple-50 p-3 rounded-lg">
+                  <div class="text-sm font-semibold text-purple-600">${new Date(supplier.joinDate).toLocaleDateString()}</div>
+                  <div class="text-sm text-gray-600">Join Date</div>
+                </div>
+                <div class="bg-orange-50 p-3 rounded-lg">
+                  <div class="text-sm font-semibold text-orange-600">${new Date(supplier.lastOrderDate).toLocaleDateString()}</div>
+                  <div class="text-sm text-gray-600">Last Order</div>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h4 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                <i class="fas fa-credit-card mr-2 text-red-600"></i>Payment Terms
+              </h4>
+              <div class="bg-gray-50 p-3 rounded-lg">
+                <span class="font-medium">${supplier.paymentTerms}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('viewSupplierContent').innerHTML = content;
+      openModal('viewSupplierModal');
+    }
+
+    // Edit supplier
+    function editSupplier(supplierId) {
+      const supplier = suppliersData.find(s => s.id === supplierId);
+      if (!supplier) return;
+      
+      const content = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <input type="hidden" name="id" value="${supplier.id}">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Company Name*</label>
+            <input type="text" name="name" value="${supplier.name}" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Contact Person*</label>
+            <input type="text" name="contactPerson" value="${supplier.contactPerson}" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Email*</label>
+            <input type="email" name="email" value="${supplier.email}" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Phone*</label>
+            <input type="tel" name="phone" value="${supplier.phone}" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Category*</label>
+            <select name="category" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              <option value="manufacturing" ${supplier.category === 'manufacturing' ? 'selected' : ''}>Manufacturing</option>
+              <option value="technology" ${supplier.category === 'technology' ? 'selected' : ''}>Technology</option>
+              <option value="logistics" ${supplier.category === 'logistics' ? 'selected' : ''}>Logistics</option>
+              <option value="raw-materials" ${supplier.category === 'raw-materials' ? 'selected' : ''}>Raw Materials</option>
+              <option value="services" ${supplier.category === 'services' ? 'selected' : ''}>Services</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Location*</label>
+            <input type="text" name="location" value="${supplier.location}" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              <option value="active" ${supplier.status === 'active' ? 'selected' : ''}>Active</option>
+              <option value="pending" ${supplier.status === 'pending' ? 'selected' : ''}>Pending</option>
+              <option value="inactive" ${supplier.status === 'inactive' ? 'selected' : ''}>Inactive</option>
+              <option value="suspended" ${supplier.status === 'suspended' ? 'selected' : ''}>Suspended</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Payment Terms</label>
+            <input type="text" name="paymentTerms" value="${supplier.paymentTerms}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          </div>
+        </div>
+        
+        <div class="mt-6">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
+          <textarea name="address" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">${supplier.address}</textarea>
+        </div>
+      `;
+      
+      document.getElementById('editSupplierContent').innerHTML = content;
+      openModal('editSupplierModal');
+    }
+
+    // Contact supplier
+    function contactSupplier(supplierId) {
+      const supplier = suppliersData.find(s => s.id === supplierId);
+      if (supplier) {
+        window.open(`mailto:${supplier.email}?subject=Business Inquiry&body=Dear ${supplier.contactPerson},%0A%0A`);
+      }
+    }
+
+    // Toggle supplier status
+    function toggleSupplierStatus(supplierId) {
+      const supplier = suppliersData.find(s => s.id === supplierId);
+      if (!supplier) return;
+      
+      const newStatus = supplier.status === 'active' ? 'inactive' : 'active';
+      supplier.status = newStatus;
+      
+      renderSuppliers();
+      showSuccessMessage(`Supplier status updated to ${newStatus}`);
+    }
+
+    // Export suppliers
+    function exportSuppliers() {
+      const csvContent = "data:text/csv;charset=utf-8,"
+        + "Company Name,Contact Person,Email,Phone,Category,Location,Status,Rating,Total Orders,Total Value\n"
+        + filteredData.map(supplier => 
+          `"${supplier.name}","${supplier.contactPerson}","${supplier.email}","${supplier.phone}","${supplier.category}","${supplier.location}","${supplier.status}",${supplier.rating},${supplier.totalOrders},${supplier.totalValue}`
+        ).join("\n");
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "suppliers_list.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      showSuccessMessage('Suppliers data exported successfully!');
+    }
+
+    // Modal management
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    // Form submissions
+    document.getElementById('addSupplierForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      
+      // Collect certification data
+      const certifications = [];
+      const certCheckboxes = document.querySelectorAll('input[name="certifications"]:checked');
+      certCheckboxes.forEach(checkbox => {
+        certifications.push(checkbox.value);
+      });
+      
+      const newVendor = {
+        id: Math.max(...suppliersData.map(s => s.id)) + 1,
+        registrationNumber: formData.get('registrationNumber'),
+        gstNumber: formData.get('gstNumber'),
+        panNumber: formData.get('panNumber'),
+        companyType: formData.get('companyType'),
+        yearEstablished: formData.get('yearEstablished'),
+        employeeCount: formData.get('employeeCount'),
+        website: formData.get('website') || '',
+        designation: formData.get('designation'),
+        alternatePhone: formData.get('alternatePhone') || '',
+        skypeWhatsapp: formData.get('skypeWhatsapp') || '',
+        city: formData.get('city'),
+        state: formData.get('state'),
+        pinCode: formData.get('pinCode'),
+        country: formData.get('country'),
+        bankName: formData.get('bankName'),
+        accountNumber: formData.get('accountNumber'),
+        ifscCode: formData.get('ifscCode'),
+        accountHolderName: formData.get('accountHolderName'),
+        otherCertifications: formData.get('otherCertifications') || '',
+        agreeTerms: formData.get('agreeTerms') === 'on',
+        agreeAccuracy: formData.get('agreeAccuracy') === 'on',
+        agreeUpdates: formData.get('agreeUpdates') === 'on',
+        
+        // Basic vendor info
+        name: formData.get('name'),
+        contactPerson: formData.get('contactPerson'),
+        email: formData.get('email'),
+        phone: formData.get('phone'),
+        category: formData.get('category'),
+        location: formData.get('city') + ', ' + formData.get('state'),
+        address: formData.get('address'),
+        status: 'pending',
+        rating: 0,
+        totalOrders: 0,
+        totalValue: 0,
+        joinDate: new Date().toISOString().split('T')[0],
+        lastOrderDate: '',
+        performance: 'new',
+        certifications: certifications,
+        paymentTerms: 'Net 30',
+        deliveryRating: 0,
+        qualityRating: 0,
+        serviceRating: 0,
+        registrationDate: new Date().toISOString(),
+        approvalStatus: 'pending',
+        credentialsGenerated: false
+      };
+      
+      // Add to pending vendors list (in real app, this would be saved to database)
+      suppliersData.unshift(newVendor);
+      filteredData = [...suppliersData];
+      renderSuppliers();
+      updatePagination();
+      
+      closeModal('addSupplierModal');
+      showSuccessMessage('Vendor registration submitted successfully! The vendor will be notified once approved.');
+      e.target.reset();
+      
+      // In real implementation, this would trigger email notification to approver
+      console.log('Vendor registration submitted for approval:', newVendor);
+    });
+
+    // Vendor approval functions
+    function approveVendorById(vendorId) {
+      const vendor = suppliersData.find(s => s.id === vendorId && s.status === 'pending');
+      if (!vendor) {
+        showSuccessMessage('Vendor not found or already processed.');
+        return;
+      }
+      
+      showVendorApprovalDetails(vendor);
+    }
+
+    function showVendorApprovalDetails(vendor) {
+      const content = `
+        <div class="mb-6">
+          <div class="flex items-center mb-4">
+            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+              <span class="text-blue-600 font-semibold text-lg">${vendor.name.charAt(0)}</span>
+            </div>
+            <div>
+              <h4 class="text-lg font-semibold">${vendor.name}</h4>
+              <p class="text-gray-600">${vendor.contactPerson} - ${vendor.designation || 'Contact Person'}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <!-- Company Details -->
+          <div class="space-y-4">
+            <h5 class="font-semibold text-gray-900">Company Information</h5>
+            <div class="space-y-2 text-sm">
+              <div><strong>Registration No:</strong> ${vendor.registrationNumber || 'N/A'}</div>
+              <div><strong>GST Number:</strong> ${vendor.gstNumber || 'N/A'}</div>
+              <div><strong>PAN Number:</strong> ${vendor.panNumber || 'N/A'}</div>
+              <div><strong>Company Type:</strong> ${vendor.companyType || 'N/A'}</div>
+              <div><strong>Year Established:</strong> ${vendor.yearEstablished || 'N/A'}</div>
+              <div><strong>Employee Count:</strong> ${vendor.employeeCount || 'N/A'}</div>
+              <div><strong>Website:</strong> ${vendor.website || 'N/A'}</div>
+            </div>
+          </div>
+
+          <!-- Contact & Address -->
+          <div class="space-y-4">
+            <h5 class="font-semibold text-gray-900">Contact & Address</h5>
+            <div class="space-y-2 text-sm">
+              <div><strong>Email:</strong> ${vendor.email}</div>
+              <div><strong>Phone:</strong> ${vendor.phone}</div>
+              <div><strong>Alt Phone:</strong> ${vendor.alternatePhone || 'N/A'}</div>
+              <div><strong>City:</strong> ${vendor.city || 'N/A'}</div>
+              <div><strong>State:</strong> ${vendor.state || 'N/A'}</div>
+              <div><strong>PIN:</strong> ${vendor.pinCode || 'N/A'}</div>
+              <div><strong>Address:</strong> ${vendor.address}</div>
+            </div>
+          </div>
+
+          <!-- Banking Details -->
+          <div class="space-y-4">
+            <h5 class="font-semibold text-gray-900">Banking Information</h5>
+            <div class="space-y-2 text-sm">
+              <div><strong>Bank Name:</strong> ${vendor.bankName || 'N/A'}</div>
+              <div><strong>Account Number:</strong> ${vendor.accountNumber || 'N/A'}</div>
+              <div><strong>IFSC Code:</strong> ${vendor.ifscCode || 'N/A'}</div>
+              <div><strong>Account Holder:</strong> ${vendor.accountHolderName || 'N/A'}</div>
+            </div>
+          </div>
+
+          <!-- Certifications -->
+          <div class="space-y-4">
+            <h5 class="font-semibold text-gray-900">Certifications</h5>
+            <div class="space-y-2">
+              <div class="flex flex-wrap gap-2">
+                ${vendor.certifications.map(cert => `<span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">${cert}</span>`).join('')}
+              </div>
+              ${vendor.otherCertifications ? `<div class="text-sm"><strong>Other:</strong> ${vendor.otherCertifications}</div>` : ''}
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-blue-50 p-4 rounded-lg">
+          <h5 class="font-semibold text-blue-900 mb-2">Registration Date</h5>
+          <p class="text-blue-800">${new Date(vendor.registrationDate).toLocaleDateString()} at ${new Date(vendor.registrationDate).toLocaleTimeString()}</p>
+        </div>
+      `;
+      
+      document.getElementById('vendorApprovalContent').innerHTML = content;
+      window.currentApprovalVendor = vendor;
+      openModal('vendorApprovalModal');
+    }
+
+    function approveVendor() {
+      if (!window.currentApprovalVendor) return;
+      
+      const vendor = window.currentApprovalVendor;
+      const vendorIndex = suppliersData.findIndex(s => s.id === vendor.id);
+      
+      if (vendorIndex !== -1) {
+        // Generate credentials
+        const credentials = generateVendorCredentials(vendor);
+        
+        // Update vendor status
+        suppliersData[vendorIndex].status = 'active';
+        suppliersData[vendorIndex].approvalStatus = 'approved';
+        suppliersData[vendorIndex].credentialsGenerated = true;
+        suppliersData[vendorIndex].vendorId = credentials.vendorId;
+        suppliersData[vendorIndex].username = credentials.username;
+        suppliersData[vendorIndex].password = credentials.password;
+        suppliersData[vendorIndex].approvalDate = new Date().toISOString();
+        
+        // In real implementation, send email with credentials
+        sendCredentialEmail(vendor, credentials);
+        
+        filteredData = [...suppliersData];
+        renderSuppliers();
+        
+        closeModal('vendorApprovalModal');
+        showCredentialModal(vendor, credentials);
+      }
+    }
+
+    function rejectVendor() {
+      if (!window.currentApprovalVendor) return;
+      
+      const vendor = window.currentApprovalVendor;
+      const vendorIndex = suppliersData.findIndex(s => s.id === vendor.id);
+      
+      if (vendorIndex !== -1) {
+        suppliersData[vendorIndex].status = 'rejected';
+        suppliersData[vendorIndex].approvalStatus = 'rejected';
+        suppliersData[vendorIndex].rejectionDate = new Date().toISOString();
+        
+        filteredData = [...suppliersData];
+        renderSuppliers();
+        
+        closeModal('vendorApprovalModal');
+        showSuccessMessage('Vendor registration rejected. Notification sent to vendor.');
+        
+        // In real implementation, send rejection email
+        console.log('Vendor rejected:', vendor);
+      }
+    }
+
+    function generateVendorCredentials(vendor) {
+      const vendorId = 'VID' + String(vendor.id).padStart(6, '0');
+      const username = vendor.email;
+      const password = 'VP' + Math.random().toString(36).substring(2, 10).toUpperCase();
+      
+      return {
+        vendorId: vendorId,
+        username: username,
+        password: password
+      };
+    }
+
+    function sendCredentialEmail(vendor, credentials) {
+      // In real implementation, this would call backend API to send email
+      const emailContent = `
+        Dear ${vendor.contactPerson},
+
+        Congratulations! Your vendor registration with our procurement portal has been approved.
+
+        Your login credentials are:
+        Vendor ID: ${credentials.vendorId}
+        Username: ${credentials.username}
+        Password: ${credentials.password}
+
+        You can now login to the vendor portal at: https://vendorportal.company.com
+
+        Please change your password after first login for security.
+
+        Best regards,
+        Procurement Team
+      `;
+      
+      console.log('Email sent to:', vendor.email);
+      console.log('Email content:', emailContent);
+      
+      // Simulate email sending success
+      return true;
+    }
+
+    function showCredentialModal(vendor, credentials) {
+      document.getElementById('generatedVendorId').textContent = credentials.vendorId;
+      document.getElementById('generatedUsername').textContent = credentials.username;
+      document.getElementById('generatedPassword').textContent = credentials.password;
+      document.getElementById('vendorEmail').textContent = vendor.email;
+      
+      openModal('credentialModal');
+    }
+
+    function refreshSupplierList() {
+      filteredData = [...suppliersData];
+      renderSuppliers();
+      updatePagination();
+    }
+
+    document.getElementById('editSupplierForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const supplierId = parseInt(formData.get('id'));
+      const supplierIndex = suppliersData.findIndex(s => s.id === supplierId);
+      
+      if (supplierIndex !== -1) {
+        suppliersData[supplierIndex] = {
+          ...suppliersData[supplierIndex],
+          name: formData.get('name'),
+          contactPerson: formData.get('contactPerson'),
+          email: formData.get('email'),
+          phone: formData.get('phone'),
+          category: formData.get('category'),
+          location: formData.get('location'),
+          address: formData.get('address') || '',
+          status: formData.get('status'),
+          paymentTerms: formData.get('paymentTerms') || 'Net 30'
+        };
+        
+        filteredData = [...suppliersData];
+        renderSuppliers();
+        
+        closeModal('editSupplierModal');
+        showSuccessMessage('Supplier updated successfully!');
+      }
+    });
+
+    // Success message
+    function showSuccessMessage(message) {
+      document.getElementById('successMessage').textContent = message;
+      openModal('successModal');
+      
+      setTimeout(() => {
+        closeModal('successModal');
+      }, 3000);
+    }
+
+    // Escape key to close modals
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const modals = ['viewSupplierModal', 'addSupplierModal', 'editSupplierModal', 'successModal', 'vendorApprovalModal', 'credentialModal'];
+        modals.forEach(modalId => {
+          const modal = document.getElementById(modalId);
+          if (modal && !modal.classList.contains('hidden')) {
+            closeModal(modalId);
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

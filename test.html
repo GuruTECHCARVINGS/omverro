@@ -1,0 +1,347 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vendor Dashboard - Total Vendors Donut Chart with Details</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap"
+    rel="stylesheet"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+  />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #F5F5F5;
+      color: #212121;
+    }
+    /* Scrollbar for sidebar nav */
+    aside nav::-webkit-scrollbar {
+      width: 6px;
+    }
+    aside nav::-webkit-scrollbar-thumb {
+      background-color: rgba(255 255 255 / 0.3);
+      border-radius: 3px;
+    }
+    /* Scrollbar for lists */
+    ul::-webkit-scrollbar {
+      width: 8px;
+    }
+    ul::-webkit-scrollbar-thumb {
+      background-color: rgba(138, 43, 226, 0.5); /* purple shade */
+      border-radius: 4px;
+    }
+    /* Scrollbar for Firefox */
+    ul {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(138, 43, 226, 0.5) transparent;
+    }
+    /* Purple highlight for selected items */
+    .selected {
+      background-color: #8E24AA;
+      color: white;
+    }
+    /* Section titles */
+    h1, h2 {
+      color: #6A1B9A;
+    }
+    /* Buttons */
+    button {
+      background-color: #8E24AA;
+      color: white;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #6A1B9A;
+    }
+    /* Input fields and boxes */
+    input, textarea, select {
+      background-color: #FFFFFF;
+      border: 1px solid #E0E0E0;
+      color: #212121;
+    }
+    /* Sidebar background */
+    aside {
+      background-color: #6A1B9A;
+    }
+    /* Sidebar text */
+    aside nav a {
+      color: #D1C4E9;
+    }
+    aside nav a:hover {
+      color: #FFFFFF;
+    }
+    /* Sidebar icons */
+    aside nav a i {
+      color: inherit;
+    }
+    /* Modal backdrop */
+    .modal-backdrop {
+      background-color: rgba(0,0,0,0.5);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex">
+  <!-- Sidebar -->
+   
+
+  <!-- Main content -->
+  <main class="flex-1 p-6 md:p-10 flex flex-col items-center justify-center relative">
+    <header class="mb-8 w-full max-w-md text-center">
+      <h1 class="text-3xl font-extrabold">Vendor Dashboard</h1>
+      <p class="text-gray-700 mt-2">Total Vendors Overview</p>
+    </header>
+
+    <section class="bg-white rounded-lg shadow p-6 w-full max-w-md">
+      <h2 class="text-xl font-semibold mb-6 text-center">Total Vendors</h2>
+      <div class="chart-container cursor-pointer">
+        <canvas
+          id="vendorsDonutChart"
+          aria-label="Donut chart showing total vendors by category"
+          role="img"
+        ></canvas>
+      </div>
+      <ul class="mt-6 flex justify-center space-x-6 text-sm text-gray-700">
+        <li class="flex items-center space-x-2">
+          <span class="w-4 h-4 rounded-full bg-purple-700 block"></span>
+          <span>Active Vendors</span>
+        </li>
+        <li class="flex items-center space-x-2">
+          <span class="w-4 h-4 rounded-full bg-purple-400 block"></span>
+          <span>Inactive Vendors</span>
+        </li>
+        <li class="flex items-center space-x-2">
+          <span class="w-4 h-4 rounded-full bg-gray-300 block"></span>
+          <span>Pending Approval</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Modal -->
+    <div id="modalBackdrop" class="fixed inset-0 hidden items-center justify-center modal-backdrop z-50">
+      <div class="bg-white rounded-lg shadow-lg max-w-lg w-full p-6 relative max-h-[80vh] overflow-y-auto">
+        <button id="closeModalBtn" aria-label="Close modal" class="absolute top-3 right-3 text-gray-600 hover:text-gray-900 text-xl">
+          <i class="fas fa-times"></i>
+        </button>
+        <h3 id="modalTitle" class="text-xl font-semibold mb-4 text-gray-900">Vendor Details</h3>
+        <ul id="vendorList" class="list-disc list-inside space-y-2 text-gray-900 text-sm max-h-[60vh] overflow-y-auto"></ul>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const ctx = document.getElementById('vendorsDonutChart').getContext('2d');
+
+    // Vendor data for each category
+    const vendorData = {
+      'Active Vendors': [
+        'Vendor A',
+        'Vendor B',
+        'Vendor C',
+        'Vendor D',
+        'Vendor E',
+        'Vendor F',
+        'Vendor G',
+        'Vendor H',
+        'Vendor I',
+        'Vendor J',
+        'Vendor K',
+        'Vendor L',
+        'Vendor M',
+        'Vendor N',
+        'Vendor O',
+        'Vendor P',
+        'Vendor Q',
+        'Vendor R',
+        'Vendor S',
+        'Vendor T',
+        'Vendor U',
+        'Vendor V',
+        'Vendor W',
+        'Vendor X',
+        'Vendor Y',
+        'Vendor Z',
+        'Vendor AA',
+        'Vendor AB',
+        'Vendor AC',
+        'Vendor AD',
+        'Vendor AE',
+        'Vendor AF',
+        'Vendor AG',
+        'Vendor AH',
+        'Vendor AI',
+        'Vendor AJ',
+        'Vendor AK',
+        'Vendor AL',
+        'Vendor AM',
+        'Vendor AN',
+        'Vendor AO',
+        'Vendor AP',
+        'Vendor AQ',
+        'Vendor AR',
+        'Vendor AS',
+        'Vendor AT',
+        'Vendor AU',
+      ],
+      'Inactive Vendors': [
+        'Vendor BA',
+        'Vendor BB',
+        'Vendor BC',
+        'Vendor BD',
+        'Vendor BE',
+        'Vendor BF',
+        'Vendor BG',
+        'Vendor BH',
+        'Vendor BI',
+        'Vendor BJ',
+        'Vendor BK',
+        'Vendor BL',
+        'Vendor BM',
+        'Vendor BN',
+        'Vendor BO',
+        'Vendor BP',
+        'Vendor BQ',
+        'Vendor BR',
+        'Vendor BS',
+        'Vendor BT',
+        'Vendor BU',
+        'Vendor BV',
+        'Vendor BW',
+        'Vendor BX',
+        'Vendor BY',
+      ],
+      'Pending Approval': [
+        'Vendor CA',
+        'Vendor CB',
+        'Vendor CC',
+        'Vendor CD',
+        'Vendor CE',
+        'Vendor CF',
+        'Vendor CG',
+        'Vendor CH',
+        'Vendor CI',
+        'Vendor CJ',
+        'Vendor CK',
+        'Vendor CL',
+        'Vendor CM',
+        'Vendor CN',
+        'Vendor CO',
+      ],
+    };
+
+    const data = {
+      labels: ['Active Vendors', 'Inactive Vendors', 'Pending Approval'],
+      datasets: [
+        {
+          data: [45, 25, 15],
+          backgroundColor: ['#6A1B9A', '#9C4DCC', '#D1C4E9'],
+          hoverBackgroundColor: ['#8E24AA', '#B366E6', '#E6D9F7'],
+          borderWidth: 0,
+        },
+      ],
+    };
+
+    const options = {
+      cutout: '70%',
+      responsive: true,
+      plugins: {
+        legend: {
+          display: false,
+        },
+        tooltip: {
+          enabled: true,
+          backgroundColor: '#6A1B9A',
+          titleColor: '#fff',
+          bodyColor: '#fff',
+          cornerRadius: 4,
+          padding: 8,
+        },
+      },
+      onClick(evt, elements) {
+        if (elements.length > 0) {
+          const chart = elements[0].element.$context.chart;
+          const index = elements[0].index;
+          const label = chart.data.labels[index];
+          openModal(label);
+        }
+      },
+    };
+
+    // Plugin to draw smaller center text
+    const centerTextPlugin = {
+      id: 'centerText',
+      beforeDraw(chart) {
+        const { width } = chart;
+        const { height } = chart;
+        const ctx = chart.ctx;
+        ctx.restore();
+        const fontSize = (height / 180).toFixed(2); // smaller font size
+        ctx.font = `bold ${fontSize}em Inter`;
+        ctx.textBaseline = 'middle';
+
+        const total = chart._metasets[0].total;
+        const text = total + ' Vendors';
+        const textX = Math.round((width - ctx.measureText(text).width) / 2);
+        const textY = height / 2;
+
+        ctx.fillStyle = '#6A1B9A';
+        ctx.fillText(text, textX, textY);
+        ctx.save();
+      },
+    };
+
+    const vendorsDonutChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: data,
+      options: options,
+      plugins: [centerTextPlugin],
+    });
+
+    // Modal elements
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    const vendorList = document.getElementById('vendorList');
+    const modalTitle = document.getElementById('modalTitle');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+
+    function openModal(category) {
+      modalTitle.textContent = category + ' - Vendor Details';
+      vendorList.innerHTML = '';
+      const vendors = vendorData[category] || [];
+      if (vendors.length === 0) {
+        vendorList.innerHTML = '<li>No vendors found.</li>';
+      } else {
+        vendors.forEach((vendor) => {
+          const li = document.createElement('li');
+          li.textContent = vendor;
+          vendorList.appendChild(li);
+        });
+      }
+      modalBackdrop.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      modalBackdrop.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    closeModalBtn.addEventListener('click', closeModal);
+    modalBackdrop.addEventListener('click', (e) => {
+      if (e.target === modalBackdrop) {
+        closeModal();
+      }
+    });
+
+    // Close modal on Escape key
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !modalBackdrop.classList.contains('hidden')) {
+        closeModal();
+      }
+    });
+  </script>
+</body>
+</html>

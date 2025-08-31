@@ -1,0 +1,447 @@
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <title>
+   RFQ Inbox
+  </title>
+  <script src="https://cdn.tailwindcss.com">
+  </script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;display=swap" rel="stylesheet"/>
+  <style>
+   body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+ </head>
+ <body class="bg-white p-6 sm:p-10">
+    <!-- <header
+    class="bg-gradient-to-r from-[#0B1B38] to-[#142D5B] flex items-center justify-between px-6 sm:px-10 py-5 shadow-md relative"
+  >
+    <div class="flex items-center space-x-6">
+      <img
+        alt="Mitsubishi Electric red logo with three diamond shapes"
+        class="w-28 h-28 object-contain"
+        height="112"
+         src="https://media.licdn.com/dms/image/v2/D560BAQGXc0zxzyvurA/company-logo_200_200/company-logo_200_200/0/1737107658724/techcarvings_consultancy_pvt_ltd_logo?e=2147483647&v=beta&t=q75AmCilrus_--oITKIAATFgioUt-0t29OJVhWNv2kw"
+        width="112"
+        style=""
+      />
+      <h1
+        class="text-white text-center sm:text-3xl font-extrabold tracking-tight gradient-text select-none"
+      >
+        SUPPLIER RFQ PORTAL
+      </h1>
+    </div>
+    <div class="relative">
+      <button
+        id="profileBtn"
+        aria-label="User profile menu button"
+        tabindex="0"
+        role="button"
+        class="w-14 h-14 bg-[#4B5E85] rounded-full flex items-center justify-center hover:bg-[#3a4a6a] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ff4d4d] transition-colors"
+        aria-haspopup="true"
+        aria-expanded="false"
+      >
+        <i class="fas fa-user-circle text-[#B9C6E6] text-4xl"></i>
+      </button>
+      <div
+        id="profileMenu"
+        class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-20"
+        role="menu"
+        aria-orientation="vertical"
+        aria-labelledby="profileBtn"
+        tabindex="-1"
+      >
+        <a
+          href="#"
+          class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+          role="menuitem"
+          tabindex="-1"
+          id="profile-option"
+          >My Profile</a
+        >
+        <a
+          href="#"
+          class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+          role="menuitem"
+          tabindex="-1"
+          id="settings-option"
+          >Settings</a
+        >
+        <a
+          href="#"
+          class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+          role="menuitem"
+          tabindex="-1"
+          id="notifications-option"
+          >Notifications</a
+        >
+        <a
+          href="#"
+          class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+          role="menuitem"
+          tabindex="-1"
+          id="help-option"
+          >Help</a
+        >
+        <button
+          id="logoutBtn"
+          class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100"
+          role="menuitem"
+          tabindex="-1"
+        >
+          Logout
+        </button>
+      </div>
+    </div>
+  </header> -->
+  <main>
+   <h1 class="text-4xl font-extrabold text-[#001233] mb-6">
+    RFQ INBOX
+   </h1>
+   <form class="flex flex-wrap gap-4 mb-6 max-w-full">
+    <select aria-label="Status" class="border border-[#D9E4F5] rounded-md px-4 py-2 text-base text-black placeholder-black focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+     <option>
+      Status
+     </option>
+     <option value="open">
+      Open
+     </option>
+     <option value="closed">
+      Closed
+     </option>
+    </select>
+    <select aria-label="RFQ Number" class="border border-[#D9E4F5] rounded-md px-4 py-2 text-base text-black placeholder-black focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+     <option>
+      RFQ Number
+     </option>
+     <option value="90010004">
+      90010004
+     </option>
+     <option value="90010003">
+      90010003
+     </option>
+     <option value="90000999">
+      90000999
+     </option>
+     <option value="90000001">
+      90000001
+     </option>
+     <option value="90000998">
+      90000998
+     </option>
+     <option value="90000997">
+      90000997
+     </option>
+     <option value="90000996">
+      90000996
+     </option>
+    </select>
+    <input aria-label="Material" class="border border-[#D9E4F5] rounded-md px-4 py-2 text-base text-black placeholder-black focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent" placeholder="Material" type="text"/>
+    <div class="relative">
+     <input aria-label="Delivery Date" class="border border-[#D9E4F5] rounded-md px-4 py-2 text-base text-black placeholder-black focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent" type="date"/>
+     <span class="absolute right-3 top-1/2 -translate-y-1/2 text-blue-600 text-lg pointer-events-none">
+      <!-- <i class="far fa-calendar-alt">
+      </i> -->
+     </span>
+    </div>
+    <button class="bg-[#0047FF] text-white font-semibold rounded-md px-5 py-2.5 hover:bg-[#0039cc] transition" type="submit">
+     Apply Filters
+    </button>
+   </form>
+   <div class="overflow-x-auto rounded-md border border-[#D9E4F5]">
+    <table class="min-w-full border-collapse table-auto text-left text-black">
+     <thead class="bg-white border-b border-[#D9E4F5]">
+      <tr>
+       <th class="px-6 py-3 font-bold border-r border-[#D9E4F5]">
+        RFQ Number
+       </th>
+       <th class="px-6 py-3 font-bold border-r border-[#D9E4F5]">
+        Status
+       </th>
+       <th class="px-6 py-3 font-bold border-r border-[#D9E4F5]">
+        Material
+       </th>
+       <th class="px-6 py-3 font-bold border-r border-[#D9E4F5]">
+        Quantity
+       </th>
+       <th class="px-6 py-3 font-bold border-r border-[#D9E4F5]">
+        Delivery Place
+       </th>
+       <th class="px-6 py-3 font-bold border-r border-[#D9E4F5]">
+        Deadline Date
+       </th>
+       <th class="px-6 py-3 font-bold border-r border-[#D9E4F5]">
+        Delivery Date
+       </th>
+       <th class="px-6 py-3 font-bold">
+        View
+       </th>
+      </tr>
+     </thead>
+     <tbody>
+      <tr class="border-b border-[#D9E4F5]">
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        90010004
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        <span class="bg-[#D9E4F5] text-[#0047FF] font-semibold rounded-md px-3 py-1 inline-block cursor-pointer select-none">
+         Open
+        </span>
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        Dell Latitude Laptop
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        5
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        Delhi
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        March 25, 2024
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        April 1, 2024
+       </td>
+       <td class="px-6 py-3">
+       <a href="4_RYQ_Details.html">
+        <button class="bg-[#0047FF] text-white font-semibold rounded-md px-4 py-1.5 hover:bg-[#0039cc] transition">
+         View
+        </button>
+        </a>
+       </td>
+      </tr>
+      <tr class="border-b border-[#D9E4F5]">
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        90010003
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        <span class="bg-[#D9E4F5] text-[#0047FF] font-semibold rounded-md px-3 py-1 inline-block cursor-pointer select-none">
+         Open
+        </span>
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        External Hard Drive 1TB
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        2
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        Mumbai
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        April 5, 2024
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        April 11, 2024
+       </td>
+       <td class="px-6 py-3">
+        <a href="4_RYQ_Details.html">
+        <button class="bg-[#0047FF] text-white font-semibold rounded-md px-4 py-1.5 hover:bg-[#0039cc] transition">
+         View
+        </button>
+        </a>
+       </td>
+      </tr>
+      <tr class="border-b border-[#D9E4F5]">
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        90000999
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        <span class="bg-[#D9E4F5] text-[#5A6B82] font-semibold rounded-md px-3 py-1 inline-block cursor-default select-none">
+         Closed
+        </span>
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        Cisco Network Switch
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        10
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        Bangalore
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        April 1, 2020
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        April 8, 2020
+       </td>
+       <td class="px-6 py-3">
+        <a href="4_RYQ_Details.html">
+        <button class="bg-[#0047FF] text-white font-semibold rounded-md px-4 py-1.5 hover:bg-[#0039cc] transition">
+         View
+        </button>
+        </a>
+       </td>
+      </tr>
+      <tr class="border-b border-[#D9E4F5]">
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        90000001
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        <span class="bg-[#D9E4F5] text-[#0047FF] font-semibold rounded-md px-3 py-1 inline-block cursor-pointer select-none">
+         Open
+        </span>
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        Dell Ultrasharp Monitor
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        15
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        Delhi
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        April 1, 2020
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        April 8, 2020
+       </td>
+       <td class="px-6 py-3">
+        <a href="4_RYQ_Details.html">
+        <button class="bg-[#0047FF] text-white font-semibold rounded-md px-4 py-1.5 hover:bg-[#0039cc] transition">
+         View
+        </button>
+        </a>
+       </td>
+      </tr>
+      <tr class="border-b border-[#D9E4F5]">
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        90000999
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        <span class="bg-[#D9E4F5] text-[#5A6B82] font-semibold rounded-md px-3 py-1 inline-block cursor-default select-none">
+         Closed
+        </span>
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        Logitech Wireless Keyboard
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        6
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        Mumbai
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        August 15, 2021
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        August 22, 2021
+       </td>
+       <td class="px-6 py-3">
+        <a href="4_RYQ_Details.html">
+        <button class="bg-[#0047FF] text-white font-semibold rounded-md px-4 py-1.5 hover:bg-[#0039cc] transition">
+         View
+        </button>
+        </a>
+       </td>
+      </tr>
+      <tr class="border-b border-[#D9E4F5]">
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        90000998
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        <span class="bg-[#D9E4F5] text-[#5A6B82] font-semibold rounded-md px-3 py-1 inline-block cursor-default select-none">
+         Closed
+        </span>
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        Apple Mac Mini M2
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        8
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        Delhi
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        March 28, 2024
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        April 1, 2024
+       </td>
+       <td class="px-6 py-3">
+       <a href="4_RYQ_Details.html">
+        <button class="bg-[#0047FF] text-white font-semibold rounded-md px-4 py-1.5 hover:bg-[#0039cc] transition">
+         View
+        </button>
+        </a>
+       </td>
+      </tr>
+      <tr class="border-b border-[#D9E4F5]">
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        90000997
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        <span class="bg-[#D9E4F5] text-[#0047FF] font-semibold rounded-md px-3 py-1 inline-block cursor-pointer select-none">
+         Open
+        </span>
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        Lenovo ThinkPad X1
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        2
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        Bangalore
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        March 30, 2024
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        April 4, 2024
+       </td>
+       <td class="px-6 py-3">
+       <a href="4_RYQ_Details.html">
+        <button class="bg-[#0047FF] text-white font-semibold rounded-md px-4 py-1.5 hover:bg-[#0039cc] transition">
+         View
+        </button>
+        </a>
+       </td>
+      </tr>
+      <tr>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        90000996
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        <span class="bg-[#D9E4F5] text-[#5A6B82] font-semibold rounded-md px-3 py-1 inline-block cursor-default select-none">
+         Closed
+        </span>
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        WD External SSD 2TB
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        2
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        Himachal Pradesh
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        April 5, 2024
+       </td>
+       <td class="px-6 py-3 border-r border-[#D9E4F5]">
+        April 11, 2024
+       </td>
+       <td class="px-6 py-3">
+        <a href="4_RYQ_Details.html">
+        <button class="bg-[#0047FF] text-white font-semibold rounded-md px-4 py-1.5 hover:bg-[#0039cc] transition">
+         View
+        </button>
+        </a>
+       </td>
+      </tr>
+     </tbody>
+    </table>
+   </div>
+  </main>
+    <script src ="./script.js"></script>
+ </body>
+</html>

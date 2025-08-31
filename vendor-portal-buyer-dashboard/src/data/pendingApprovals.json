@@ -1,0 +1,44 @@
+{
+  "pendingApprovals": [
+    {
+      "id": 1,
+      "description": "Purchase Order #1024 - Office Supplies",
+      "amount": 1500,
+      "requestedBy": "John Doe",
+      "dateRequested": "2023-10-01",
+      "status": "Pending"
+    },
+    {
+      "id": 2,
+      "description": "Purchase Order #1025 - IT Equipment",
+      "amount": 25000,
+      "requestedBy": "Jane Smith",
+      "dateRequested": "2023-10-02",
+      "status": "Pending"
+    },
+    {
+      "id": 3,
+      "description": "Purchase Order #1026 - Consulting Services",
+      "amount": 8000,
+      "requestedBy": "Alice Johnson",
+      "dateRequested": "2023-10-03",
+      "status": "Pending"
+    },
+    {
+      "id": 4,
+      "description": "Purchase Order #1027 - Software Licenses",
+      "amount": 12000,
+      "requestedBy": "Bob Brown",
+      "dateRequested": "2023-10-04",
+      "status": "Pending"
+    },
+    {
+      "id": 5,
+      "description": "Purchase Order #1028 - Office Chairs",
+      "amount": 4500,
+      "requestedBy": "Charlie Davis",
+      "dateRequested": "2023-10-05",
+      "status": "Pending"
+    }
+  ]
+}

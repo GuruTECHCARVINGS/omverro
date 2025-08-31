@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risks - Buyer Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .risk-card:hover { transform: translateY(-2px); transition: all 0.3s ease; }
+        .risk-critical { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); }
+        .risk-high { background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); }
+        .risk-medium { background: linear-gradient(135deg, #ca8a04 0%, #a16207 100%); }
+        .risk-low { background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); }
+        .escalation-pulse { animation: pulse-red 2s infinite; }
+        .risk-matrix-cell { min-height: 60px; min-width: 80px; }
+        
+        @keyframes pulse-red {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; background-color: rgba(239, 68, 68, 0.1); }
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            width: 2px;
+            height: 100%;
+            background: #e5e7eb;
+        }
+        
+        .timeline-dot {
+            position: relative;
+            z-index: 10;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 0 3px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <button onclick="navigateToBuyerDashboard()" class="mr-4 p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200" title="Back to Buyer Dashboard">
+                        <i class="fas fa-arrow-left text-gray-600"></i>
+                    </button>
+                    <h1 class="text-xl font-semibold text-gray-900">Risk Management</h1>
+                    <span class="ml-3 px-3 py-1 bg-red-100 text-red-800 text-sm font-medium rounded-full escalation-pulse">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>2 Escalations Open
+                    </span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-500">August 2025</span>
+                    <button onclick="exportRiskReport()" class="p-2 hover:bg-gray-100 rounded-lg" title="Export Report">
+                        <i class="fas fa-download text-gray-600"></i>
+                    </button>
+                    <button onclick="openRiskSettings()" class="p-2 hover:bg-gray-100 rounded-lg" title="Risk Settings">
+                        <i class="fas fa-cog text-gray-600"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Breadcrumb Navigation -->
+        <nav class="flex mb-6" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li class="inline-flex items-center">
+                    <button onclick="navigateToBuyerDashboard()" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors duration-200">
+                        <i class="fas fa-home w-4 h-4 mr-2"></i>
+                        Buyer Dashboard
+                    </button>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <i class="fas fa-chevron-right w-4 h-4 text-gray-400 mx-1"></i>
+                        <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">Risk Management</span>
+                    </div>
+                </li>
+            </ol>
+        </nav>
+
+        <!-- Risk Overview Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <!-- Total Risks -->
+            <div class="bg-white rounded-xl shadow-sm p-6 risk-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Total Risks</p>
+                        <p class="text-3xl font-bold text-gray-900">12</p>
+                        <p class="text-sm text-orange-600">+3 from last month</p>
+                    </div>
+                    <div class="p-3 bg-gray-100 rounded-full">
+                        <i class="fas fa-exclamation-triangle text-gray-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Critical Risks -->
+            <div class="bg-white rounded-xl shadow-sm p-6 risk-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Critical Risks</p>
+                        <p class="text-3xl font-bold text-red-600">2</p>
+                        <p class="text-sm text-red-600">Requires immediate action</p>
+                    </div>
+                    <div class="p-3 bg-red-100 rounded-full">
+                        <i class="fas fa-fire text-red-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Open Escalations -->
+            <div class="bg-white rounded-xl shadow-sm p-6 risk-card border-2 border-red-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Open Escalations</p>
+                        <p class="text-3xl font-bold text-red-600">2</p>
+                        <p class="text-sm text-red-600">Senior management involved</p>
+                    </div>
+                    <div class="p-3 bg-red-100 rounded-full escalation-pulse">
+                        <i class="fas fa-arrow-up text-red-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risk Score -->
+            <div class="bg-white rounded-xl shadow-sm p-6 risk-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Overall Risk Score</p>
+                        <p class="text-3xl font-bold text-orange-600">7.2</p>
+                        <p class="text-sm text-orange-600">High Risk Level</p>
+                    </div>
+                    <div class="p-3 bg-orange-100 rounded-full">
+                        <i class="fas fa-gauge-high text-orange-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-orange-500 h-2 rounded-full" style="width: 72%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Critical Escalations Section -->
+        <div class="mb-8">
+            <div class="bg-red-50 border border-red-200 rounded-xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-lg font-semibold text-red-900">Critical Escalations Requiring Immediate Action</h3>
+                        <p class="text-sm text-red-700">2 open escalations need senior management intervention</p>
+                    </div>
+                    <button onclick="escalateToManagement()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                        <i class="fas fa-phone mr-2"></i>Contact Management
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Escalation 1 -->
+                    <div class="bg-white border-l-4 border-red-500 rounded-lg p-6 shadow-sm">
+                        <div class="flex items-start justify-between mb-4">
+                            <div>
+                                <h4 class="text-lg font-semibold text-gray-900">Vendor Contract Breach</h4>
+                                <p class="text-sm text-gray-600">TechCorp Solutions • Critical Supplier</p>
+                            </div>
+                            <span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">
+                                CRITICAL
+                            </span>
+                        </div>
+                        
+                        <div class="space-y-3 mb-4">
+                            <div class="flex items-center text-sm">
+                                <i class="fas fa-calendar-alt text-gray-400 mr-2"></i>
+                                <span class="text-gray-600">Escalated: Aug 24, 2025</span>
+                            </div>
+                            <div class="flex items-center text-sm">
+                                <i class="fas fa-user text-gray-400 mr-2"></i>
+                                <span class="text-gray-600">Owner: Sarah Wilson (Procurement Director)</span>
+                            </div>
+                            <div class="flex items-center text-sm">
+                                <i class="fas fa-clock text-gray-400 mr-2"></i>
+                                <span class="text-red-600">SLA: 2 hours remaining</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                            <h5 class="font-medium text-gray-900 mb-2">Issue Description</h5>
+                            <p class="text-sm text-gray-700">
+                                TechCorp has failed to deliver 60% of contracted IT equipment for Q3 deployment. 
+                                This impacts 150+ employees and critical infrastructure projects. Legal implications possible.
+                            </p>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex space-x-2">
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                                    Financial Impact: ₹2.5Cr
+                                </span>
+                                <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">
+                                    150+ Users Affected
+                                </span>
+                            </div>
+                            <button onclick="viewEscalationDetails('ESC-001')" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Escalation 2 -->
+                    <div class="bg-white border-l-4 border-red-500 rounded-lg p-6 shadow-sm">
+                        <div class="flex items-start justify-between mb-4">
+                            <div>
+                                <h4 class="text-lg font-semibold text-gray-900">Quality Control Failure</h4>
+                                <p class="text-sm text-gray-600">Global Manufacturing Co • Key Partner</p>
+                            </div>
+                            <span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">
+                                CRITICAL
+                            </span>
+                        </div>
+                        
+                        <div class="space-y-3 mb-4">
+                            <div class="flex items-center text-sm">
+                                <i class="fas fa-calendar-alt text-gray-400 mr-2"></i>
+                                <span class="text-gray-600">Escalated: Aug 25, 2025</span>
+                            </div>
+                            <div class="flex items-center text-sm">
+                                <i class="fas fa-user text-gray-400 mr-2"></i>
+                                <span class="text-gray-600">Owner: Michael Chen (Quality Manager)</span>
+                            </div>
+                            <div class="flex items-center text-sm">
+                                <i class="fas fa-clock text-gray-400 mr-2"></i>
+                                <span class="text-red-600">SLA: 6 hours remaining</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                            <h5 class="font-medium text-gray-900 mb-2">Issue Description</h5>
+                            <p class="text-sm text-gray-700">
+                                Manufacturing defects found in 40% of delivered products. Customer complaints increasing. 
+                                Potential recall required affecting Q3 revenue targets and brand reputation.
+                            </p>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex space-x-2">
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                                    Revenue Risk: ₹4.8Cr
+                                </span>
+                                <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">
+                                    Brand Impact: High
+                                </span>
+                            </div>
+                            <button onclick="viewEscalationDetails('ESC-002')" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Risk Categories & Analysis -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Risk by Category -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">Risk by Category</h3>
+                    <select class="text-sm border border-gray-300 rounded-lg px-3 py-1">
+                        <option>All Risks</option>
+                        <option>Active Only</option>
+                        <option>Escalated Only</option>
+                    </select>
+                </div>
+                
+                <div class="space-y-4">
+                    <!-- Vendor Risks -->
+                    <div class="risk-category-item">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 bg-red-500 rounded-full mr-3"></div>
+                                <span class="font-medium text-gray-900">Vendor & Supplier</span>
+                                <span class="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">Critical</span>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold text-gray-900">5 risks</p>
+                                <p class="text-sm text-red-600">2 escalated</p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-red-500 h-2 rounded-full" style="width: 83%"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Risk Score: 8.3/10</p>
+                    </div>
+
+                    <!-- Financial Risks -->
+                    <div class="risk-category-item">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 bg-orange-500 rounded-full mr-3"></div>
+                                <span class="font-medium text-gray-900">Financial & Budget</span>
+                                <span class="ml-2 px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">High</span>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold text-gray-900">3 risks</p>
+                                <p class="text-sm text-orange-600">0 escalated</p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-orange-500 h-2 rounded-full" style="width: 65%"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Risk Score: 6.5/10</p>
+                    </div>
+
+                    <!-- Operational Risks -->
+                    <div class="risk-category-item">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 bg-yellow-500 rounded-full mr-3"></div>
+                                <span class="font-medium text-gray-900">Operational</span>
+                                <span class="ml-2 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">Medium</span>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold text-gray-900">2 risks</p>
+                                <p class="text-sm text-yellow-600">0 escalated</p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-yellow-500 h-2 rounded-full" style="width: 45%"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Risk Score: 4.5/10</p>
+                    </div>
+
+                    <!-- Compliance Risks -->
+                    <div class="risk-category-item">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 bg-purple-500 rounded-full mr-3"></div>
+                                <span class="font-medium text-gray-900">Compliance & Legal</span>
+                                <span class="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Low</span>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold text-gray-900">2 risks</p>
+                                <p class="text-sm text-green-600">0 escalated</p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-purple-500 h-2 rounded-full" style="width: 30%"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Risk Score: 3.0/10</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risk Matrix -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">Risk Matrix</h3>
+                    <button onclick="viewFullMatrix()" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                        View Full Matrix
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-6 gap-1 mb-4">
+                    <!-- Header Row -->
+                    <div class="p-2 text-center text-xs font-medium text-gray-600">Impact →</div>
+                    <div class="p-2 text-center text-xs font-medium text-gray-600">Very Low</div>
+                    <div class="p-2 text-center text-xs font-medium text-gray-600">Low</div>
+                    <div class="p-2 text-center text-xs font-medium text-gray-600">Medium</div>
+                    <div class="p-2 text-center text-xs font-medium text-gray-600">High</div>
+                    <div class="p-2 text-center text-xs font-medium text-gray-600">Very High</div>
+                    
+                    <!-- Very High Probability -->
+                    <div class="p-2 text-center text-xs font-medium text-gray-600">Very High</div>
+                    <div class="risk-matrix-cell bg-yellow-200 border border-gray-300 rounded text-center text-xs flex items-center justify-center">-</div>
+                    <div class="risk-matrix-cell bg-orange-200 border border-gray-300 rounded text-center text-xs flex items-center justify-center">1</div>
+                    <div class="risk-matrix-cell bg-red-200 border border-gray-300 rounded text-center text-xs flex items-center justify-center">-</div>
+                    <div class="risk-matrix-cell bg-red-300 border border-gray-300 rounded text-center text-xs flex items-center justify-center font-bold">2</div>
+                    <div class="risk-matrix-cell bg-red-400 border border-gray-300 rounded text-center text-xs flex items-center justify-center font-bold">2</div>
+                    
+                    <!-- High Probability -->
+                    <div class="p-2 text-center text-xs font-medium text-gray-600">High</div>
+                    <div class="risk-matrix-cell bg-green-200 border border-gray-300 rounded text-center text-xs flex items-center justify-center">1</div>
+                    <div class="risk-matrix-cell bg-yellow-200 border border-gray-300 rounded text-center text-xs flex items-center justify-center">1</div>
+                    <div class="risk-matrix-cell bg-orange-200 border border-gray-300 rounded text-center text-xs flex items-center justify-center">2</div>
+                    <div class="risk-matrix-cell bg-red-200 border border-gray-300 rounded text-center text-xs flex items-center justify-center">1</div>
+                    <div class="risk-matrix-cell bg-red-300 border border-gray-300 rounded text-center text-xs flex items-center justify-center">-</div>
+                    
+                    <!-- Medium Probability -->
+                    <div class="p-2 text-center text-xs font-medium text-gray-600">Medium</div>
+                    <div class="risk-matrix-cell bg-green-200 border border-gray-300 rounded text-center text-xs flex items-center justify-center">-</div>
+                    <div class="risk-matrix-cell bg-green-200 border border-gray-300 rounded text-center text-xs flex items-center justify-center">1</div>
+                    <div class="risk-matrix-cell bg-yellow-200 border border-gray-300 rounded text-center text-xs flex items-center justify-center">1</div>
+                    <div class="risk-matrix-cell bg-orange-200 border border-gray-300 rounded text-center text-xs flex items-center justify-center">-</div>
+                    <div class="risk-matrix-cell bg-red-200 border border-gray-300 rounded text-center text-xs flex items-center justify-center">-</div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 text-xs">
+                    <div>
+                        <h5 class="font-medium text-gray-900 mb-2">Legend</h5>
+                        <div class="space-y-1">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-red-400 rounded mr-2"></div>
+                                <span>Critical (9-10)</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-orange-300 rounded mr-2"></div>
+                                <span>High (7-8)</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-yellow-300 rounded mr-2"></div>
+                                <span>Medium (4-6)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h5 class="font-medium text-gray-900 mb-2">Current Status</h5>
+                        <div class="space-y-1">
+                            <div>Critical: <strong>2 risks</strong></div>
+                            <div>High: <strong>5 risks</strong></div>
+                            <div>Medium: <strong>3 risks</strong></div>
+                            <div>Low: <strong>2 risks</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity & Action Items -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Recent Risk Activities -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-6">Recent Risk Activities</h3>
+                
+                <div class="space-y-6">
+                    <div class="relative timeline-item pl-8">
+                        <div class="timeline-dot bg-red-500 shadow-red-300 absolute left-0 top-1"></div>
+                        <div>
+                            <p class="font-medium text-gray-900">Risk Escalated to Management</p>
+                            <p class="text-sm text-gray-600">TechCorp contract breach escalated due to delivery failure</p>
+                            <div class="flex items-center mt-2 space-x-4">
+                                <span class="text-xs text-gray-500">2 hours ago</span>
+                                <span class="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">Critical</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative timeline-item pl-8">
+                        <div class="timeline-dot bg-orange-500 shadow-orange-300 absolute left-0 top-1"></div>
+                        <div>
+                            <p class="font-medium text-gray-900">New Risk Identified</p>
+                            <p class="text-sm text-gray-600">Quality control issues detected in manufacturing partner</p>
+                            <div class="flex items-center mt-2 space-x-4">
+                                <span class="text-xs text-gray-500">4 hours ago</span>
+                                <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">High</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative timeline-item pl-8">
+                        <div class="timeline-dot bg-blue-500 shadow-blue-300 absolute left-0 top-1"></div>
+                        <div>
+                            <p class="font-medium text-gray-900">Mitigation Plan Updated</p>
+                            <p class="text-sm text-gray-600">Financial risk mitigation strategy revised for Q4</p>
+                            <div class="flex items-center mt-2 space-x-4">
+                                <span class="text-xs text-gray-500">1 day ago</span>
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">Update</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative timeline-item pl-8">
+                        <div class="timeline-dot bg-green-500 shadow-green-300 absolute left-0 top-1"></div>
+                        <div>
+                            <p class="font-medium text-gray-900">Risk Resolved</p>
+                            <p class="text-sm text-gray-600">Compliance documentation completed for vendor audit</p>
+                            <div class="flex items-center mt-2 space-x-4">
+                                <span class="text-xs text-gray-500">2 days ago</span>
+                                <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Resolved</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Items & Next Steps -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">Priority Action Items</h3>
+                    <span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">
+                        6 Urgent Actions
+                    </span>
+                </div>
+                
+                <div class="space-y-4">
+                    <!-- Urgent Action 1 -->
+                    <div class="action-item p-4 border border-red-200 bg-red-50 rounded-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-medium text-red-900">Contact TechCorp Management</h4>
+                            <span class="text-xs text-red-600">DUE TODAY</span>
+                        </div>
+                        <p class="text-sm text-red-700 mb-3">
+                            Schedule emergency meeting to address contract deliverables and penalties
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center text-sm text-red-600">
+                                <i class="fas fa-user mr-2"></i>
+                                <span>Sarah Wilson</span>
+                            </div>
+                            <button onclick="completeAction('ACTION-001')" class="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700">
+                                Mark Complete
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Urgent Action 2 -->
+                    <div class="action-item p-4 border border-orange-200 bg-orange-50 rounded-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-medium text-orange-900">Quality Audit Initiation</h4>
+                            <span class="text-xs text-orange-600">DUE TOMORROW</span>
+                        </div>
+                        <p class="text-sm text-orange-700 mb-3">
+                            Launch comprehensive quality audit for Global Manufacturing Co
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center text-sm text-orange-600">
+                                <i class="fas fa-user mr-2"></i>
+                                <span>Michael Chen</span>
+                            </div>
+                            <button onclick="completeAction('ACTION-002')" class="px-3 py-1 bg-orange-600 text-white text-sm rounded hover:bg-orange-700">
+                                Mark Complete
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Standard Actions -->
+                    <div class="action-item p-4 border border-blue-200 bg-blue-50 rounded-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-medium text-blue-900">Budget Impact Assessment</h4>
+                            <span class="text-xs text-blue-600">DUE THIS WEEK</span>
+                        </div>
+                        <p class="text-sm text-blue-700 mb-3">
+                            Calculate financial impact of vendor delays on Q3 targets
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center text-sm text-blue-600">
+                                <i class="fas fa-user mr-2"></i>
+                                <span>Finance Team</span>
+                            </div>
+                            <button onclick="viewActionDetails('ACTION-003')" class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="action-item p-4 border border-gray-200 bg-gray-50 rounded-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-medium text-gray-900">Risk Register Update</h4>
+                            <span class="text-xs text-gray-600">DUE NEXT WEEK</span>
+                        </div>
+                        <p class="text-sm text-gray-700 mb-3">
+                            Update risk register with new mitigation strategies
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-user mr-2"></i>
+                                <span>Risk Management</span>
+                            </div>
+                            <button onclick="assignAction('ACTION-004')" class="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700">
+                                Assign
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions & Tools -->
+        <div class="bg-white rounded-xl shadow-sm p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-semibold text-gray-900">Risk Management Tools</h3>
+                <button onclick="createNewRisk()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    <i class="fas fa-plus mr-2"></i>Add New Risk
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <button onclick="generateRiskReport()" class="flex items-center justify-center p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-gray-700 transition-colors">
+                    <i class="fas fa-chart-line mr-2"></i>
+                    <span class="text-sm font-medium">Risk Analytics</span>
+                </button>
+                
+                <button onclick="scheduleRiskReview()" class="flex items-center justify-center p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-gray-700 transition-colors">
+                    <i class="fas fa-calendar-check mr-2"></i>
+                    <span class="text-sm font-medium">Schedule Review</span>
+                </button>
+                
+                <button onclick="exportRiskData()" class="flex items-center justify-center p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-gray-700 transition-colors">
+                    <i class="fas fa-file-export mr-2"></i>
+                    <span class="text-sm font-medium">Export Data</span>
+                </button>
+                
+                <button onclick="openRiskTraining()" class="flex items-center justify-center p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-gray-700 transition-colors">
+                    <i class="fas fa-graduation-cap mr-2"></i>
+                    <span class="text-sm font-medium">Training</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample risk data
+        const riskData = {
+            summary: {
+                totalRisks: 12,
+                criticalRisks: 2,
+                openEscalations: 2,
+                overallScore: 7.2
+            },
+            escalations: [
+                {
+                    id: 'ESC-001',
+                    title: 'Vendor Contract Breach',
+                    vendor: 'TechCorp Solutions',
+                    type: 'Critical Supplier',
+                    escalatedDate: '2025-08-24',
+                    owner: 'Sarah Wilson (Procurement Director)',
+                    slaRemaining: '2 hours',
+                    description: 'TechCorp has failed to deliver 60% of contracted IT equipment for Q3 deployment. This impacts 150+ employees and critical infrastructure projects. Legal implications possible.',
+                    financialImpact: 25000000, // ₹2.5Cr
+                    usersAffected: 150,
+                    severity: 'CRITICAL',
+                    status: 'Open'
+                },
+                {
+                    id: 'ESC-002',
+                    title: 'Quality Control Failure',
+                    vendor: 'Global Manufacturing Co',
+                    type: 'Key Partner',
+                    escalatedDate: '2025-08-25',
+                    owner: 'Michael Chen (Quality Manager)',
+                    slaRemaining: '6 hours',
+                    description: 'Manufacturing defects found in 40% of delivered products. Customer complaints increasing. Potential recall required affecting Q3 revenue targets and brand reputation.',
+                    revenueRisk: 48000000, // ₹4.8Cr
+                    brandImpact: 'High',
+                    severity: 'CRITICAL',
+                    status: 'Open'
+                }
+            ],
+            categories: [
+                {
+                    name: 'Vendor & Supplier',
+                    count: 5,
+                    escalated: 2,
+                    score: 8.3,
+                    severity: 'Critical',
+                    color: 'red'
+                },
+                {
+                    name: 'Financial & Budget',
+                    count: 3,
+                    escalated: 0,
+                    score: 6.5,
+                    severity: 'High',
+                    color: 'orange'
+                },
+                {
+                    name: 'Operational',
+                    count: 2,
+                    escalated: 0,
+                    score: 4.5,
+                    severity: 'Medium',
+                    color: 'yellow'
+                },
+                {
+                    name: 'Compliance & Legal',
+                    count: 2,
+                    escalated: 0,
+                    score: 3.0,
+                    severity: 'Low',
+                    color: 'purple'
+                }
+            ]
+        };
+
+        // Navigation Functions
+        function navigateToBuyerDashboard() {
+            showNotification('Returning to Buyer Dashboard...', 'info');
+            setTimeout(() => {
+                window.location.href = 'BuyerDashboard.html';
+            }, 500);
+        }
+
+        // Risk Management Functions
+        function viewEscalationDetails(escalationId) {
+            const escalation = riskData.escalations.find(e => e.id === escalationId);
+            if (!escalation) return;
+
+            const detailsHTML = `
+                <div class="max-w-4xl mx-auto">
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl font-semibold text-red-900">${escalation.title}</h3>
+                            <span class="px-3 py-1 bg-red-100 text-red-800 font-medium rounded-full">
+                                ${escalation.severity}
+                            </span>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <h4 class="font-medium text-red-900 mb-3">Escalation Details</h4>
+                                <div class="space-y-2 text-sm">
+                                    <div><strong>ID:</strong> ${escalation.id}</div>
+                                    <div><strong>Vendor:</strong> ${escalation.vendor}</div>
+                                    <div><strong>Type:</strong> ${escalation.type}</div>
+                                    <div><strong>Escalated:</strong> ${new Date(escalation.escalatedDate).toLocaleDateString('en-IN')}</div>
+                                    <div><strong>Owner:</strong> ${escalation.owner}</div>
+                                    <div class="text-red-600"><strong>SLA Remaining:</strong> ${escalation.slaRemaining}</div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-medium text-red-900 mb-3">Impact Assessment</h4>
+                                <div class="space-y-2 text-sm">
+                                    ${escalation.financialImpact ? `<div><strong>Financial Impact:</strong> ₹${(escalation.financialImpact / 10000000).toFixed(1)}Cr</div>` : ''}
+                                    ${escalation.revenueRisk ? `<div><strong>Revenue Risk:</strong> ₹${(escalation.revenueRisk / 10000000).toFixed(1)}Cr</div>` : ''}
+                                    ${escalation.usersAffected ? `<div><strong>Users Affected:</strong> ${escalation.usersAffected}+</div>` : ''}
+                                    ${escalation.brandImpact ? `<div><strong>Brand Impact:</strong> ${escalation.brandImpact}</div>` : ''}
+                                    <div><strong>Status:</strong> ${escalation.status}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white border border-red-200 rounded p-4 mb-6">
+                            <h4 class="font-medium text-gray-900 mb-2">Detailed Description</h4>
+                            <p class="text-gray-700">${escalation.description}</p>
+                        </div>
+                        
+                        <div class="flex space-x-3">
+                            <button onclick="escalateToManagement()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                                <i class="fas fa-phone mr-2"></i>Contact Senior Management
+                            </button>
+                            <button onclick="updateEscalation('${escalationId}')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                <i class="fas fa-edit mr-2"></i>Update Status
+                            </button>
+                            <button onclick="assignTeam('${escalationId}')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                <i class="fas fa-users mr-2"></i>Assign Team
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            showModal('Escalation Details', detailsHTML);
+        }
+
+        function escalateToManagement() {
+            const escalateHTML = `
+                <div class="max-w-md mx-auto">
+                    <h3 class="text-lg font-semibold mb-4">Contact Senior Management</h3>
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                        <p class="text-sm text-red-700">
+                            This will immediately notify senior management about the critical escalations. 
+                            Emergency protocols will be activated.
+                        </p>
+                    </div>
+                    
+                    <form onsubmit="confirmEscalation(event)">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Urgency Level</label>
+                                <select class="w-full rounded-md border-gray-300" required>
+                                    <option value="immediate" selected>Immediate (< 1 hour)</option>
+                                    <option value="urgent">Urgent (< 4 hours)</option>
+                                    <option value="high">High Priority (< 24 hours)</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Management Level</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" checked class="rounded border-gray-300 text-red-600">
+                                        <span class="ml-2 text-sm">Procurement Director</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" checked class="rounded border-gray-300 text-red-600">
+                                        <span class="ml-2 text-sm">VP Operations</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" class="rounded border-gray-300 text-red-600">
+                                        <span class="ml-2 text-sm">CEO</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Summary Message</label>
+                                <textarea class="w-full rounded-md border-gray-300" rows="3" required
+                                          placeholder="Brief summary of the critical situation requiring immediate attention..."></textarea>
+                            </div>
+                            
+                            <button type="submit" class="w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>Send Emergency Alert
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            
+            showModal('Emergency Escalation', escalateHTML);
+        }
+
+        function completeAction(actionId) {
+            if (confirm('Mark this action as completed?')) {
+                showNotification(`Action ${actionId} marked as completed!`, 'success');
+                // In real implementation, update the UI to reflect completion
+                setTimeout(() => {
+                    location.reload(); // Refresh to show updated state
+                }, 1500);
+            }
+        }
+
+        function createNewRisk() {
+            const newRiskHTML = `
+                <div class="max-w-2xl mx-auto">
+                    <h3 class="text-lg font-semibold mb-4">Create New Risk</h3>
+                    
+                    <form onsubmit="submitNewRisk(event)">
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Risk Title</label>
+                                    <input type="text" class="w-full rounded-md border-gray-300" required
+                                           placeholder="Brief descriptive title">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                    <select class="w-full rounded-md border-gray-300" required>
+                                        <option value="">Select Category</option>
+                                        <option value="vendor">Vendor & Supplier</option>
+                                        <option value="financial">Financial & Budget</option>
+                                        <option value="operational">Operational</option>
+                                        <option value="compliance">Compliance & Legal</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Risk Description</label>
+                                <textarea class="w-full rounded-md border-gray-300" rows="3" required
+                                          placeholder="Detailed description of the risk..."></textarea>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Probability</label>
+                                    <select class="w-full rounded-md border-gray-300" required>
+                                        <option value="">Select Probability</option>
+                                        <option value="very-low">Very Low (1-2)</option>
+                                        <option value="low">Low (3-4)</option>
+                                        <option value="medium">Medium (5-6)</option>
+                                        <option value="high">High (7-8)</option>
+                                        <option value="very-high">Very High (9-10)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Impact</label>
+                                    <select class="w-full rounded-md border-gray-300" required>
+                                        <option value="">Select Impact</option>
+                                        <option value="very-low">Very Low (1-2)</option>
+                                        <option value="low">Low (3-4)</option>
+                                        <option value="medium">Medium (5-6)</option>
+                                        <option value="high">High (7-8)</option>
+                                        <option value="very-high">Very High (9-10)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Owner</label>
+                                    <select class="w-full rounded-md border-gray-300" required>
+                                        <option value="">Select Owner</option>
+                                        <option value="sarah.wilson">Sarah Wilson - Procurement Director</option>
+                                        <option value="michael.chen">Michael Chen - Quality Manager</option>
+                                        <option value="finance.team">Finance Team</option>
+                                        <option value="operations.team">Operations Team</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
+                                    <input type="date" class="w-full rounded-md border-gray-300" required>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Mitigation Strategy</label>
+                                <textarea class="w-full rounded-md border-gray-300" rows="2"
+                                          placeholder="Initial mitigation approach or action plan..."></textarea>
+                            </div>
+                            
+                            <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700">
+                                <i class="fas fa-plus mr-2"></i>Create Risk
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            
+            showModal('New Risk', newRiskHTML);
+        }
+
+        // Utility Functions
+        function showModal(title, content) {
+            const modalHTML = `
+                <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" onclick="closeModal()">
+                    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white max-h-screen overflow-y-auto" onclick="event.stopPropagation()">
+                        <div class="flex items-center justify-between pb-3 border-b border-gray-200">
+                            <h3 class="text-lg font-semibold">${title}</h3>
+                            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="mt-4">
+                            ${content}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+
+        function closeModal() {
+            const modal = document.querySelector('.fixed.inset-0.z-50');
+            if (modal) modal.remove();
+        }
+
+        function showNotification(message, type = 'info') {
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                warning: 'bg-yellow-500',
+                info: 'bg-blue-500'
+            };
+            
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-opacity duration-300`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Form submission handlers
+        function confirmEscalation(event) {
+            event.preventDefault();
+            showNotification('Emergency alert sent to senior management!', 'success');
+            closeModal();
+        }
+
+        function submitNewRisk(event) {
+            event.preventDefault();
+            showNotification('New risk created and assigned successfully!', 'success');
+            closeModal();
+        }
+
+        // Initialize page functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (e.altKey && e.key === 'b') {
+                    e.preventDefault();
+                    navigateToBuyerDashboard();
+                }
+                if (e.key === 'Escape') {
+                    closeModal();
+                }
+            });
+
+            // Initialize tooltips and hover effects
+            document.querySelectorAll('.risk-card').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.classList.add('shadow-lg');
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.classList.remove('shadow-lg');
+                });
+            });
+        });
+
+        // Additional utility functions for completeness
+        function exportRiskReport() {
+            showNotification('Generating risk management report...', 'info');
+            setTimeout(() => showNotification('Report exported successfully!', 'success'), 2000);
+        }
+
+        function openRiskSettings() {
+            showNotification('Opening risk management settings...', 'info');
+        }
+
+        function generateRiskReport() {
+            showNotification('Generating risk analytics...', 'info');
+        }
+
+        function scheduleRiskReview() {
+            showNotification('Opening calendar for risk review...', 'info');
+        }
+
+        function exportRiskData() {
+            showNotification('Exporting risk data...', 'info');
+        }
+
+        function openRiskTraining() {
+            showNotification('Opening risk management training modules...', 'info');
+        }
+    </script>
+</body>
+</html>

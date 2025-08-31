@@ -1,0 +1,268 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Settings - Buyer Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap"
+    rel="stylesheet"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+  />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #F5F5F5;
+      color: #212121;
+    }
+    /* Sidebar background */
+    /* aside {
+      background-color: #6A1B9A;
+    } */
+    /* Sidebar text */
+    /* aside nav a {
+      color: #D1C4E9;
+    } */
+    /* aside nav a:hover {
+      color: #FFFFFF;
+    } */
+    /* Sidebar icons */
+    /* aside nav a i {
+      color: inherit;
+    } */
+    /* Scrollbar for sidebar nav */
+    /* aside nav::-webkit-scrollbar {
+      width: 6px;
+    } */
+    /* aside nav::-webkit-scrollbar-thumb {
+      background-color: rgba(255 255 255 / 0.3);
+      border-radius: 3px;
+    } */
+    /* Form elements */
+    label {
+      color: #6A1B9A;
+      font-weight: 600;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    select,
+    textarea {
+      background-color: #FFFFFF;
+      border: 1px solid #E0E0E0;
+      color: #212121;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.375rem;
+      width: 100%;
+      font-size: 0.875rem;
+      transition: border-color 0.2s ease;
+    }
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="password"]:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #8E24AA;
+      box-shadow: 0 0 0 3px rgba(142, 36, 170, 0.3);
+    }
+    /* Section titles */
+    h1, h2 {
+      color: #6A1B9A;
+    }
+    /* Buttons */
+    button {
+      background-color: #8E24AA;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #6A1B9A;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex">
+    <!-- Sidebar -->
+    <aside class="bg-primary w-20 flex flex-col items-center py-6 space-y-6">
+        <nav class="flex flex-col space-y-6 text-white text-xs font-normal w-full">
+         <a class="flex flex-col items-center space-y-1 opacity-100" href="">
+        <!-- <img src="https://www.mitsubishielectric-railway.eu/wp-content/uploads/2020/06/ME-Logo_mit-Claim_rgb.jpg" alt="Mitsubishi Electric logo" class="mx-auto mb-6 max-w-[180px] w-full"/> -->
+         </a>
+         <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="BuyerVendorApproval.html">
+          <i class="fas fa-file-invoice text-xs">
+          </i>
+          <span>
+           Purchase
+           <br/>
+           Orders
+          </span>
+         </a>
+         <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="Buyer_Vendorlist.html">
+          <i class="fas fa-check-circle text-xs">
+          </i>
+          <span>
+           Approvals
+          </span>
+         </a>
+         <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="Buyer_.manageasn.html">
+          <i class="fas fa-truck text-xs">
+          </i>
+          <span>
+           Suppliers
+          </span>
+         </a>
+         <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="Buyer_Inquires.html">
+          <i class="fas fa-question-circle text-xs">
+          </i>
+          <span>
+           Inquiries
+          </span>
+         </a>
+         <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="Buyer_report.html">
+          <i class="fas fa-chart-bar text-xs">
+          </i>
+          <span>
+           Reports
+          </span>
+         </a>
+         <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="Buyer_settings.html">
+          <i class="fas fa-cog text-xs">
+          </i>
+          <span>
+           Settings
+          </span>
+         </a>
+        </nav>
+       </aside>
+
+  <!-- Main content -->
+  <main class="flex-1 p-6 md:p-10 overflow-auto max-w-4xl mx-auto">
+    <header class="mb-8 flex items-center justify-between">
+      <h1 class="text-2xl font-extrabold">Settings</h1>
+      <div class="flex space-x-4 text-gray-600 text-xl">
+        <button aria-label="Notifications" class="hover:text-gray-900">
+          <i class="fas fa-bell"></i>
+        </button>
+        <button aria-label="User profile" class="hover:text-gray-900">
+          <i class="fas fa-user"></i>
+        </button>
+      </div>
+    </header>
+
+    <section class="space-y-10">
+      <!-- Profile Settings -->
+      <div>
+        <h2 class="text-xl font-semibold mb-4">Profile Settings</h2>
+        <form class="space-y-6">
+          <div>
+            <label for="fullName" class="block mb-1">Full Name</label>
+            <input type="text" id="fullName" name="fullName" placeholder="John Doe" required />
+          </div>
+          <div>
+            <label for="email" class="block mb-1">Email Address</label>
+            <input type="email" id="email" name="email" placeholder="john@example.com" required />
+          </div>
+          <div>
+            <label for="phone" class="block mb-1">Phone Number</label>
+            <input type="text" id="phone" name="phone" placeholder="+1 234 567 8900" />
+          </div>
+          <div>
+            <label for="password" class="block mb-1">Change Password</label>
+            <input type="password" id="password" name="password" placeholder="New password" />
+          </div>
+          <button type="submit">Save Profile Settings</button>
+        </form>
+      </div>
+
+      <!-- Access & Authorization -->
+      <div>
+        <h2 class="text-xl font-semibold mb-4">Access & Authorization</h2>
+        <form class="space-y-6">
+          <div>
+            <label for="userRole" class="block mb-1">User Role</label>
+            <select id="userRole" name="userRole" required>
+              <option value="">Select role</option>
+              <option value="buyer">Buyer</option>
+              <option value="admin">Admin</option>
+              <option value="supplier">Supplier</option>
+            </select>
+          </div>
+          <div>
+            <label for="accessLevel" class="block mb-1">Access Level</label>
+            <select id="accessLevel" name="accessLevel" required>
+              <option value="">Select access level</option>
+              <option value="read">Read Only</option>
+              <option value="write">Read & Write</option>
+              <option value="full">Full Access</option>
+            </select>
+          </div>
+          <div>
+            <label for="authorizedUsers" class="block mb-1">Authorized Users (Emails)</label>
+            <textarea id="authorizedUsers" name="authorizedUsers" rows="3" placeholder="Enter emails separated by commas" required></textarea>
+          </div>
+          <button type="submit">Save Access Settings</button>
+        </form>
+      </div>
+
+      <!-- Portal Settings -->
+      <div>
+        <h2 class="text-xl font-semibold mb-4">Portal Settings</h2>
+        <form class="space-y-6">
+          <div>
+            <label for="notificationPref" class="block mb-1">Notification Preferences</label>
+            <select id="notificationPref" name="notificationPref" required>
+              <option value="">Select preference</option>
+              <option value="all">All Notifications</option>
+              <option value="important">Only Important</option>
+              <option value="none">No Notifications</option>
+            </select>
+          </div>
+          <div>
+            <label for="theme" class="block mb-1">Theme</label>
+            <select id="theme" name="theme" required>
+              <option value="">Select theme</option>
+              <option value="purple">Purple</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </div>
+          <div>
+            <label for="sessionTimeout" class="block mb-1">Session Timeout (minutes)</label>
+            <input type="number" id="sessionTimeout" name="sessionTimeout" min="5" max="120" value="30" required />
+          </div>
+          <button type="submit">Save Portal Settings</button>
+        </form>
+      </div>
+
+      <!-- Security Settings -->
+      <div>
+        <h2 class="text-xl font-semibold mb-4">Security Settings</h2>
+        <form class="space-y-6">
+          <div>
+            <label for="passwordPolicy" class="block mb-1">Password Policy</label>
+            <select id="passwordPolicy" name="passwordPolicy" required>
+              <option value="">Select policy</option>
+              <option value="standard">Standard (8+ chars, 1 number)</option>
+              <option value="strict">Strict (12+ chars, numbers, symbols)</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+          <div>
+            <label for="twoFactorAuth" class="inline-flex items-center space-x-2 cursor-pointer">
+              <input type="checkbox" id="twoFactorAuth" name="twoFactorAuth" />
+              <span>Enable Two-Factor Authentication (2FA)</span>
+            </label>
+          </div>
+          <button type="submit">Save Security Settings</button>
+        </form>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

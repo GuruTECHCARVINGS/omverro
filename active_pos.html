@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Active Purchase Orders - TechCarvings Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .status-overdue { background: #fee2e2; color: #dc2626; }
+        .status-transit { background: #dbeafe; color: #2563eb; }
+        .status-pending { background: #fef3c7; color: #d97706; }
+        .priority-high { background: #fecaca; color: #dc2626; }
+        .priority-medium { background: #fed7aa; color: #ea580c; }
+        .priority-low { background: #e5e7eb; color: #6b7280; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <button onclick="history.back()" class="mr-4 p-2 text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h1 class="text-2xl font-bold text-gray-900">Active Purchase Orders</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center">
+                        <i class="fas fa-plus mr-2"></i>
+                        New PO
+                    </button>
+                    <button class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center">
+                        <i class="fas fa-download mr-2"></i>
+                        Export
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Summary Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-sm p-6 card-hover">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-file-invoice text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Total Active POs</p>
+                        <p class="text-2xl font-bold text-gray-900">12</p>
+                        <p class="text-sm text-green-600">+5% from last month</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-6 card-hover">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Pending Delivery</p>
+                        <p class="text-2xl font-bold text-gray-900">8</p>
+                        <p class="text-sm text-gray-500">67% of total</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-6 card-hover">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Overdue</p>
+                        <p class="text-2xl font-bold text-red-600">2</p>
+                        <p class="text-sm text-red-500">Requires attention</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-6 card-hover">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-rupee-sign text-green-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Total Value</p>
+                        <p class="text-2xl font-bold text-gray-900">₹2.46CR</p>
+                        <p class="text-sm text-gray-500">Avg: ₹20.5L/PO</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+            <div class="flex flex-col sm:flex-row gap-4">
+                <div class="flex-1">
+                    <input type="text" id="searchInput" placeholder="Search by PO number, vendor, or item..." 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <select id="statusFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">All Status</option>
+                    <option value="overdue">Overdue</option>
+                    <option value="transit">In Transit</option>
+                    <option value="pending">Pending</option>
+                </select>
+                <select id="categoryFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">All Categories</option>
+                    <option value="equipment">Equipment</option>
+                    <option value="raw-materials">Raw Materials</option>
+                    <option value="services">Services</option>
+                    <option value="office-supplies">Office Supplies</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- PO Table -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PO Details</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Delivery Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="poTableBody">
+                        <!-- PO Row 1 -->
+                        <tr class="hover:bg-gray-50 po-row" data-status="overdue" data-category="equipment">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900">#PO-2025-001</div>
+                                    <div class="text-sm text-gray-500">Created: Aug 15, 2025</div>
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium priority-high mt-1">
+                                        High Priority
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-8 w-8">
+                                        <div class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-medium">
+                                            TC
+                                        </div>
+                                    </div>
+                                    <div class="ml-3">
+                                        <div class="text-sm font-medium text-gray-900">TechCarvings Solutions</div>
+                                        <div class="text-sm text-gray-500">★ 4.8 Rating</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-900">Industrial Machinery</div>
+                                <div class="text-sm text-gray-500">5 Units • Equipment</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">₹45,00,000</div>
+                                <div class="text-sm text-gray-500">₹9.00L per unit</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-red-600">Aug 20, 2025</div>
+                                <div class="text-xs text-red-500">5 days overdue</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full status-overdue">
+                                    Overdue
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div class="flex space-x-2">
+                                    <button class="text-blue-600 hover:text-blue-900" onclick="viewPO('PO-2025-001')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="text-red-600 hover:text-red-900" onclick="followUp('PO-2025-001')">
+                                        <i class="fas fa-phone"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- PO Row 2 -->
+                        <tr class="hover:bg-gray-50 po-row" data-status="transit" data-category="office-supplies">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900">#PO-2025-002</div>
+                                    <div class="text-sm text-gray-500">Created: Aug 18, 2025</div>
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium priority-medium mt-1">
+                                        Medium Priority
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-8 w-8">
+                                        <div class="h-8 w-8 rounded-full bg-green-500 flex items-center justify-center text-white text-sm font-medium">
+                                            GS
+                                        </div>
+                                    </div>
+                                    <div class="ml-3">
+                                        <div class="text-sm font-medium text-gray-900">Global Supplies Co.</div>
+                                        <div class="text-sm text-gray-500">★ 4.6 Rating</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-900">Office Furniture</div>
+                                <div class="text-sm text-gray-500">25 Units • Office Supplies</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">₹8,50,000</div>
+                                <div class="text-sm text-gray-500">₹34,000 per unit</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">Aug 30, 2025</div>
+                                <div class="text-xs text-blue-500">On track</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full status-transit">
+                                    In Transit
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div class="flex space-x-2">
+                                    <button class="text-blue-600 hover:text-blue-900" onclick="viewPO('PO-2025-002')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="text-green-600 hover:text-green-900" onclick="trackShipment('PO-2025-002')">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- PO Row 3 -->
+                        <tr class="hover:bg-gray-50 po-row" data-status="pending" data-category="raw-materials">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900">#PO-2025-003</div>
+                                    <div class="text-sm text-gray-500">Created: Aug 20, 2025</div>
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium priority-medium mt-1">
+                                        Medium Priority
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-8 w-8">
+                                        <div class="h-8 w-8 rounded-full bg-gray-500 flex items-center justify-center text-white text-sm font-medium">
+                                            MW
+                                        </div>
+                                    </div>
+                                    <div class="ml-3">
+                                        <div class="text-sm font-medium text-gray-900">MetalWorks Industries</div>
+                                        <div class="text-sm text-gray-500">★ 4.5 Rating</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-900">Steel Sheets</div>
+                                <div class="text-sm text-gray-500">100 kg • Raw Materials</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">₹15,75,000</div>
+                                <div class="text-sm text-gray-500">₹1,575 per kg</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">Sep 2, 2025</div>
+                                <div class="text-xs text-green-500">8 days remaining</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full status-pending">
+                                    Pending
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div class="flex space-x-2">
+                                    <button class="text-blue-600 hover:text-blue-900" onclick="viewPO('PO-2025-003')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="text-gray-600 hover:text-gray-900" onclick="editPO('PO-2025-003')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- PO Row 4 -->
+                        <tr class="hover:bg-gray-50 po-row" data-status="pending" data-category="equipment">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900">#PO-2025-004</div>
+                                    <div class="text-sm text-gray-500">Created: Aug 22, 2025</div>
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium priority-low mt-1">
+                                        Low Priority
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-8 w-8">
+                                        <div class="h-8 w-8 rounded-full bg-purple-500 flex items-center justify-center text-white text-sm font-medium">
+                                            ET
+                                        </div>
+                                    </div>
+                                    <div class="ml-3">
+                                        <div class="text-sm font-medium text-gray-900">ElectroTech Solutions</div>
+                                        <div class="text-sm text-gray-500">★ 4.7 Rating</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-900">Electronic Components</div>
+                                <div class="text-sm text-gray-500">200 Units • Equipment</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">₹12,30,000</div>
+                                <div class="text-sm text-gray-500">₹6,150 per unit</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">Sep 5, 2025</div>
+                                <div class="text-xs text-green-500">11 days remaining</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full status-pending">
+                                    Pending
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div class="flex space-x-2">
+                                    <button class="text-blue-600 hover:text-blue-900" onclick="viewPO('PO-2025-004')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="text-gray-600 hover:text-gray-900" onclick="editPO('PO-2025-004')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-4 rounded-lg shadow-sm">
+            <div class="flex-1 flex justify-between sm:hidden">
+                <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Previous
+                </button>
+                <button class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Next
+                </button>
+            </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-gray-700">
+                        Showing <span class="font-medium">1</span> to <span class="font-medium">4</span> of <span class="font-medium">12</span> results
+                    </p>
+                </div>
+                <div>
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                        <button class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-600 text-sm font-medium text-white">
+                            1
+                        </button>
+                        <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                            2
+                        </button>
+                        <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                            3
+                        </button>
+                        <button class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PO Details Modal -->
+    <div id="poModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-10 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between pb-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900" id="modalTitle">Purchase Order Details</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- Modal Content -->
+                <div class="mt-4" id="modalContent">
+                    <!-- Content will be populated by JavaScript -->
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="flex items-center justify-end pt-4 border-t border-gray-200 space-x-2">
+                    <button onclick="closeModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
+                        Close
+                    </button>
+                    <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" onclick="editPO(currentPOId)">
+                        Edit PO
+                    </button>
+                    <button class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700" onclick="downloadPO(currentPOId)">
+                        Download PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPOId = '';
+
+        // Sample PO data
+        const poData = {
+            'PO-2025-001': {
+                poNumber: '#PO-2025-001',
+                status: 'Overdue',
+                statusClass: 'status-overdue',
+                priority: 'High Priority',
+                priorityClass: 'priority-high',
+                createdDate: 'August 15, 2025',
+                deliveryDate: 'August 20, 2025',
+                daysOverdue: 5,
+                vendor: {
+                    name: 'TechCarvings Solutions',
+                    email: 'procurement@techcarvings.com',
+                    phone: '+91-9876543210',
+                    address: '123 Tech Park, Bangalore, Karnataka 560001',
+                    gst: 'GST123456789',
+                    rating: 4.8
+                },
+                items: [
+                    {
+                        description: 'Industrial CNC Machine Model X1',
+                        category: 'Equipment',
+                        quantity: 2,
+                        unitPrice: 1500000,
+                        totalPrice: 3000000
+                    },
+                    {
+                        description: 'Hydraulic Press System',
+                        category: 'Equipment',
+                        quantity: 1,
+                        unitPrice: 800000,
+                        totalPrice: 800000
+                    },
+                    {
+                        description: 'Safety Equipment Set',
+                        category: 'Equipment',
+                        quantity: 3,
+                        unitPrice: 400000,
+                        totalPrice: 1200000
+                    }
+                ],
+                totalValue: 4500000,
+                terms: {
+                    paymentTerms: 'Net 30 days',
+                    deliveryTerms: 'FOB Destination',
+                    warranty: '2 Years',
+                    penalties: '1% per day for delays beyond 5 days'
+                },
+                approvals: {
+                    requester: 'John Smith (Procurement Manager)',
+                    approvedBy: 'Sarah Wilson (Purchase Director)',
+                    approvalDate: 'August 14, 2025'
+                }
+            },
+            'PO-2025-002': {
+                poNumber: '#PO-2025-002',
+                status: 'In Transit',
+                statusClass: 'status-transit',
+                priority: 'Medium Priority',
+                priorityClass: 'priority-medium',
+                createdDate: 'August 18, 2025',
+                deliveryDate: 'August 30, 2025',
+                daysRemaining: 5,
+                vendor: {
+                    name: 'Global Supplies Co.',
+                    email: 'orders@globalsupplies.com',
+                    phone: '+91-9876543211',
+                    address: '456 Supply Street, Mumbai, Maharashtra 400001',
+                    gst: 'GST987654321',
+                    rating: 4.6
+                },
+                items: [
+                    {
+                        description: 'Executive Office Desk',
+                        category: 'Office Supplies',
+                        quantity: 10,
+                        unitPrice: 25000,
+                        totalPrice: 250000
+                    },
+                    {
+                        description: 'Ergonomic Office Chairs',
+                        category: 'Office Supplies',
+                        quantity: 15,
+                        unitPrice: 15000,
+                        totalPrice: 225000
+                    },
+                    {
+                        description: 'Conference Room Table',
+                        category: 'Office Supplies',
+                        quantity: 2,
+                        unitPrice: 75000,
+                        totalPrice: 150000
+                    },
+                    {
+                        description: 'Storage Cabinets',
+                        category: 'Office Supplies',
+                        quantity: 8,
+                        unitPrice: 18750,
+                        totalPrice: 150000
+                    }
+                ],
+                totalValue: 850000,
+                terms: {
+                    paymentTerms: 'Net 15 days',
+                    deliveryTerms: 'Door to Door',
+                    warranty: '1 Year',
+                    penalties: '0.5% per day for delays'
+                },
+                approvals: {
+                    requester: 'Mike Johnson (Admin Manager)',
+                    approvedBy: 'Sarah Wilson (Purchase Director)',
+                    approvalDate: 'August 17, 2025'
+                },
+                tracking: {
+                    trackingNumber: 'TRK123456789',
+                    currentLocation: 'Delhi Distribution Center',
+                    estimatedDelivery: 'August 28, 2025'
+                }
+            },
+            'PO-2025-003': {
+                poNumber: '#PO-2025-003',
+                status: 'Pending',
+                statusClass: 'status-pending',
+                priority: 'Medium Priority',
+                priorityClass: 'priority-medium',
+                createdDate: 'August 20, 2025',
+                deliveryDate: 'September 2, 2025',
+                daysRemaining: 8,
+                vendor: {
+                    name: 'MetalWorks Industries',
+                    email: 'sales@metalworks.com',
+                    phone: '+91-9876543212',
+                    address: '789 Industrial Zone, Chennai, Tamil Nadu 600001',
+                    gst: 'GST456789123',
+                    rating: 4.5
+                },
+                items: [
+                    {
+                        description: 'Stainless Steel Sheets - Grade 304',
+                        category: 'Raw Materials',
+                        quantity: 50,
+                        unitPrice: 15000,
+                        totalPrice: 750000
+                    },
+                    {
+                        description: 'Aluminum Rods - 6mm diameter',
+                        category: 'Raw Materials',
+                        quantity: 100,
+                        unitPrice: 5000,
+                        totalPrice: 500000
+                    },
+                    {
+                        description: 'Carbon Steel Plates',
+                        category: 'Raw Materials',
+                        quantity: 25,
+                        unitPrice: 20000,
+                        totalPrice: 500000
+                    }
+                ],
+                totalValue: 1575000,
+                terms: {
+                    paymentTerms: 'Net 45 days',
+                    deliveryTerms: 'Ex-Works',
+                    warranty: '6 Months',
+                    penalties: '2% per day for quality issues'
+                },
+                approvals: {
+                    requester: 'David Brown (Production Manager)',
+                    approvedBy: 'Sarah Wilson (Purchase Director)',
+                    approvalDate: 'August 19, 2025'
+                }
+            },
+            'PO-2025-004': {
+                poNumber: '#PO-2025-004',
+                status: 'Pending',
+                statusClass: 'status-pending',
+                priority: 'Low Priority',
+                priorityClass: 'priority-low',
+                createdDate: 'August 22, 2025',
+                deliveryDate: 'September 5, 2025',
+                daysRemaining: 11,
+                vendor: {
+                    name: 'ElectroTech Solutions',
+                    email: 'info@electrotech.com',
+                    phone: '+91-9876543213',
+                    address: '321 Electronics Hub, Hyderabad, Telangana 500001',
+                    gst: 'GST321654987',
+                    rating: 4.7
+                },
+                items: [
+                    {
+                        description: 'Microprocessor Chips - ARM Cortex',
+                        category: 'Equipment',
+                        quantity: 100,
+                        unitPrice: 2500,
+                        totalPrice: 250000
+                    },
+                    {
+                        description: 'Sensor Modules - Temperature & Humidity',
+                        category: 'Equipment',
+                        quantity: 200,
+                        unitPrice: 1500,
+                        totalPrice: 300000
+                    },
+                    {
+                        description: 'PCB Boards - Custom Design',
+                        category: 'Equipment',
+                        quantity: 150,
+                        unitPrice: 800,
+                        totalPrice: 120000
+                    },
+                    {
+                        description: 'Electronic Connectors',
+                        category: 'Equipment',
+                        quantity: 500,
+                        unitPrice: 100,
+                        totalPrice: 50000
+                    },
+                    {
+                        description: 'Power Supply Units - 24V',
+                        category: 'Equipment',
+                        quantity: 50,
+                        unitPrice: 5000,
+                        totalPrice: 250000
+                    },
+                    {
+                        description: 'LED Display Modules',
+                        category: 'Equipment',
+                        quantity: 75,
+                        unitPrice: 3000,
+                        totalPrice: 225000
+                    },
+                    {
+                        description: 'Testing Equipment Kit',
+                        category: 'Equipment',
+                        quantity: 5,
+                        unitPrice: 25000,
+                        totalPrice: 125000
+                    }
+                ],
+                totalValue: 1230000,
+                terms: {
+                    paymentTerms: 'Net 30 days',
+                    deliveryTerms: 'CIF',
+                    warranty: '3 Years',
+                    penalties: '1.5% per day for defective components'
+                },
+                approvals: {
+                    requester: 'Lisa Chen (R&D Manager)',
+                    approvedBy: 'Sarah Wilson (Purchase Director)',
+                    approvalDate: 'August 21, 2025'
+                }
+            }
+        };
+
+        // Format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR'
+            }).format(amount);
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('.po-row');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        // Status filter
+        document.getElementById('statusFilter').addEventListener('change', function(e) {
+            const selectedStatus = e.target.value;
+            const rows = document.querySelectorAll('.po-row');
+            
+            rows.forEach(row => {
+                if (!selectedStatus) {
+                    row.style.display = '';
+                } else {
+                    const status = row.getAttribute('data-status');
+                    row.style.display = status === selectedStatus ? '' : 'none';
+                }
+            });
+        });
+
+        // Category filter
+        document.getElementById('categoryFilter').addEventListener('change', function(e) {
+            const selectedCategory = e.target.value;
+            const rows = document.querySelectorAll('.po-row');
+            
+            rows.forEach(row => {
+                if (!selectedCategory) {
+                    row.style.display = '';
+                } else {
+                    const category = row.getAttribute('data-category');
+                    row.style.display = category === selectedCategory ? '' : 'none';
+                }
+            });
+        });
+
+        // Action functions
+        function viewPO(poNumber) {
+            currentPOId = poNumber;
+            const po = poData[poNumber];
+            
+            if (!po) {
+                alert('PO data not found');
+                return;
+            }
+
+            // Update modal title
+            document.getElementById('modalTitle').textContent = `Purchase Order Details - ${po.poNumber}`;
+            
+            // Create modal content
+            const modalContent = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- PO Information -->
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-3">PO Information</h4>
+                            <div class="bg-gray-50 p-4 rounded-lg space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">PO Number:</span>
+                                    <span class="font-medium">${po.poNumber}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Status:</span>
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${po.statusClass}">${po.status}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Priority:</span>
+                                    <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full ${po.priorityClass}">${po.priority}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Created Date:</span>
+                                    <span class="font-medium">${po.createdDate}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Delivery Date:</span>
+                                    <span class="font-medium">${po.deliveryDate}</span>
+                                </div>
+                                ${po.daysOverdue ? `
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Days Overdue:</span>
+                                    <span class="font-medium text-red-600">${po.daysOverdue} days</span>
+                                </div>
+                                ` : po.daysRemaining ? `
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Days Remaining:</span>
+                                    <span class="font-medium text-green-600">${po.daysRemaining} days</span>
+                                </div>
+                                ` : ''}
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Total Value:</span>
+                                    <span class="font-bold text-lg">${formatCurrency(po.totalValue)}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Vendor Information -->
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-3">Vendor Information</h4>
+                            <div class="bg-blue-50 p-4 rounded-lg space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Name:</span>
+                                    <span class="font-medium">${po.vendor.name}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Email:</span>
+                                    <span class="font-medium">${po.vendor.email}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Phone:</span>
+                                    <span class="font-medium">${po.vendor.phone}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Rating:</span>
+                                    <span class="font-medium">★ ${po.vendor.rating}/5</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">Address:</span>
+                                    <p class="font-medium mt-1">${po.vendor.address}</p>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">GST Number:</span>
+                                    <span class="font-medium">${po.vendor.gst}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Items and Other Details -->
+                    <div class="space-y-4">
+                        <!-- Items List -->
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-3">Items (${po.items.length})</h4>
+                            <div class="bg-green-50 p-4 rounded-lg max-h-64 overflow-y-auto">
+                                ${po.items.map((item, index) => `
+                                    <div class="border-b border-green-200 pb-3 mb-3 last:border-b-0 last:pb-0 last:mb-0">
+                                        <div class="font-medium text-gray-900">${item.description}</div>
+                                        <div class="text-sm text-gray-600 mt-1">
+                                            Category: ${item.category} | Qty: ${item.quantity} | Unit Price: ${formatCurrency(item.unitPrice)}
+                                        </div>
+                                        <div class="text-sm font-medium text-green-700">
+                                            Total: ${formatCurrency(item.totalPrice)}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Terms & Conditions -->
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-3">Terms & Conditions</h4>
+                            <div class="bg-yellow-50 p-4 rounded-lg space-y-2 text-sm">
+                                <div><strong>Payment Terms:</strong> ${po.terms.paymentTerms}</div>
+                                <div><strong>Delivery Terms:</strong> ${po.terms.deliveryTerms}</div>
+                                <div><strong>Warranty:</strong> ${po.terms.warranty}</div>
+                                <div><strong>Penalties:</strong> ${po.terms.penalties}</div>
+                            </div>
+                        </div>
+
+                        <!-- Approvals -->
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-3">Approvals</h4>
+                            <div class="bg-purple-50 p-4 rounded-lg space-y-2 text-sm">
+                                <div><strong>Requested by:</strong> ${po.approvals.requester}</div>
+                                <div><strong>Approved by:</strong> ${po.approvals.approvedBy}</div>
+                                <div><strong>Approval Date:</strong> ${po.approvals.approvalDate}</div>
+                            </div>
+                        </div>
+
+                        ${po.tracking ? `
+                        <!-- Tracking Information -->
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-3">Tracking Information</h4>
+                            <div class="bg-blue-50 p-4 rounded-lg space-y-2 text-sm">
+                                <div><strong>Tracking Number:</strong> ${po.tracking.trackingNumber}</div>
+                                <div><strong>Current Location:</strong> ${po.tracking.currentLocation}</div>
+                                <div><strong>Estimated Delivery:</strong> ${po.tracking.estimatedDelivery}</div>
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('modalContent').innerHTML = modalContent;
+            document.getElementById('poModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('poModal').classList.add('hidden');
+            currentPOId = '';
+        }
+
+        function followUp(poNumber) {
+            alert(`Initiating follow-up for ${poNumber}`);
+        }
+
+        function trackShipment(poNumber) {
+            const po = poData[poNumber];
+            if (po && po.tracking) {
+                alert(`Tracking ${poNumber}\nTracking Number: ${po.tracking.trackingNumber}\nCurrent Location: ${po.tracking.currentLocation}`);
+            } else {
+                alert(`Tracking information not available for ${poNumber}`);
+            }
+        }
+
+        function editPO(poNumber) {
+            alert(`Editing ${poNumber} - This would open the PO edit form`);
+        }
+
+        function downloadPO(poNumber) {
+            alert(`Downloading PDF for ${poNumber}`);
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('poModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+    </script>
+</body>
+</html>

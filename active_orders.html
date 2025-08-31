@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <title>OMVERRO Supply Chain Hub - Active Orders</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      color: #1e293b !important;
+      margin: 0;
+      paddin    });
+
+    // Pagination functionality
+    document.querySelectorAll('button').forEach(btn => {
+      const buttonText = btn.textContent.trim();
+      if (buttonText === 'Previous' || buttonText === 'Next' || /^\d+$/.test(buttonText)) {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          
+          // Remove active class from pagination buttons
+          document.querySelectorAll('button').forEach(b => {
+            if (/^\d+$/.test(b.textContent.trim())) {
+              b.classList.remove('bg-purple-500', 'text-white');
+              b.classList.add('border-gray-300', 'text-gray-700');
+            }
+          });
+          
+          // Add active class to clicked number button
+          if (/^\d+$/.test(buttonText)) {
+            this.classList.remove('border-gray-300', 'text-gray-700');
+            this.classList.add('bg-purple-500', 'text-white', 'border-purple-500');
+          }
+          
+          // Simulate page change
+          const currentPage = /^\d+$/.test(buttonText) ? buttonText : 
+                             (buttonText === 'Next' ? 'next page' : 'previous page');
+          console.log(`Navigating to ${currentPage}`);
+          
+          // You can add actual pagination logic here
+          // For now, just show a brief loading state
+          const originalText = this.innerHTML;
+          this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+          this.style.pointerEvents = 'none';
+          
+          setTimeout(() => {
+            this.innerHTML = originalText;
+            this.style.pointerEvents = 'auto';
+          }, 800);
+        });
+      }
+    });
+
+    // Filter button functionality (enhanced)
+    document.querySelector('button[title="Advanced Filters"]')?.addEventListener('click', function(e) {
+      e.preventDefault();
+      alert('Advanced filters panel would open here.\n\nAvailable filters:\n- Date Range\n- Order Value\n- Customer Type\n- Priority Level\n- Delivery Status');
+    });
+
+    // Export functionality if export buttons exist
+    const exportButtons = document.querySelectorAll('button');
+    exportButtons.forEach(btn => {
+      if (btn.textContent.includes('Export') || btn.textContent.includes('Download')) {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const format = confirm('Choose export format:\n\nOK for Excel (.xlsx)\nCancel for PDF') ? 'Excel' : 'PDF';
+          
+          this.style.pointerEvents = 'none';
+          this.style.opacity = '0.7';
+          const originalText = this.innerHTML;
+          this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
+          
+          setTimeout(() => {
+            alert(`Orders exported successfully as ${format} file!`);
+            this.innerHTML = originalText;
+            this.style.pointerEvents = 'auto';
+            this.style.opacity = '1';
+          }, 2000);
+        });
+      }
+    });
+
+    // Bulk action functionality
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    const selectAllCheckbox = document.querySelector('th input[type="checkbox"]');
+    
+    // Select all functionality
+    if (selectAllCheckbox) {
+      selectAllCheckbox.addEventListener('change', function() {
+        checkboxes.forEach(checkbox => {
+          if (checkbox !== this) {
+            checkbox.checked = this.checked;
+          }
+        });
+        updateBulkActionButtons();
+      });
+    }
+    
+    // Individual checkbox functionality
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', updateBulkActionButtons);
+    });
+    
+    function updateBulkActionButtons() {
+      const selectedCount = Array.from(checkboxes).filter(cb => cb.checked && cb !== selectAllCheckbox).length;
+      const bulkActionButtons = document.querySelectorAll('.bulk-action-btn');
+      
+      bulkActionButtons.forEach(btn => {
+        if (selectedCount > 0) {
+          btn.style.display = 'inline-flex';
+          btn.textContent = `${btn.textContent.replace(/\d+/, selectedCount)}`;
+        } else {
+          btn.style.display = 'none';
+        }
+      });
+    }
+
+    // Add smooth scrolling
+    document.documentElement.style.scrollBehavior = 'smooth';
+
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+      // Ctrl+F or Cmd+F for search
+      if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        e.preventDefault();
+        document.querySelector('input[type="text"]')?.focus();
+      }
+      
+      // Escape to clear search
+      if (e.key === 'Escape') {
+        const searchInput = document.querySelector('input[type="text"]');
+        if (searchInput && searchInput.value) {
+          searchInput.value = '';
+          searchInput.dispatchEvent(new Event('input'));
+        }
+      }
+    });
+
+    // Add loading animation on page load
+    window.addEventListener('load', function() {
+      document.body.style.opacity = '0';
+      document.body.style.transition = 'opacity 0.3s ease-in-out';
+      
+      setTimeout(() => {
+        document.body.style.opacity = '1';
+      }, 100);
+    });
+
+    // Add success notifications
+    function showNotification(message, type = 'success') {
+      const notification = document.createElement('div');
+      notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300 ${
+        type === 'success' ? 'bg-green-500 text-white' : 
+        type === 'error' ? 'bg-red-500 text-white' : 
+        'bg-blue-500 text-white'
+      }`;
+      notification.innerHTML = `
+        <div class="flex items-center gap-2">
+          <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : 'info'}-circle"></i>
+          <span>${message}</span>
+        </div>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.transform = 'translateX(400px)';
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+
+    console.log('Active Orders page loaded successfully with enhanced functionality!');
+  </script>
+</body>
+</html>  }
+    
+    /* Ensure all text is visible */
+    * {
+      color: inherit;
+    }
+    
+    .text-gray-800 {
+      color: #1f2937 !important;
+    }
+    
+    .text-gray-700 {
+      color: #374151 !important;
+    }
+    
+    .text-gray-600 {
+      color: #4b5563 !important;
+    }
+    
+    /* Enhanced card styles */
+    .metric-card {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid #e2e8f0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(10px);
+    }
+    
+    .metric-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      border-color: #8b5cf6;
+    }
+    
+    .glass-card {
+      background: rgba(255, 255, 255, 0.98) !important;
+      backdrop-filter: blur(10px);
+      border: 1px solid #e2e8f0;
+    }
+    
+    .sidebar-gradient {
+      background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%) !important;
+      border-right: 1px solid #e2e8f0;
+    }
+    
+    .active-nav-item {
+      background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+      color: white !important;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .nav-item:hover {
+      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+      transform: translateX(4px);
+    }
+    
+    .status-badge {
+      padding: 0.375rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+    }
+    
+    .status-pending { 
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); 
+      color: #92400e; 
+      border: 1px solid #f59e0b;
+    }
+    
+    .status-confirmed { 
+      background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); 
+      color: #1e40af; 
+      border: 1px solid #3b82f6;
+    }
+    
+    .status-processing { 
+      background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); 
+      color: #3730a3; 
+      border: 1px solid #6366f1;
+    }
+    
+    .status-shipped { 
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); 
+      color: #14532d; 
+      border: 1px solid #16a34a;
+    }
+    
+    .status-delayed { 
+      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); 
+      color: #991b1b; 
+      border: 1px solid #dc2626;
+    }
+    
+    .priority-high { 
+      background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); 
+      color: #7f1d1d; 
+      border: 1px solid #dc2626;
+    }
+    
+    .priority-medium { 
+      background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); 
+      color: #92400e; 
+      border: 1px solid #f59e0b;
+    }
+    
+    .priority-low { 
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); 
+      color: #14532d; 
+      border: 1px solid #16a34a;
+    }
+    
+    .header-gradient {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+      border-bottom: 1px solid #e2e8f0;
+      backdrop-filter: blur(10px);
+    }
+    
+    .action-btn {
+      transition: all 0.3s ease;
+      border: 1px solid #e5e7eb;
+    }
+    
+    .action-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .filter-btn {
+      transition: all 0.3s ease;
+      border: 2px solid #e5e7eb;
+    }
+    
+    .filter-btn.active {
+      background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+      color: white;
+      border-color: #8b5cf6;
+    }
+    
+    .filter-btn:hover {
+      border-color: #8b5cf6;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    }
+    
+    .floating-decoration {
+      position: absolute;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+      filter: blur(1px);
+    }
+    
+    .notification-badge {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .8; }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+  <!-- Floating decorations -->
+  <div class="floating-decoration w-20 h-20 top-10 left-20 opacity-30"></div>
+  <div class="floating-decoration w-16 h-16 top-32 right-32 opacity-20"></div>
+  <div class="floating-decoration w-12 h-12 bottom-20 left-40 opacity-25"></div>
+
+  <!-- Main content -->
+  <main class="p-8 relative">
+    <!-- Top Navigation Bar -->
+    <nav class="header-gradient flex items-center justify-between mb-8 p-4 rounded-2xl shadow-lg">
+      <a href="vendor_dashboard_new.html" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-xl hover:from-gray-200 hover:to-gray-300 transition-all font-medium border border-gray-300 hover:shadow-md">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back</span>
+      </a>
+      <h1 class="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+        Active Orders
+      </h1>
+      <div class="w-20"></div> <!-- Spacer for center alignment -->
+    </nav>
+    <!-- Summary Stats -->
+    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="metric-card p-6 rounded-2xl shadow-lg">
+        <div class="flex items-center gap-4 mb-3">
+          <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center text-white">
+            <i class="fas fa-shopping-cart text-lg"></i>
+          </div>
+          <span class="text-sm font-semibold text-gray-700">Total Active Orders</span>
+        </div>
+        <p class="text-3xl font-bold text-gray-800 mb-1">48</p>
+        <p class="text-xs text-blue-600 font-medium">Across all statuses</p>
+      </div>
+
+      <div class="metric-card p-6 rounded-2xl shadow-lg">
+        <div class="flex items-center gap-4 mb-3">
+          <div class="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center text-white">
+            <i class="fas fa-clock text-lg"></i>
+          </div>
+          <span class="text-sm font-semibold text-gray-700">Urgent Orders</span>
+        </div>
+        <p class="text-3xl font-bold text-gray-800 mb-1">8</p>
+        <p class="text-xs text-red-600 font-medium">Require immediate attention</p>
+      </div>
+
+      <div class="metric-card p-6 rounded-2xl shadow-lg">
+        <div class="flex items-center gap-4 mb-3">
+          <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center text-white">
+            <i class="fas fa-truck text-lg"></i>
+          </div>
+          <span class="text-sm font-semibold text-gray-700">Ready to Ship</span>
+        </div>
+        <p class="text-3xl font-bold text-gray-800 mb-1">12</p>
+        <p class="text-xs text-green-600 font-medium">Awaiting shipment</p>
+      </div>
+
+      <div class="metric-card p-6 rounded-2xl shadow-lg">
+        <div class="flex items-center gap-4 mb-3">
+          <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center text-white">
+            <i class="fas fa-rupee-sign text-lg"></i>
+          </div>
+          <span class="text-sm font-semibold text-gray-700">Total Value</span>
+        </div>
+        <p class="text-3xl font-bold text-gray-800 mb-1">₹24.8L</p>
+        <p class="text-xs text-purple-600 font-medium">Active orders value</p>
+      </div>
+    </section>
+
+    <!-- Filters and Search -->
+    <section class="glass-card p-6 rounded-2xl shadow-lg mb-8">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="flex flex-wrap items-center gap-3">
+          <h3 class="text-lg font-semibold text-gray-800">Filter Orders:</h3>
+          <button class="filter-btn active px-4 py-2 rounded-xl text-sm font-medium">All Orders</button>
+          <button class="filter-btn px-4 py-2 rounded-xl text-sm font-medium text-gray-700">Pending</button>
+          <button class="filter-btn px-4 py-2 rounded-xl text-sm font-medium text-gray-700">Confirmed</button>
+          <button class="filter-btn px-4 py-2 rounded-xl text-sm font-medium text-gray-700">Processing</button>
+          <button class="filter-btn px-4 py-2 rounded-xl text-sm font-medium text-gray-700">Ready to Ship</button>
+          <button class="filter-btn px-4 py-2 rounded-xl text-sm font-medium text-gray-700">Urgent</button>
+        </div>
+        
+        <div class="flex items-center gap-3">
+          <div class="relative">
+            <input type="text" placeholder="Search orders, PO numbers..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 w-72">
+            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+          </div>
+          <button class="action-btn px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all font-medium" title="Export">
+            <i class="fas fa-download mr-2"></i>Export
+          </button>
+          <button class="action-btn p-2 border border-gray-300 rounded-xl text-gray-600 hover:text-purple-600" title="Advanced Filters">
+            <i class="fas fa-filter"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Orders Table -->
+    <section class="glass-card rounded-2xl shadow-lg overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gradient-to-r from-purple-50 to-pink-50">
+            <tr>
+              <th class="text-left py-4 px-6 font-semibold text-gray-700">Order Details</th>
+              <th class="text-left py-4 px-6 font-semibold text-gray-700">Customer & Product</th>
+              <th class="text-left py-4 px-6 font-semibold text-gray-700">Delivery Info</th>
+              <th class="text-left py-4 px-6 font-semibold text-gray-700">Status & Priority</th>
+              <th class="text-left py-4 px-6 font-semibold text-gray-700">Value</th>
+              <th class="text-center py-4 px-6 font-semibold text-gray-700">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-gray-100 hover:bg-purple-50/30 transition-colors">
+              <td class="py-6 px-6">
+                <div class="flex flex-col">
+                  <span class="font-medium text-gray-800">#ORD-1247</span>
+                  <span class="text-sm font-medium text-blue-600">PO-2025-0847</span>
+                  <span class="text-xs text-gray-500 mt-1">Ordered: 30/07/2025</span>
+                </div>
+              </td>
+              <td class="py-6 px-6">
+                <div class="flex flex-col">
+                  <span class="font-medium text-gray-800">TechCorp Industries</span>
+                  <span class="text-sm text-gray-600">Industrial Bearings</span>
+                  <span class="text-xs text-gray-500">Qty: 50 units</span>
+                </div>
+              </td>
+              <td class="py-6 px-6">
+                <div class="flex flex-col">
+                  <span class="text-sm font-medium text-gray-800">Expected: 05/09/2025</span>
+                  <span class="text-xs text-gray-600">Mumbai, Maharashtra</span>
+                  <span class="text-xs text-red-600 font-medium">6 days remaining</span>
+                </div>
+              </td>
+              <td class="py-6 px-6">
+                <div class="flex flex-col gap-2">
+                  <span class="status-badge status-pending">Pending</span>
+                  <span class="status-badge priority-high">High Priority</span>
+                </div>
+              </td>
+              <td class="py-6 px-6">
+                <span class="text-lg font-bold text-gray-800">₹1,25,000</span>
+              </td>
+              <td class="py-6 px-6">
+                <div class="flex justify-center gap-2">
+                  <button class="action-btn p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all" title="View Details">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="action-btn p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all" title="Update Status">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="action-btn p-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-all" title="Create ASN">
+                    <i class="fas fa-truck"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <tr class="border-b border-gray-100 hover:bg-purple-50/30 transition-colors">
+              <td class="py-6 px-6">
+                <div class="flex flex-col">
+                  <span class="font-medium text-gray-800">#ORD-1242</span>
+                  <span class="text-sm font-medium text-blue-600">PO-2025-0842</span>
+                  <span class="text-xs text-gray-500 mt-1">Ordered: 25/07/2025</span>
+                </div>
+              </td>
+              <td class="py-6 px-6">
+                <div class="flex flex-col">
+                  <span class="font-medium text-gray-800">BuildTech Solutions</span>
+                  <span class="text-sm text-gray-600">Construction Materials</span>
+                  <span class="text-xs text-gray-500">Qty: 200 units</span>
+                </div>
+              </td>
+              <td class="py-6 px-6">
+                <div class="flex flex-col">
+                  <span class="text-sm font-medium text-gray-800">Expected: 10/09/2025</span>
+                  <span class="text-xs text-gray-600">Pune, Maharashtra</span>
+                  <span class="text-xs text-orange-600 font-medium">11 days remaining</span>
+                </div>
+              </td>
+              <td class="py-6 px-6">
+                <div class="flex flex-col gap-2">
+                  <span class="status-badge status-confirmed">Confirmed</span>
+                  <span class="status-badge priority-medium">Medium Priority</span>
+                </div>
+              </td>
+              <td class="py-6 px-6">
+                <span class="text-lg font-bold text-gray-800">₹1,56,400</span>
+              </td>
+              <td class="py-6 px-6">
+                <div class="flex justify-center gap-2">
+                  <button class="action-btn p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all" title="View Details">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="action-btn p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all" title="Update Status">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="action-btn p-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-all" title="Create ASN">
+                    <i class="fas fa-truck"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <tr class="border-b border-gray-100 hover:bg-purple-50/30 transition-colors">
+              <td class="py-6 px-6">
+                <div class="flex flex-col">
+                  <span class="font-medium text-gray-800">#ORD-1238</span>
+                  <span class="text-sm font-medium text-blue-600">PO-2025-0838</span>
+                  <span class="text-xs text-gray-500 mt-1">Ordered: 21/07/2025</span>
+                </div>
+              </td>
+              <td class="py-6 px-6">
+                <div class="flex flex-col">
+                  <span class="font-medium text-gray-800">AutoMax Enterprises</span>
+                  <span class="text-sm text-gray-600">Automotive Parts</span>
+                  <span class="text-xs text-gray-500">Qty: 75 units</span>
+                </div>
+              </td>
+              <td class="py-6 px-6">
+                <div class="flex flex-col">
+                  <span class="text-sm font-medium text-gray-800">Expected: 15/09/2025</span>
+                  <span class="text-xs text-gray-600">Chennai, Tamil Nadu</span>
+                  <span class="text-xs text-green-600 font-medium">16 days remaining</span>
+                </div>
+              </td>
+              <td class="py-6 px-6">
+                <div class="flex flex-col gap-2">
+                  <span class="status-badge status-processing">Processing</span>
+                  <span class="status-badge priority-high">High Priority</span>
+                </div>
+              </td>
+              <td class="py-6 px-6">
+                <span class="text-lg font-bold text-gray-800">₹1,92,500</span>
+              </td>
+              <td class="py-6 px-6">
+                <div class="flex justify-center gap-2">
+                  <button class="action-btn p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all" title="View Details">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="action-btn p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all" title="Update Status">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="action-btn p-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-all" title="Create ASN">
+                    <i class="fas fa-truck"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <tr class="border-b border-gray-100 hover:bg-purple-50/30 transition-colors">
+              <td class="py-6 px-6">
+                <div class="flex flex-col">
+                  <span class="font-medium text-gray-800">#ORD-1233</span>
+                  <span class="text-sm font-medium text-blue-600">PO-2025-0833</span>
+                  <span class="text-xs text-gray-500 mt-1">Ordered: 16/07/2025</span>
+                </div>
+              </td>
+              <td class="py-6 px-6">
+                <div class="flex flex-col">
+                  <span class="font-medium text-gray-800">PackTech Solutions</span>
+                  <span class="text-sm text-gray-600">Packaging Materials</span>
+                  <span class="text-xs text-gray-500">Qty: 1000 units</span>
+                </div>
+              </td>
+              <td class="py-6 px-6">
+                <div class="flex flex-col">
+                  <span class="text-sm font-medium text-gray-800">Expected: 20/09/2025</span>
+                  <span class="text-xs text-gray-600">Bangalore, Karnataka</span>
+                  <span class="text-xs text-green-600 font-medium">21 days remaining</span>
+                </div>
+              </td>
+              <td class="py-6 px-6">
+                <div class="flex flex-col gap-2">
+                  <span class="status-badge status-shipped">Ready to Ship</span>
+                  <span class="status-badge priority-low">Low Priority</span>
+                </div>
+              </td>
+              <td class="py-6 px-6">
+                <span class="text-lg font-bold text-gray-800">₹54,300</span>
+              </td>
+              <td class="py-6 px-6">
+                <div class="flex justify-center gap-2">
+                  <button class="action-btn p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all" title="View Details">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="action-btn p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all" title="Update Status">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="action-btn p-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-all" title="Create ASN">
+                    <i class="fas fa-truck"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <tr class="border-b border-gray-100 hover:bg-purple-50/30 transition-colors">
+              <td class="py-6 px-6">
+                <div class="flex flex-col">
+                  <span class="font-medium text-gray-800">#ORD-1249</span>
+                  <span class="text-sm font-medium text-blue-600">PO-2025-0849</span>
+                  <span class="text-xs text-gray-500 mt-1">Ordered: 01/08/2025</span>
+                </div>
+              </td>
+              <td class="py-6 px-6">
+                <div class="flex flex-col">
+                  <span class="font-medium text-gray-800">MedEquip Corp</span>
+                  <span class="text-sm text-gray-600">Medical Devices</span>
+                  <span class="text-xs text-gray-500">Qty: 25 units</span>
+                </div>
+              </td>
+              <td class="py-6 px-6">
+                <div class="flex flex-col">
+                  <span class="text-sm font-medium text-red-800">Expected: 02/09/2025</span>
+                  <span class="text-xs text-gray-600">Delhi, Delhi</span>
+                  <span class="text-xs text-red-600 font-medium">3 days remaining</span>
+                </div>
+              </td>
+              <td class="py-6 px-6">
+                <div class="flex flex-col gap-2">
+                  <span class="status-badge status-delayed">Delayed</span>
+                  <span class="status-badge priority-high">High Priority</span>
+                </div>
+              </td>
+              <td class="py-6 px-6">
+                <span class="text-lg font-bold text-gray-800">₹3,45,600</span>
+              </td>
+              <td class="py-6 px-6">
+                <div class="flex justify-center gap-2">
+                  <button class="action-btn p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all" title="View Details">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="action-btn p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all" title="Update Status">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="action-btn p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all" title="Escalate">
+                    <i class="fas fa-exclamation-triangle"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <tr class="hover:bg-purple-50/30 transition-colors">
+              <td class="py-6 px-6">
+                <div class="flex flex-col">
+                  <span class="font-medium text-gray-800">#ORD-1248</span>
+                  <span class="text-sm font-medium text-blue-600">PO-2025-0848</span>
+                  <span class="text-xs text-gray-500 mt-1">Ordered: 31/07/2025</span>
+                </div>
+              </td>
+              <td class="py-6 px-6">
+                <div class="flex flex-col">
+                  <span class="font-medium text-gray-800">ElectroCorp Ltd</span>
+                  <span class="text-sm text-gray-600">Electronic Components</span>
+                  <span class="text-xs text-gray-500">Qty: 150 units</span>
+                </div>
+              </td>
+              <td class="py-6 px-6">
+                <div class="flex flex-col">
+                  <span class="text-sm font-medium text-gray-800">Expected: 12/09/2025</span>
+                  <span class="text-xs text-gray-600">Hyderabad, Telangana</span>
+                  <span class="text-xs text-green-600 font-medium">13 days remaining</span>
+                </div>
+              </td>
+              <td class="py-6 px-6">
+                <div class="flex flex-col gap-2">
+                  <span class="status-badge status-confirmed">Confirmed</span>
+                  <span class="status-badge priority-medium">Medium Priority</span>
+                </div>
+              </td>
+              <td class="py-6 px-6">
+                <span class="text-lg font-bold text-gray-800">₹2,18,900</span>
+              </td>
+              <td class="py-6 px-6">
+                <div class="flex justify-center gap-2">
+                  <button class="action-btn p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all" title="View Details">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="action-btn p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all" title="Update Status">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="action-btn p-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-all" title="Create ASN">
+                    <i class="fas fa-truck"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="flex items-center justify-between px-6 py-4 bg-gray-50">
+        <div class="text-sm text-gray-700">
+          Showing <span class="font-medium">1</span> to <span class="font-medium">6</span> of <span class="font-medium">48</span> orders
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="px-3 py-1 rounded-lg border border-gray-300 text-gray-500 hover:bg-gray-100 transition-colors">
+            Previous
+          </button>
+          <button class="px-3 py-1 rounded-lg bg-purple-500 text-white font-medium">1</button>
+          <button class="px-3 py-1 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors">2</button>
+          <button class="px-3 py-1 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors">3</button>
+          <button class="px-3 py-1 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors">
+            Next
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Enhanced JavaScript -->
+  <script>
+    // Filter functionality
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        // Remove active class from all buttons
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Get the filter text
+        const filterText = this.textContent.trim().toLowerCase();
+        const rows = document.querySelectorAll('tbody tr');
+        
+        // Filter rows based on status
+        rows.forEach(row => {
+          if (filterText === 'all orders') {
+            row.style.display = '';
+          } else {
+            let shouldShow = false;
+            
+            // Check status badges in the row
+            const statusBadges = row.querySelectorAll('.status-badge');
+            statusBadges.forEach(badge => {
+              const badgeText = badge.textContent.trim().toLowerCase();
+              
+              // Match filter criteria
+              if (filterText === 'pending' && badgeText === 'pending') shouldShow = true;
+              else if (filterText === 'confirmed' && badgeText === 'confirmed') shouldShow = true;
+              else if (filterText === 'processing' && badgeText === 'processing') shouldShow = true;
+              else if (filterText === 'ready to ship' && badgeText === 'ready to ship') shouldShow = true;
+              else if (filterText === 'urgent' && (badgeText.includes('high priority') || badge.classList.contains('priority-high'))) shouldShow = true;
+            });
+            
+            row.style.display = shouldShow ? '' : 'none';
+          }
+        });
+      });
+    });
+
+    // Enhanced Action button functionality
+    document.querySelectorAll('.action-btn').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const title = this.getAttribute('title');
+        const icon = this.querySelector('i');
+        const originalIcon = icon ? icon.className : '';
+        const originalText = this.innerHTML;
+        
+        // Loading state
+        if (icon) {
+          icon.className = 'fas fa-spinner fa-spin';
+        }
+        this.style.pointerEvents = 'none';
+        this.style.opacity = '0.7';
+        
+        // Different actions based on button type
+        setTimeout(() => {
+          if (title === 'View Details') {
+            // Simulate opening order details
+            this.innerHTML = '<i class="fas fa-check"></i>';
+            setTimeout(() => {
+              alert('Order details would open in a new window/modal');
+              this.innerHTML = originalText;
+              this.style.pointerEvents = 'auto';
+              this.style.opacity = '1';
+            }, 1500);
+            
+          } else if (title === 'Update Status') {
+            // Simulate status update
+            this.innerHTML = '<i class="fas fa-check"></i>';
+            setTimeout(() => {
+              // Show status update options
+              const newStatus = prompt('Update order status to:\n1. Confirmed\n2. Processing\n3. Ready to Ship\n4. Shipped\n\nEnter your choice (1-4):');
+              if (newStatus) {
+                const statusOptions = {
+                  '1': 'Confirmed',
+                  '2': 'Processing', 
+                  '3': 'Ready to Ship',
+                  '4': 'Shipped'
+                };
+                const selectedStatus = statusOptions[newStatus];
+                if (selectedStatus) {
+                  // Update the status badge in the row
+                  const row = this.closest('tr');
+                  const statusBadge = row.querySelector('.status-badge:not(.priority-high):not(.priority-medium):not(.priority-low)');
+                  if (statusBadge) {
+                    statusBadge.textContent = selectedStatus;
+                    statusBadge.className = `status-badge status-${selectedStatus.toLowerCase().replace(' ', '')}`;
+                  }
+                  alert(`Order status updated to: ${selectedStatus}`);
+                } else {
+                  alert('Invalid selection. Status not updated.');
+                }
+              }
+              this.innerHTML = originalText;
+              this.style.pointerEvents = 'auto';
+              this.style.opacity = '1';
+            }, 1500);
+            
+          } else if (title === 'Download') {
+            // Simulate download
+            this.innerHTML = '<i class="fas fa-check"></i>';
+            setTimeout(() => {
+              alert('Order document downloaded successfully!');
+              this.innerHTML = originalText;
+              this.style.pointerEvents = 'auto';
+              this.style.opacity = '1';
+            }, 1500);
+            
+          } else {
+            // Generic action
+            if (icon) {
+              icon.className = 'fas fa-check';
+            }
+            setTimeout(() => {
+              this.innerHTML = originalText;
+              this.style.pointerEvents = 'auto';
+              this.style.opacity = '1';
+            }, 1500);
+          }
+        }, 1000);
+      });
+    });
+
+    // Search functionality
+    document.querySelector('input[type="text"]').addEventListener('input', function(e) {
+      const searchTerm = e.target.value.toLowerCase();
+      const rows = document.querySelectorAll('tbody tr');
+      
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        const matchesSearch = searchTerm === '' || text.includes(searchTerm);
+        
+        // Check current filter
+        const currentFilter = document.querySelector('.filter-btn.active').textContent.trim().toLowerCase();
+        let matchesFilter = true;
+        
+        if (currentFilter !== 'all orders') {
+          matchesFilter = false;
+          const statusBadges = row.querySelectorAll('.status-badge');
+          statusBadges.forEach(badge => {
+            const badgeText = badge.textContent.trim().toLowerCase();
+            
+            if (currentFilter === 'pending' && badgeText === 'pending') matchesFilter = true;
+            else if (currentFilter === 'confirmed' && badgeText === 'confirmed') matchesFilter = true;
+            else if (currentFilter === 'processing' && badgeText === 'processing') matchesFilter = true;
+            else if (currentFilter === 'ready to ship' && badgeText === 'ready to ship') matchesFilter = true;
+            else if (currentFilter === 'urgent' && (badgeText.includes('high priority') || badge.classList.contains('priority-high'))) matchesFilter = true;
+          });
+        }
+        
+        row.style.display = (matchesSearch && matchesFilter) ? '' : 'none';
+      });
+    });
+
+    // Add smooth scrolling
+    document.documentElement.style.scrollBehavior = 'smooth';
+
+    console.log('Active Orders page loaded successfully');
+  </script>
+</body>
+</html>

@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PR Approval & Change Approval - Buyer Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .approval-card:hover { transform: translateY(-2px); transition: all 0.3s ease; }
+        .gradient-blue { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+        .gradient-green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .gradient-red { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+        .gradient-orange { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .gradient-purple { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+        
+        .status-pending { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .status-approved { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .status-rejected { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+        .status-changes-requested { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+        
+        .priority-urgent { border-left: 4px solid #ef4444; }
+        .priority-high { border-left: 4px solid #f59e0b; }
+        .priority-medium { border-left: 4px solid #3b82f6; }
+        .priority-low { border-left: 4px solid #10b981; }
+        
+        .animate-counter { animation: counter 1.5s ease-in-out; }
+        @keyframes counter {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .approval-pulse { animation: pulse-orange 2s infinite; }
+        @keyframes pulse-orange {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; background-color: rgba(251, 146, 60, 0.1); }
+        }
+        
+        .signature-pad {
+            border: 2px dashed #d1d5db;
+            border-radius: 0.5rem;
+            background-color: #f9fafb;
+        }
+        
+        .workflow-step {
+            position: relative;
+        }
+        
+        .workflow-step::after {
+            content: '';
+            position: absolute;
+            top: 2rem;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: #e5e7eb;
+            z-index: -1;
+        }
+        
+        .workflow-step:last-child::after {
+            display: none;
+        }
+        
+        .step-active { color: #3b82f6; background-color: #dbeafe; }
+        .step-completed { color: #10b981; background-color: #d1fae5; }
+        .step-pending { color: #6b7280; background-color: #f3f4f6; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <button onclick="navigateToBuyerDashboard()" class="mr-4 p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200" title="Back to Buyer Dashboard (Alt+B)">
+                        <i class="fas fa-arrow-left text-gray-600"></i>
+                    </button>
+                    <h1 class="text-xl font-semibold text-gray-900">PR Approval & Change Approval</h1>
+                    <span class="ml-3 px-3 py-1 bg-orange-100 text-orange-800 text-sm font-medium rounded-full approval-pulse">
+                        <i class="fas fa-clock mr-1"></i>12 Pending Actions
+                    </span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-500">August 2025</span>
+                    <button onclick="exportApprovalReport()" class="p-2 hover:bg-gray-100 rounded-lg" title="Export Report">
+                        <i class="fas fa-download text-gray-600"></i>
+                    </button>
+                    <button onclick="openApprovalSettings()" class="p-2 hover:bg-gray-100 rounded-lg" title="Approval Settings">
+                        <i class="fas fa-cog text-gray-600"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Breadcrumb Navigation -->
+        <nav class="flex mb-6" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li class="inline-flex items-center">
+                    <button onclick="navigateToBuyerDashboard()" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors duration-200">
+                        <i class="fas fa-home w-4 h-4 mr-2"></i>
+                        Buyer Dashboard
+                    </button>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <i class="fas fa-chevron-right w-4 h-4 text-gray-400 mx-1"></i>
+                        <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">PR Approval & Change Approval</span>
+                    </div>
+                </li>
+            </ol>
+        </nav>
+
+        <!-- Approval Overview Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <!-- Pending Approvals -->
+            <div class="bg-white rounded-xl shadow-sm p-6 approval-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Pending Approvals</p>
+                        <p class="text-3xl font-bold text-orange-600 animate-counter">12</p>
+                        <p class="text-sm text-orange-600">Requires action today</p>
+                    </div>
+                    <div class="p-3 bg-orange-100 rounded-full">
+                        <i class="fas fa-clock text-orange-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Change Requests -->
+            <div class="bg-white rounded-xl shadow-sm p-6 approval-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Change Requests</p>
+                        <p class="text-3xl font-bold text-purple-600 animate-counter">3</p>
+                        <p class="text-sm text-purple-600">Modifications needed</p>
+                    </div>
+                    <div class="p-3 bg-purple-100 rounded-full">
+                        <i class="fas fa-edit text-purple-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Approved Today -->
+            <div class="bg-white rounded-xl shadow-sm p-6 approval-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Approved Today</p>
+                        <p class="text-3xl font-bold text-green-600 animate-counter">12</p>
+                        <p class="text-sm text-green-600">Fast processing</p>
+                    </div>
+                    <div class="p-3 bg-green-100 rounded-full">
+                        <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Approval Value -->
+            <div class="bg-white rounded-xl shadow-sm p-6 approval-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Approval Value</p>
+                        <p class="text-3xl font-bold text-blue-600 animate-counter">₹22.5L</p>
+                        <p class="text-sm text-blue-600">Pending decisions</p>
+                    </div>
+                    <div class="p-3 bg-blue-100 rounded-full">
+                        <i class="fas fa-rupee-sign text-blue-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Approval Workflow Status -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-8 approval-card">
+            <h3 class="text-lg font-semibold text-gray-900 mb-6">
+                <i class="fas fa-project-diagram mr-2 text-blue-600"></i>Approval Workflow Overview
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div class="workflow-step text-center">
+                    <div class="w-12 h-12 mx-auto rounded-full flex items-center justify-center text-sm font-semibold step-completed">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <p class="text-xs font-medium mt-2">Requestor</p>
+                    <p class="text-xs text-gray-500">Submitted</p>
+                </div>
+                
+                <div class="workflow-step text-center">
+                    <div class="w-12 h-12 mx-auto rounded-full flex items-center justify-center text-sm font-semibold step-active">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <p class="text-xs font-medium mt-2">Manager</p>
+                    <p class="text-xs text-gray-500">In Review</p>
+                </div>
+                
+                <div class="workflow-step text-center">
+                    <div class="w-12 h-12 mx-auto rounded-full flex items-center justify-center text-sm font-semibold step-pending">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <p class="text-xs font-medium mt-2">Finance</p>
+                    <p class="text-xs text-gray-500">Pending</p>
+                </div>
+                
+                <div class="workflow-step text-center">
+                    <div class="w-12 h-12 mx-auto rounded-full flex items-center justify-center text-sm font-semibold step-pending">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <p class="text-xs font-medium mt-2">Procurement</p>
+                    <p class="text-xs text-gray-500">Pending</p>
+                </div>
+                
+                <div class="workflow-step text-center">
+                    <div class="w-12 h-12 mx-auto rounded-full flex items-center justify-center text-sm font-semibold step-pending">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <p class="text-xs font-medium mt-2">Final</p>
+                    <p class="text-xs text-gray-500">Pending</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Bulk Approval -->
+            <div class="bg-white rounded-xl shadow-sm p-6 approval-card">
+                <h4 class="text-lg font-semibold text-gray-900 mb-4">
+                    <i class="fas fa-tasks mr-2 text-green-600"></i>Bulk Actions
+                </h4>
+                <div class="space-y-3">
+                    <button onclick="bulkApprove()" class="w-full px-4 py-3 gradient-green text-white rounded-lg hover:opacity-90">
+                        <i class="fas fa-check-double mr-2"></i>Bulk Approve Selected
+                    </button>
+                    <button onclick="bulkReject()" class="w-full px-4 py-3 gradient-red text-white rounded-lg hover:opacity-90">
+                        <i class="fas fa-times-circle mr-2"></i>Bulk Reject Selected
+                    </button>
+                    <button onclick="requestChanges()" class="w-full px-4 py-3 gradient-purple text-white rounded-lg hover:opacity-90">
+                        <i class="fas fa-edit mr-2"></i>Request Changes
+                    </button>
+                </div>
+            </div>
+
+            <!-- Approval Stats -->
+            <div class="bg-white rounded-xl shadow-sm p-6 approval-card">
+                <h4 class="text-lg font-semibold text-gray-900 mb-4">
+                    <i class="fas fa-chart-bar mr-2 text-blue-600"></i>Approval Statistics
+                </h4>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Approval Rate</span>
+                        <span class="text-sm font-semibold text-green-600">87%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-green-500 h-2 rounded-full" style="width: 87%"></div>
+                    </div>
+                    <div class="flex justify-between items-center text-xs text-gray-500">
+                        <span>Avg. Processing Time</span>
+                        <span>2.3 days</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Urgent Alerts -->
+            <div class="bg-white rounded-xl shadow-sm p-6 approval-card">
+                <h4 class="text-lg font-semibold text-gray-900 mb-4">
+                    <i class="fas fa-exclamation-triangle mr-2 text-red-600"></i>Urgent Alerts
+                </h4>
+                <div class="space-y-3">
+                    <div class="p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <p class="text-sm font-medium text-red-900">3 PRs overdue</p>
+                        <p class="text-xs text-red-600">Require immediate attention</p>
+                    </div>
+                    <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p class="text-sm font-medium text-yellow-900">5 PRs expire today</p>
+                        <p class="text-xs text-yellow-600">Approval deadline approaching</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PR Approval List -->
+        <div class="bg-white rounded-xl shadow-sm mb-8">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-900">
+                        <i class="fas fa-list-check mr-2 text-blue-600"></i>Purchase Requests Awaiting Approval
+                    </h3>
+                    <div class="flex space-x-4">
+                        <select id="filterPriority" class="rounded-md border-gray-300 text-sm" onchange="filterApprovals()">
+                            <option value="">All Priorities</option>
+                            <option value="Urgent">Urgent</option>
+                            <option value="High">High</option>
+                            <option value="Medium">Medium</option>
+                            <option value="Low">Low</option>
+                        </select>
+                        <select id="filterDepartment" class="rounded-md border-gray-300 text-sm" onchange="filterApprovals()">
+                            <option value="">All Departments</option>
+                            <option value="IT">IT</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="HR">HR</option>
+                            <option value="Operations">Operations</option>
+                            <option value="Legal">Legal</option>
+                            <option value="Production">Production</option>
+                            <option value="Sales">Sales</option>
+                            <option value="R&D">R&D</option>
+                        </select>
+                        <select id="filterStatus" class="rounded-md border-gray-300 text-sm" onchange="filterApprovals()">
+                            <option value="">All Status</option>
+                            <option value="overdue">Overdue</option>
+                            <option value="due-today">Due Today</option>
+                            <option value="due-soon">Due Soon (3 days)</option>
+                        </select>
+                        <button onclick="clearFilters()" class="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">
+                            <i class="fas fa-times mr-1"></i>Clear
+                        </button>
+                        <button onclick="refreshApprovalList()" class="px-4 py-2 gradient-blue text-white rounded-lg hover:opacity-90">
+                            <i class="fas fa-sync-alt mr-2"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left">
+                                <input type="checkbox" id="selectAll" class="rounded border-gray-300" onchange="toggleSelectAll()">
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PR Details</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Requestor</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="approvalTableBody" class="bg-white divide-y divide-gray-200">
+                        <!-- Sample approval items will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Change Approval Requests -->
+        <div class="bg-white rounded-xl shadow-sm">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">
+                    <i class="fas fa-exchange-alt mr-2 text-purple-600"></i>Change Approval Requests
+                </h3>
+            </div>
+            
+            <div class="p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" id="changeRequestsList">
+                    <!-- Change requests will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Approval Modal -->
+    <div id="approvalModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white max-h-screen overflow-y-auto">
+            <div class="flex items-center justify-between pb-3 border-b border-gray-200">
+                <h3 class="text-lg font-semibold" id="modalTitle">PR Approval</h3>
+                <button onclick="closeApprovalModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="mt-4" id="modalContent">
+                <!-- Modal content will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data for PR approvals
+        const sampleApprovals = [
+            {
+                id: 'PR-2025-001240',
+                title: 'IT Equipment Procurement',
+                requestor: 'John Smith',
+                department: 'IT',
+                amount: 245000,
+                priority: 'Urgent',
+                dueDate: '2025-08-27',
+                submittedDate: '2025-08-24',
+                description: 'Purchase of 10 Dell laptops and 2 servers for new office setup',
+                items: [
+                    { description: 'Dell Laptops', quantity: 10, unitPrice: 45000, total: 450000 },
+                    { description: 'Dell Servers', quantity: 2, unitPrice: 150000, total: 300000 }
+                ],
+                businessJustification: 'Critical IT infrastructure expansion for new team onboarding',
+                status: 'Pending Manager Approval'
+            },
+            {
+                id: 'PR-2025-001241',
+                title: 'Marketing Campaign Software',
+                requestor: 'Sarah Wilson',
+                department: 'Marketing',
+                amount: 85000,
+                priority: 'High',
+                dueDate: '2025-08-28',
+                submittedDate: '2025-08-25',
+                description: 'Annual subscription for marketing automation platform',
+                items: [
+                    { description: 'HubSpot Enterprise License', quantity: 1, unitPrice: 85000, total: 85000 }
+                ],
+                businessJustification: 'Essential for Q4 marketing campaigns and lead generation',
+                status: 'Pending Manager Approval'
+            },
+            {
+                id: 'PR-2025-001242',
+                title: 'Office Furniture Upgrade',
+                requestor: 'Michael Chen',
+                department: 'HR',
+                amount: 125000,
+                priority: 'Medium',
+                dueDate: '2025-08-30',
+                submittedDate: '2025-08-23',
+                description: 'Ergonomic chairs and standing desks for employee wellness',
+                items: [
+                    { description: 'Ergonomic Chairs', quantity: 20, unitPrice: 4500, total: 90000 },
+                    { description: 'Standing Desks', quantity: 10, unitPrice: 3500, total: 35000 }
+                ],
+                businessJustification: 'Employee health and productivity improvement initiative',
+                status: 'Pending Manager Approval'
+            },
+            {
+                id: 'PR-2025-001243',
+                title: 'Server Maintenance Contract',
+                requestor: 'David Johnson',
+                department: 'IT',
+                amount: 350000,
+                priority: 'High',
+                dueDate: '2025-08-26',
+                submittedDate: '2025-08-22',
+                description: 'Annual maintenance contract for critical servers',
+                items: [
+                    { description: 'Server Maintenance Contract', quantity: 1, unitPrice: 350000, total: 350000 }
+                ],
+                businessJustification: 'Critical maintenance to prevent system downtime',
+                status: 'Overdue - Urgent Action Required'
+            },
+            {
+                id: 'PR-2025-001244',
+                title: 'Cloud Storage Solution',
+                requestor: 'Emma Davis',
+                department: 'IT',
+                amount: 180000,
+                priority: 'High',
+                dueDate: '2025-08-29',
+                submittedDate: '2025-08-26',
+                description: 'Enterprise cloud storage and backup solution',
+                items: [
+                    { description: 'AWS S3 Enterprise Storage', quantity: 1, unitPrice: 120000, total: 120000 },
+                    { description: 'Backup Solution License', quantity: 1, unitPrice: 60000, total: 60000 }
+                ],
+                businessJustification: 'Secure data storage and compliance requirements',
+                status: 'Pending Manager Approval'
+            },
+            {
+                id: 'PR-2025-001245',
+                title: 'Training Program Development',
+                requestor: 'Lisa Anderson',
+                department: 'HR',
+                amount: 95000,
+                priority: 'Medium',
+                dueDate: '2025-09-02',
+                submittedDate: '2025-08-25',
+                description: 'Leadership development and technical training programs',
+                items: [
+                    { description: 'Leadership Training Program', quantity: 1, unitPrice: 50000, total: 50000 },
+                    { description: 'Technical Skills Training', quantity: 1, unitPrice: 45000, total: 45000 }
+                ],
+                businessJustification: 'Employee skill development and retention strategy',
+                status: 'Pending Manager Approval'
+            },
+            {
+                id: 'PR-2025-001246',
+                title: 'Security System Upgrade',
+                requestor: 'Robert Kim',
+                department: 'Operations',
+                amount: 275000,
+                priority: 'Urgent',
+                dueDate: '2025-08-25',
+                submittedDate: '2025-08-20',
+                description: 'Advanced security cameras and access control system',
+                items: [
+                    { description: 'Security Cameras', quantity: 15, unitPrice: 8000, total: 120000 },
+                    { description: 'Access Control System', quantity: 1, unitPrice: 155000, total: 155000 }
+                ],
+                businessJustification: 'Enhanced facility security and compliance',
+                status: 'Overdue - Urgent Action Required'
+            },
+            {
+                id: 'PR-2025-001247',
+                title: 'Legal Software Subscription',
+                requestor: 'Jennifer Lee',
+                department: 'Legal',
+                amount: 65000,
+                priority: 'Medium',
+                dueDate: '2025-09-05',
+                submittedDate: '2025-08-27',
+                description: 'Contract management and legal research software',
+                items: [
+                    { description: 'Contract Management Software', quantity: 1, unitPrice: 45000, total: 45000 },
+                    { description: 'Legal Research Database', quantity: 1, unitPrice: 20000, total: 20000 }
+                ],
+                businessJustification: 'Streamline legal processes and reduce contract risks',
+                status: 'Pending Manager Approval'
+            },
+            {
+                id: 'PR-2025-001248',
+                title: 'Manufacturing Equipment',
+                requestor: 'Carlos Rodriguez',
+                department: 'Production',
+                amount: 420000,
+                priority: 'High',
+                dueDate: '2025-08-31',
+                submittedDate: '2025-08-24',
+                description: 'Automated assembly line equipment upgrade',
+                items: [
+                    { description: 'Assembly Line Robot', quantity: 2, unitPrice: 180000, total: 360000 },
+                    { description: 'Quality Control Scanner', quantity: 1, unitPrice: 60000, total: 60000 }
+                ],
+                businessJustification: 'Increase production efficiency and product quality',
+                status: 'Pending Manager Approval'
+            },
+            {
+                id: 'PR-2025-001249',
+                title: 'Employee Wellness Program',
+                requestor: 'Amanda White',
+                department: 'HR',
+                amount: 78000,
+                priority: 'Low',
+                dueDate: '2025-09-10',
+                submittedDate: '2025-08-28',
+                description: 'Gym membership and wellness activities for employees',
+                items: [
+                    { description: 'Corporate Gym Membership', quantity: 50, unitPrice: 1200, total: 60000 },
+                    { description: 'Wellness Activities Budget', quantity: 1, unitPrice: 18000, total: 18000 }
+                ],
+                businessJustification: 'Improve employee health and job satisfaction',
+                status: 'Pending Manager Approval'
+            },
+            {
+                id: 'PR-2025-001250',
+                title: 'Customer Relationship Software',
+                requestor: 'Mark Thompson',
+                department: 'Sales',
+                amount: 135000,
+                priority: 'High',
+                dueDate: '2025-08-30',
+                submittedDate: '2025-08-26',
+                description: 'CRM system for improved customer management',
+                items: [
+                    { description: 'CRM Software License', quantity: 1, unitPrice: 100000, total: 100000 },
+                    { description: 'Implementation Services', quantity: 1, unitPrice: 35000, total: 35000 }
+                ],
+                businessJustification: 'Enhance customer relationships and sales performance',
+                status: 'Pending Manager Approval'
+            },
+            {
+                id: 'PR-2025-001251',
+                title: 'Research Equipment',
+                requestor: 'Dr. Priya Sharma',
+                department: 'R&D',
+                amount: 195000,
+                priority: 'Medium',
+                dueDate: '2025-09-08',
+                submittedDate: '2025-08-25',
+                description: 'Laboratory equipment for product research',
+                items: [
+                    { description: 'Spectrometer', quantity: 1, unitPrice: 120000, total: 120000 },
+                    { description: 'Research Software', quantity: 1, unitPrice: 75000, total: 75000 }
+                ],
+                businessJustification: 'Advance product development and innovation',
+                status: 'Pending Manager Approval'
+            }
+        ];
+
+        // Sample change requests
+        const sampleChangeRequests = [
+            {
+                id: 'PR-2025-001238',
+                title: 'Software License Renewal',
+                originalAmount: 150000,
+                newAmount: 180000,
+                changeReason: 'Additional user licenses required due to team expansion',
+                requestor: 'Alice Brown',
+                department: 'IT',
+                changeDate: '2025-08-25',
+                status: 'Pending Change Approval'
+            },
+            {
+                id: 'PR-2025-001239',
+                title: 'Office Supplies Bulk Order',
+                originalAmount: 45000,
+                newAmount: 35000,
+                changeReason: 'Negotiated better pricing with vendor, reducing total cost',
+                requestor: 'Robert Davis',
+                department: 'Operations',
+                changeDate: '2025-08-24',
+                status: 'Pending Change Approval'
+            }
+        ];
+
+        // Navigation Functions
+        function navigateToBuyerDashboard() {
+            try {
+                showNotification('Returning to Buyer Dashboard...', 'info');
+                setTimeout(() => {
+                    window.location.href = 'BuyerDashboard.html';
+                }, 500);
+            } catch (error) {
+                console.error('Navigation error:', error);
+                try {
+                    window.history.back();
+                } catch (fallbackError) {
+                    alert('Unable to navigate back. Please use browser back button.');
+                }
+            }
+        }
+
+        // Load approval data
+        function loadApprovalList(filteredData = null) {
+            const tbody = document.getElementById('approvalTableBody');
+            tbody.innerHTML = '';
+            
+            const dataToShow = filteredData || sampleApprovals;
+            
+            dataToShow.forEach((pr, index) => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 cursor-pointer';
+                row.setAttribute('data-pr-id', pr.id);
+                
+                const priorityClass = `priority-${pr.priority.toLowerCase()}`;
+                const isOverdue = new Date(pr.dueDate) < new Date();
+                
+                row.innerHTML = `
+                    <td class="px-4 py-4">
+                        <input type="checkbox" class="approval-checkbox rounded border-gray-300" value="${pr.id}">
+                    </td>
+                    <td class="px-6 py-4 ${priorityClass}">
+                        <div>
+                            <p class="text-sm font-medium text-gray-900">${pr.id}</p>
+                            <p class="text-sm text-gray-600">${pr.title}</p>
+                            ${isOverdue ? '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800"><i class="fas fa-exclamation-triangle mr-1"></i>Overdue</span>' : ''}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${pr.requestor}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${pr.department}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">₹${pr.amount.toLocaleString('en-IN')}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPriorityClass(pr.priority)}">
+                            ${getPriorityIcon(pr.priority)} ${pr.priority}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${new Date(pr.dueDate).toLocaleDateString('en-IN')}
+                        ${isOverdue ? '<br><span class="text-red-600 text-xs">Overdue</span>' : ''}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div class="flex space-x-2">
+                            <button onclick="viewPRDetails('${pr.id}')" class="text-blue-600 hover:text-blue-900" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button onclick="approvePR('${pr.id}')" class="text-green-600 hover:text-green-900" title="Approve">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button onclick="rejectPR('${pr.id}')" class="text-red-600 hover:text-red-900" title="Reject">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            <button onclick="requestPRChanges('${pr.id}')" class="text-purple-600 hover:text-purple-900" title="Request Changes">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            // Update the pending count in header
+            updatePendingCount(dataToShow.length);
+        }
+
+        function loadChangeRequests() {
+            const container = document.getElementById('changeRequestsList');
+            container.innerHTML = '';
+            
+            sampleChangeRequests.forEach(change => {
+                const changeDiv = document.createElement('div');
+                changeDiv.className = 'bg-purple-50 border border-purple-200 rounded-lg p-6';
+                
+                const amountChange = change.newAmount - change.originalAmount;
+                const changeType = amountChange > 0 ? 'increase' : 'decrease';
+                const changeColor = amountChange > 0 ? 'text-red-600' : 'text-green-600';
+                const changeIcon = amountChange > 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+                
+                changeDiv.innerHTML = `
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="text-lg font-semibold text-gray-900">${change.title}</h4>
+                        <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">
+                            Change Request
+                        </span>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <p class="text-sm text-gray-600">PR Number</p>
+                            <p class="font-medium">${change.id}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Department</p>
+                            <p class="font-medium">${change.department}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Requestor</p>
+                            <p class="font-medium">${change.requestor}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Change Date</p>
+                            <p class="font-medium">${new Date(change.changeDate).toLocaleDateString('en-IN')}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white border border-gray-200 rounded-lg p-4 mb-4">
+                        <h5 class="font-medium text-gray-900 mb-2">Amount Change</h5>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600">Original Amount</p>
+                                <p class="font-semibold">₹${change.originalAmount.toLocaleString('en-IN')}</p>
+                            </div>
+                            <div class="text-center">
+                                <i class="fas ${changeIcon} ${changeColor} text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">New Amount</p>
+                                <p class="font-semibold">₹${change.newAmount.toLocaleString('en-IN')}</p>
+                            </div>
+                        </div>
+                        <div class="mt-2 pt-2 border-t border-gray-200">
+                            <p class="text-sm font-medium ${changeColor}">
+                                Net Change: ₹${Math.abs(amountChange).toLocaleString('en-IN')} ${changeType}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-lg p-3 mb-4">
+                        <h5 class="font-medium text-gray-900 mb-2">Reason for Change</h5>
+                        <p class="text-sm text-gray-700">${change.changeReason}</p>
+                    </div>
+                    
+                    <div class="flex space-x-3">
+                        <button onclick="approveChange('${change.id}')" class="flex-1 px-4 py-2 gradient-green text-white rounded-lg hover:opacity-90">
+                            <i class="fas fa-check mr-2"></i>Approve Change
+                        </button>
+                        <button onclick="rejectChange('${change.id}')" class="flex-1 px-4 py-2 gradient-red text-white rounded-lg hover:opacity-90">
+                            <i class="fas fa-times mr-2"></i>Reject Change
+                        </button>
+                        <button onclick="requestMoreInfo('${change.id}')" class="px-4 py-2 gradient-blue text-white rounded-lg hover:opacity-90">
+                            <i class="fas fa-question-circle mr-2"></i>More Info
+                        </button>
+                    </div>
+                `;
+                
+                container.appendChild(changeDiv);
+            });
+        }
+
+        // Approval actions
+        function approvePR(prId) {
+            const pr = sampleApprovals.find(p => p.id === prId);
+            if (!pr) return;
+            
+            const approvalHTML = `
+                <div class="max-w-2xl mx-auto">
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                        <h4 class="text-lg font-semibold text-green-900">Approve Purchase Request</h4>
+                        <p class="text-sm text-green-700 mt-1">PR: ${pr.id} - ${pr.title}</p>
+                    </div>
+                    
+                    <form onsubmit="submitApproval(event, '${prId}', 'approved')">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Approval Comments</label>
+                                <textarea class="w-full rounded-md border-gray-300" rows="3" placeholder="Add any approval comments or conditions..."></textarea>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Budget Code Verification</label>
+                                <input type="text" class="w-full rounded-md border-gray-300" placeholder="Confirm budget code" required>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Approval Authority Level</label>
+                                <select class="w-full rounded-md border-gray-300" required>
+                                    <option value="">Select Authority Level</option>
+                                    <option value="manager">Manager Level (up to ₹5L)</option>
+                                    <option value="director">Director Level (up to ₹25L)</option>
+                                    <option value="cfo">CFO Level (up to ₹1Cr)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <input type="checkbox" class="rounded border-gray-300 mr-2" required>
+                                <span class="text-sm text-gray-700">I confirm that I have the authority to approve this purchase request</span>
+                            </div>
+                            
+                            <div class="flex justify-end space-x-3">
+                                <button type="button" onclick="closeApprovalModal()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="px-4 py-2 gradient-green text-white rounded-lg hover:opacity-90">
+                                    <i class="fas fa-check mr-2"></i>Approve PR
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            `;
+            
+            showApprovalModal('Approve Purchase Request', approvalHTML);
+        }
+
+        function rejectPR(prId) {
+            const pr = sampleApprovals.find(p => p.id === prId);
+            if (!pr) return;
+            
+            const rejectionHTML = `
+                <div class="max-w-2xl mx-auto">
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                        <h4 class="text-lg font-semibold text-red-900">Reject Purchase Request</h4>
+                        <p class="text-sm text-red-700 mt-1">PR: ${pr.id} - ${pr.title}</p>
+                    </div>
+                    
+                    <form onsubmit="submitApproval(event, '${prId}', 'rejected')">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Reason for Rejection *</label>
+                                <select class="w-full rounded-md border-gray-300 mb-2" required>
+                                    <option value="">Select rejection reason</option>
+                                    <option value="budget">Insufficient budget allocation</option>
+                                    <option value="justification">Inadequate business justification</option>
+                                    <option value="policy">Violates procurement policy</option>
+                                    <option value="vendor">Unapproved vendor selection</option>
+                                    <option value="timing">Inappropriate timing</option>
+                                    <option value="duplicate">Duplicate request</option>
+                                    <option value="other">Other (specify below)</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Detailed Comments *</label>
+                                <textarea class="w-full rounded-md border-gray-300" rows="4" placeholder="Provide detailed explanation for rejection..." required></textarea>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Suggested Actions</label>
+                                <textarea class="w-full rounded-md border-gray-300" rows="2" placeholder="Suggest how the requestor can resubmit or modify the request..."></textarea>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <input type="checkbox" class="rounded border-gray-300 mr-2" required>
+                                <span class="text-sm text-gray-700">I have reviewed all aspects of this request before rejection</span>
+                            </div>
+                            
+                            <div class="flex justify-end space-x-3">
+                                <button type="button" onclick="closeApprovalModal()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="px-4 py-2 gradient-red text-white rounded-lg hover:opacity-90">
+                                    <i class="fas fa-times mr-2"></i>Reject PR
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            `;
+            
+            showApprovalModal('Reject Purchase Request', rejectionHTML);
+        }
+
+        function requestPRChanges(prId) {
+            const pr = sampleApprovals.find(p => p.id === prId);
+            if (!pr) return;
+            
+            const changesHTML = `
+                <div class="max-w-2xl mx-auto">
+                    <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
+                        <h4 class="text-lg font-semibold text-purple-900">Request Changes to PR</h4>
+                        <p class="text-sm text-purple-700 mt-1">PR: ${pr.id} - ${pr.title}</p>
+                    </div>
+                    
+                    <form onsubmit="submitApproval(event, '${prId}', 'changes-requested')">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Change Category *</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" class="rounded border-gray-300 mr-2">
+                                        <span class="text-sm">Budget/Amount adjustment needed</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" class="rounded border-gray-300 mr-2">
+                                        <span class="text-sm">Additional justification required</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" class="rounded border-gray-300 mr-2">
+                                        <span class="text-sm">Vendor information needs update</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" class="rounded border-gray-300 mr-2">
+                                        <span class="text-sm">Timeline/delivery dates</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" class="rounded border-gray-300 mr-2">
+                                        <span class="text-sm">Item specifications/quantities</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Specific Changes Required *</label>
+                                <textarea class="w-full rounded-md border-gray-300" rows="4" placeholder="Clearly describe the specific changes needed..." required></textarea>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Revised Deadline</label>
+                                <input type="date" class="w-full rounded-md border-gray-300">
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <input type="checkbox" class="rounded border-gray-300 mr-2" required>
+                                <span class="text-sm text-gray-700">I will notify the requestor of these change requirements</span>
+                            </div>
+                            
+                            <div class="flex justify-end space-x-3">
+                                <button type="button" onclick="closeApprovalModal()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="px-4 py-2 gradient-purple text-white rounded-lg hover:opacity-90">
+                                    <i class="fas fa-edit mr-2"></i>Request Changes
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            `;
+            
+            showApprovalModal('Request Changes', changesHTML);
+        }
+
+        function viewPRDetails(prId) {
+            const pr = sampleApprovals.find(p => p.id === prId);
+            if (!pr) return;
+            
+            const detailsHTML = `
+                <div class="max-w-4xl mx-auto">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                        <h4 class="text-lg font-semibold text-blue-900">${pr.title}</h4>
+                        <p class="text-sm text-blue-700 mt-1">PR: ${pr.id} | Status: ${pr.status}</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <h5 class="font-medium text-gray-900 mb-3">Request Details</h5>
+                            <div class="space-y-2 text-sm">
+                                <div><strong>Requestor:</strong> ${pr.requestor}</div>
+                                <div><strong>Department:</strong> ${pr.department}</div>
+                                <div><strong>Priority:</strong> ${pr.priority}</div>
+                                <div><strong>Amount:</strong> ₹${pr.amount.toLocaleString('en-IN')}</div>
+                                <div><strong>Due Date:</strong> ${new Date(pr.dueDate).toLocaleDateString('en-IN')}</div>
+                                <div><strong>Submitted:</strong> ${new Date(pr.submittedDate).toLocaleDateString('en-IN')}</div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h5 class="font-medium text-gray-900 mb-3">Business Justification</h5>
+                            <div class="bg-gray-50 p-3 rounded text-sm">
+                                ${pr.businessJustification}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h5 class="font-medium text-gray-900 mb-3">Items Requested</h5>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left">Description</th>
+                                        <th class="px-3 py-2 text-left">Quantity</th>
+                                        <th class="px-3 py-2 text-left">Unit Price</th>
+                                        <th class="px-3 py-2 text-left">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    ${pr.items.map(item => `
+                                        <tr>
+                                            <td class="px-3 py-2">${item.description}</td>
+                                            <td class="px-3 py-2">${item.quantity}</td>
+                                            <td class="px-3 py-2">₹${item.unitPrice.toLocaleString('en-IN')}</td>
+                                            <td class="px-3 py-2 font-medium">₹${item.total.toLocaleString('en-IN')}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3">
+                        <button onclick="approvePR('${pr.id}')" class="px-4 py-2 gradient-green text-white rounded-lg hover:opacity-90">
+                            <i class="fas fa-check mr-2"></i>Approve
+                        </button>
+                        <button onclick="requestPRChanges('${pr.id}')" class="px-4 py-2 gradient-purple text-white rounded-lg hover:opacity-90">
+                            <i class="fas fa-edit mr-2"></i>Request Changes
+                        </button>
+                        <button onclick="rejectPR('${pr.id}')" class="px-4 py-2 gradient-red text-white rounded-lg hover:opacity-90">
+                            <i class="fas fa-times mr-2"></i>Reject
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            showApprovalModal('PR Details', detailsHTML);
+        }
+
+        // Change approval functions
+        function approveChange(changeId) {
+            if (confirm(`Approve change request for ${changeId}?`)) {
+                showNotification(`Change request ${changeId} approved successfully!`, 'success');
+                // Remove from change requests list
+                setTimeout(() => {
+                    loadChangeRequests();
+                }, 1500);
+            }
+        }
+
+        function rejectChange(changeId) {
+            if (confirm(`Reject change request for ${changeId}?`)) {
+                showNotification(`Change request ${changeId} rejected.`, 'info');
+                // Remove from change requests list
+                setTimeout(() => {
+                    loadChangeRequests();
+                }, 1500);
+            }
+        }
+
+        function requestMoreInfo(changeId) {
+            showNotification(`Additional information requested for ${changeId}`, 'info');
+        }
+
+        // Bulk actions
+        function bulkApprove() {
+            const selectedPRs = document.querySelectorAll('.approval-checkbox:checked');
+            if (selectedPRs.length === 0) {
+                showNotification('Please select PRs to approve', 'warning');
+                return;
+            }
+            
+            if (confirm(`Approve ${selectedPRs.length} selected PR(s)?`)) {
+                showNotification(`${selectedPRs.length} PRs approved successfully!`, 'success');
+                selectedPRs.forEach(checkbox => checkbox.checked = false);
+                document.getElementById('selectAll').checked = false;
+            }
+        }
+
+        function bulkReject() {
+            const selectedPRs = document.querySelectorAll('.approval-checkbox:checked');
+            if (selectedPRs.length === 0) {
+                showNotification('Please select PRs to reject', 'warning');
+                return;
+            }
+            
+            if (confirm(`Reject ${selectedPRs.length} selected PR(s)?`)) {
+                showNotification(`${selectedPRs.length} PRs rejected.`, 'info');
+                selectedPRs.forEach(checkbox => checkbox.checked = false);
+                document.getElementById('selectAll').checked = false;
+            }
+        }
+
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll');
+            const checkboxes = document.querySelectorAll('.approval-checkbox');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+            });
+        }
+
+        // Utility functions
+        function getPriorityClass(priority) {
+            switch (priority) {
+                case 'Urgent': return 'bg-red-100 text-red-800';
+                case 'High': return 'bg-orange-100 text-orange-800';
+                case 'Medium': return 'bg-blue-100 text-blue-800';
+                case 'Low': return 'bg-green-100 text-green-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        function getPriorityIcon(priority) {
+            switch (priority) {
+                case 'Urgent': return '<i class="fas fa-exclamation-triangle mr-1"></i>';
+                case 'High': return '<i class="fas fa-arrow-up mr-1"></i>';
+                case 'Medium': return '<i class="fas fa-minus mr-1"></i>';
+                case 'Low': return '<i class="fas fa-arrow-down mr-1"></i>';
+                default: return '';
+            }
+        }
+
+        function showApprovalModal(title, content) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalContent').innerHTML = content;
+            document.getElementById('approvalModal').classList.remove('hidden');
+        }
+
+        function closeApprovalModal() {
+            document.getElementById('approvalModal').classList.add('hidden');
+        }
+
+        function submitApproval(event, prId, action) {
+            event.preventDefault();
+            
+            let message = '';
+            let type = '';
+            
+            switch (action) {
+                case 'approved':
+                    message = `PR ${prId} approved successfully!`;
+                    type = 'success';
+                    break;
+                case 'rejected':
+                    message = `PR ${prId} rejected.`;
+                    type = 'info';
+                    break;
+                case 'changes-requested':
+                    message = `Change request sent for PR ${prId}`;
+                    type = 'warning';
+                    break;
+            }
+            
+            closeApprovalModal();
+            showNotification(message, type);
+            
+            // Refresh the approval list
+            setTimeout(() => {
+                loadApprovalList();
+            }, 1500);
+        }
+
+        function filterApprovals() {
+            const priorityFilter = document.getElementById('filterPriority').value;
+            const departmentFilter = document.getElementById('filterDepartment').value;
+            const statusFilter = document.getElementById('filterStatus').value;
+            
+            let filteredPRs = sampleApprovals;
+            
+            // Apply priority filter
+            if (priorityFilter && priorityFilter !== '') {
+                filteredPRs = filteredPRs.filter(pr => pr.priority === priorityFilter);
+            }
+            
+            // Apply department filter
+            if (departmentFilter && departmentFilter !== '') {
+                filteredPRs = filteredPRs.filter(pr => pr.department === departmentFilter);
+            }
+            
+            // Apply status filter
+            if (statusFilter && statusFilter !== '') {
+                const today = new Date();
+                filteredPRs = filteredPRs.filter(pr => {
+                    const dueDate = new Date(pr.dueDate);
+                    const daysDiff = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+                    
+                    switch (statusFilter) {
+                        case 'overdue':
+                            return daysDiff < 0;
+                        case 'due-today':
+                            return daysDiff === 0;
+                        case 'due-soon':
+                            return daysDiff > 0 && daysDiff <= 3;
+                        default:
+                            return true;
+                    }
+                });
+            }
+            
+            loadApprovalList(filteredPRs);
+            
+            // Show filter summary
+            let filterSummary = [];
+            if (priorityFilter) filterSummary.push(`Priority: ${priorityFilter}`);
+            if (departmentFilter) filterSummary.push(`Department: ${departmentFilter}`);
+            if (statusFilter) filterSummary.push(`Status: ${statusFilter.replace('-', ' ')}`);
+            
+            if (filterSummary.length > 0) {
+                showNotification(`Filtered: ${filterSummary.join(', ')} (${filteredPRs.length} PRs)`, 'info');
+            } else {
+                showNotification('Showing all PRs', 'info');
+            }
+        }
+
+        function clearFilters() {
+            document.getElementById('filterPriority').value = '';
+            document.getElementById('filterDepartment').value = '';
+            document.getElementById('filterStatus').value = '';
+            loadApprovalList();
+            showNotification('Filters cleared - showing all PRs', 'info');
+        }
+
+        function updatePendingCount(count) {
+            // Update the header badge count
+            const badge = document.querySelector('.approval-pulse');
+            if (badge) {
+                badge.innerHTML = `<i class="fas fa-clock mr-1"></i>${count} Pending Actions`;
+            }
+            
+            // Update the metrics card
+            const pendingCard = document.querySelector('.approval-card .text-orange-600');
+            if (pendingCard && pendingCard.textContent.includes('Pending Approvals')) {
+                const numberElement = pendingCard.previousElementSibling;
+                if (numberElement) {
+                    numberElement.textContent = count;
+                }
+            }
+        }
+
+        function refreshApprovalList() {
+            // Reset filter to show all
+            document.getElementById('filterPriority').value = '';
+            loadApprovalList();
+            showNotification('Approval list refreshed - showing all PRs', 'info');
+        }
+
+        function exportApprovalReport() {
+            showNotification('Generating approval report...', 'info');
+            setTimeout(() => {
+                showNotification('Report exported successfully!', 'success');
+            }, 2000);
+        }
+
+        function openApprovalSettings() {
+            showNotification('Opening approval settings...', 'info');
+        }
+
+        function showNotification(message, type = 'info') {
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                warning: 'bg-yellow-500',
+                info: 'bg-blue-500'
+            };
+            
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-opacity duration-300`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (e.altKey && e.key === 'b') {
+                    e.preventDefault();
+                    navigateToBuyerDashboard();
+                }
+                if (e.key === 'Escape') {
+                    closeApprovalModal();
+                }
+            });
+            
+            // Add hover effects to cards
+            document.querySelectorAll('.approval-card').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.classList.add('shadow-lg');
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.classList.remove('shadow-lg');
+                });
+            });
+            
+            // Load initial data
+            loadApprovalList();
+            loadChangeRequests();
+            
+            // Animate metric cards
+            setTimeout(() => {
+                document.querySelectorAll('.animate-counter').forEach(counter => {
+                    counter.classList.add('animate-counter');
+                });
+            }, 500);
+            
+            showNotification('PR Approval system initialized', 'info');
+            
+            // Show tip after 3 seconds
+            setTimeout(() => {
+                showNotification('Tip: Use Alt+B to navigate back to Buyer Dashboard', 'info');
+            }, 3000);
+        });
+    </script>
+</body>
+</html>

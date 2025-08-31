@@ -1,0 +1,30 @@
+{
+  "name": "vendor-portal-buyer-dashboard",
+  "version": "1.0.0",
+  "description": "A buyer dashboard for the vendor portal application.",
+  "main": "src/app.ts",
+  "scripts": {
+    "start": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "tailwindcss": "^2.2.19",
+    "vite": "^2.6.4"
+  },
+  "devDependencies": {
+    "@types/react": "^17.0.2",
+    "@types/react-dom": "^17.0.2",
+    "typescript": "^4.4.3"
+  },
+  "keywords": [
+    "vendor",
+    "portal",
+    "buyer",
+    "dashboard"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}

@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>TechCarvings - Buyer Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+      :root {
+        --accent: #1d4ed8;
+        --accent-2: #7c3aed;
+        --muted: #64748b;
+        --card: #ffffff;
+      }
+      body {
+        font-family: "Inter", sans-serif;
+        background: linear-gradient(120deg, #f3f6fd 0%, #e9eafc 100%);
+        color: #212121;
+      }
+      .box-white {
+        background: rgba(255,255,255,0.85);
+        border: 1px solid #E5E7EB;
+        border-radius: 1.25rem;
+        box-shadow: 0 12px 32px 0 rgba(59,130,246,0.08), 0 1.5px 6px 0 #d1e0ef;
+        backdrop-filter: blur(8px) saturate(180%);
+        transition: box-shadow .2s, border-color .2s;
+      }
+      .ring-gradient {
+        position: relative;
+      }
+      .ring-gradient::before {
+        content: "";
+        position: absolute; inset: -1px;
+        border-radius: inherit;
+        padding: 1px;
+        background: linear-gradient(135deg, #7c3aed55, #1d4ed855);
+        pointer-events: none;
+      }
+      .tile {
+        background: rgba(255,255,255,0.92);
+        border: 1px solid #E5E7EB;
+        border-radius: 1.25rem;
+        box-shadow: 0 8px 28px rgba(59,130,246,0.08);
+        transition: transform .18s cubic-bezier(.4,2,.3,1), box-shadow .2s, border-color .2s, background .2s;
+        cursor: pointer;
+        padding: 1.7rem 1.3rem 1.3rem;
+        display: flex; flex-direction: column; gap: .5rem; align-items: flex-start;
+        min-height: 150px; position: relative; overflow: hidden;
+        will-change: transform, box-shadow;
+      }
+      .tile:hover {
+        transform: scale(1.04) translateY(-4px) rotateZ(-1deg);
+        border-color: #7c3aed88;
+        box-shadow: 0 18px 48px rgba(124,58,237,0.13);
+        background: linear-gradient(120deg, #f3f6fd 0%, #e9eafc 100%);
+      }
+      .tile-icon {
+        background: #EEF2FF;
+        color: var(--accent);
+        border-radius: .85rem;
+        width: 3.2rem; height: 3.2rem;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-size: 1.5rem;
+        box-shadow: 0 2px 8px rgba(59,130,246,0.08);
+        transition: box-shadow .2s, background .2s;
+      }
+      .tile:hover .tile-icon {
+        background: #e0e7ff;
+        box-shadow: 0 6px 18px rgba(124,58,237,0.10);
+      }
+      .tile-title {
+        font-size: 1.08rem;
+
+        font-weight: 700;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+        color: #1d1e22;
+        letter-spacing: .01em;
+        transition: color .2s;
+      }
+      .tile:hover .tile-title {
+        color: #7c3aed;
+      }
+      .tile-desc {
+        color: #64748b;
+        font-size: .93rem;
+        margin-bottom: 0;
+        letter-spacing: .01em;
+      }
+      .kpi {
+        transition: transform .18s cubic-bezier(.4,2,.3,1), box-shadow .2s;
+        background: rgba(255,255,255,0.92);
+        border-radius: 1.25rem;
+        box-shadow: 0 8px 28px rgba(59,130,246,0.08);
+        border: 1px solid #E5E7EB;
+      }
+      .kpi:hover {
+        transform: scale(1.03) translateY(-2px);
+        box-shadow: 0 18px 48px rgba(124,58,237,0.13);
+        border-color: #7c3aed88;
+      }
+      .header-blur {
+        backdrop-filter: saturate(180%) blur(12px);
+        background-color: rgba(255,255,255,0.92);
+        box-shadow: 0 2px 12px rgba(124,58,237,0.07);
+      }
+      .reveal {
+        opacity: 0; transform: translateY(16px) scale(.98); transition: all .6s cubic-bezier(.4,2,.3,1);
+      }
+      .reveal.show {
+        opacity: 1; transform: translateY(0) scale(1);
+      }
+      .badge {
+        font-size: .7rem; font-weight: 700; padding: .25rem .5rem; border-radius: 999px;
+        background: #EEF2FF; color: #7c3aed; border: 1px solid #7c3aed33;
+        box-shadow: 0 2px 8px rgba(124,58,237,0.08);
+      }
+      /* Floating action button */
+      .fab {
+        position: fixed; bottom: 2.5rem; right: 2.5rem; z-index: 50;
+        background: linear-gradient(135deg, #7c3aed 0%, #1d4ed8 100%);
+        color: #fff; border-radius: 50%; width: 60px; height: 60px;
+        box-shadow: 0 8px 24px rgba(124,58,237,0.18);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2rem; cursor: pointer; border: none;
+        transition: box-shadow .2s, background .2s;
+      }
+      .fab:hover {
+        box-shadow: 0 16px 40px rgba(29,78,216,0.18);
+        background: linear-gradient(135deg, #1d4ed8 0%, #7c3aed 100%);
+      }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+  <!-- Header -->
+  <header id="app-header" class="bg-white border-b border-gray-200 sticky top-0 z-50 transition-colors">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <img
+          alt="TechCarvings Consultancy Pvt Ltd Logo"
+          class="h-12 w-12 rounded-xl"
+          width="48" height="48"
+          src="./mainlogo.png" />
+        <div>
+          <h1 class="text-xl font-bold text-[#212121] leading-tight"> OMVERRO</h1>
+          <p class="text-xs text-gray-500 -mt-1">Enterprise Procurement Management</p>
+        </div>
+      </div>
+
+      <!-- Top actions -->
+      <div class="hidden md:flex items-center gap-4">
+        <div class="relative">
+          <input type="search" placeholder="Search PR/PO/Supplier..."
+                 class="w-64 pl-10 pr-3 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none"
+                 aria-label="Search"/>
+          <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+        </div>
+        <button id="themeToggle" class="h-10 w-10 rounded-full bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-600" title="Theme">
+          <i class="fas fa-sun"></i>
+        </button>
+        <button id="notificationsButton" class="relative h-10 w-10 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100">
+          <i class="far fa-bell"></i>
+          <span class="absolute -top-1 -right-1 badge">4</span>
+        </button>
+        <div class="relative">
+          <button id="profileMenuButton" aria-label="Open profile menu" class="flex items-center justify-center w-10 h-10 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-600">
+            <i class="fas fa-user-circle fa-lg"></i>
+          </button>
+          <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+            <div class="p-4 border-b border-blue-50">
+              <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                  <i class="fas fa-user fa-2x"></i>
+                </div>
+                <div>
+                  <div class="font-semibold text-blue-600">John Smith</div>
+                  <div class="text-sm text-gray-700">john.smith@techcarvings.com</div>
+                </div>
+              </div>
+            </div>
+            <div class="p-4 space-y-2">
+              <div class="text-sm text-gray-700"><span class="font-semibold">Buyer ID:</span> BUY123456</div>
+              <div class="text-sm text-gray-700"><span class="font-semibold">Company:</span> TechCarvings Consultancy Pvt Ltd</div>
+              <div class="text-sm text-gray-700"><span class="font-semibold">Role:</span> Buyer</div>
+              <a href="profile_settings.html" class="block text-blue-600 hover:underline text-sm mt-2"><i class="fas fa-user-cog mr-2"></i>Profile Settings</a>
+              <a href="change_password.html" class="block text-blue-600 hover:underline text-sm"><i class="fas fa-key mr-2"></i>Change Password</a>
+            </div>
+            <div class="border-t border-blue-50">
+              <button onclick="window.location.href='index.html'" class="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 font-semibold flex items-center gap-2" type="button">
+                <i class="fas fa-sign-out-alt"></i> Log Out
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile -->
+      <button id="mobile-menu-button" aria-label="Open menu" class="md:hidden text-gray-600 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded" aria-expanded="false" aria-controls="mobile-menu">
+        <i class="fas fa-bars fa-lg"></i>
+      </button>
+    </div>
+
+    <!-- Mobile nav -->
+    <nav id="mobile-menu" class="hidden md:hidden border-t border-gray-200 bg-white" aria-label="Mobile Navigation">
+      <div class="px-4 py-3 grid grid-cols-2 gap-3">
+        <a class="px-3 py-2 rounded-lg hover:bg-blue-50 text-gray-700" href="./PR Creation and navigation_buyer.html">PR Management</a>
+        <a class="px-3 py-2 rounded-lg hover:bg-blue-50 text-gray-700" href="./PO_creation and PO_change navigation.html">PO Management</a>
+        <a class="px-3 py-2 rounded-lg hover:bg-blue-50 text-gray-700" href="./vendor_invoice_view_buyer.html">Invoice</a>
+        <a class="px-3 py-2 rounded-lg hover:bg-blue-50 text-gray-700" href="./Budget Management.html">Budget</a>
+        <a class="px-3 py-2 rounded-lg hover:bg-blue-50 text-gray-700" href="./Advance Payment.html">Advance Payment</a>
+  <a class="px-3 py-2 rounded-lg hover:bg-blue-50 text-gray-700" href="./RFP_andReverse_Auction_Navigatingscreen.html">Sourcing</a>
+        <a class="px-3 py-2 rounded-lg hover:bg-blue-50 text-gray-700" href="./Reports_Buyer.html">Reports</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main -->
+  <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Toolbar -->
+    <section class="box-white ring-gradient p-4 mb-8 reveal">
+      <div class="flex flex-col md:flex-row items-center gap-4 justify-between">
+        <div class="flex items-center gap-3">
+          <span class="px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-semibold">Overview</span>
+          <span class="text-sm text-gray-500">Today • Quick glance of your procurement posture</span>
+        </div>
+        <div class="flex items-center gap-3 w-full md:w-auto">
+          <input type="date" class="w-full md:w-44 px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600" />
+          <select class="w-full md:w-44 px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600">
+            <option>All Categories</option>
+            <option>Capex</option>
+            <option>Opex</option>
+          </select>
+          <div class="relative w-full md:w-64">
+            <input type="search" placeholder="Search PR/PO/Supplier..." class="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600" />
+            <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- KPIs -->
+    <section class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+      <div class="box-white kpi p-4 reveal">
+        <div class="text-sm text-gray-500">Open RFQs</div>
+        <div class="mt-1 text-2xl font-extrabold">8</div>
+        <div class="text-xs text-blue-600 mt-1">2 expiring soon</div>
+      </div>
+      <div class="box-white kpi p-4 reveal">
+        <div class="text-sm text-gray-500">Active POs</div>
+        <div class="mt-1 text-2xl font-extrabold">12</div>
+        <div class="text-xs text-green-600 mt-1">+5% vs last month</div>
+      </div>
+      <div class="box-white kpi p-4 reveal">
+        <div class="text-sm text-gray-500">Pending Approvals</div>
+        <div class="mt-1 text-2xl font-extrabold">3</div>
+        <div class="text-xs text-orange-600 mt-1">Need action today</div>
+      </div>
+      <div class="box-white kpi p-4 reveal">
+        <div class="text-sm text-gray-500">Budget Utilization</div>
+        <div class="mt-1 text-2xl font-extrabold">72%</div>
+        <div class="text-xs text-gray-500 mt-1">Q3 • Marketing high</div>
+      </div>
+      <div class="box-white kpi p-4 reveal">
+        <div class="text-sm text-gray-500">Savings (MTD)</div>
+        <div class="mt-1 text-2xl font-extrabold">₹83.2L</div>
+        <div class="text-xs text-green-600 mt-1">On track</div>
+      </div>
+      <div class="box-white kpi p-4 reveal">
+        <div class="text-sm text-gray-500">Risks</div>
+        <div class="mt-1 text-2xl font-extrabold">2</div>
+        <div class="text-xs text-red-600 mt-1">Escalations open</div>
+      </div>
+    </section>
+
+    <!-- Tiles -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" aria-label="Dashboard Features">
+      <button class="tile reveal" onclick="location.href='pr_approval_change.html'">
+        <span class="tile-icon"><i class="fas fa-file-alt"></i></span>
+        <span class="tile-title">PR Creation &amp; Change</span>
+        <span class="tile-desc">Opex &amp; Capex Purchase Requisitions</span>
+        <span class="absolute top-3 right-3 badge">New</span>
+      </button>
+
+      <button class="tile reveal" onclick="location.href='pr_approval_change.html'">
+        <span class="tile-icon" style="color:#16a34a;background:#ECFDF5;"><i class="fas fa-check-circle"></i></span>
+        <span class="tile-title">PR Approval &amp; Change Approval</span>
+        <span class="tile-desc">Approve PRs &amp; Changes</span>
+      </button>
+
+  <button class="tile reveal" onclick="location.href='po_approval_change.html'">
+        <span class="tile-icon" style="color:#ca8a04;background:#FFFBEB;"><i class="fas fa-edit"></i></span>
+        <span class="tile-title">PO Approval &amp; Change Approval</span>
+        <span class="tile-desc">Approve POs &amp; Modifications</span>
+      </button>
+
+  <button class="tile reveal" onclick="location.href='po_creation_send.html'">
+        <span class="tile-icon" style="color:#4f46e5;background:#EEF2FF;"><i class="fas fa-file-invoice"></i></span>
+        <span class="tile-title">PO Creation &amp; Send</span>
+        <span class="tile-desc">Generate and dispatch POs</span>
+      </button>
+
+      <button class="tile reveal" onclick="location.href='supplier_po_acknowledgement.html'">
+        <span class="tile-icon" style="color:#2563eb;background:#EFF6FF;"><i class="fas fa-file-invoice-dollar"></i></span>
+        <span class="tile-title">Supplier PO Acknowledgement</span>
+        <span class="tile-desc">View accepted/rejected POs</span>
+      </button>
+
+      <button class="tile reveal" onclick="location.href='pr_po_tracking.html'">
+        <span class="tile-icon" style="color:#db2777;background:#FCE7F3;"><i class="fas fa-route"></i></span>
+        <span class="tile-title">PR &amp; PO Tracking</span>
+        <span class="tile-desc">Track status &amp; actions</span>
+      </button>
+
+      <button class="tile reveal" onclick="location.href='./vendor_invoice_view_buyer.html'">
+        <span class="tile-icon" style="color:#16a34a;background:#ECFDF5;"><i class="fas fa-file-invoice-dollar"></i></span>
+        <span class="tile-title">PO-based Invoice &amp; Approval</span>
+        <span class="tile-desc">Process &amp; validate invoices</span>
+      </button>
+
+      <button class="tile reveal" onclick="location.href='./Budget Management.html'">
+        <span class="tile-icon" style="color:#ea580c;background:#FFF7ED;"><i class="fas fa-wallet"></i></span>
+        <span class="tile-title">Budget Management</span>
+        <span class="tile-desc">Track &amp; control budgets</span>
+      </button>
+
+      <button class="tile reveal" onclick="location.href='./View credit Note Buyer.html'">
+        <span class="tile-icon" style="color:#f59e0b;background:#FFFBEB;"><i class="fas fa-receipt"></i></span>
+        <span class="tile-title">Credit Note</span>
+        <span class="tile-desc">Manage adjustments</span>
+      </button>
+
+      <button class="tile reveal" onclick="location.href='./Petty Cash and Cash Advance.html'">
+        <span class="tile-icon" style="color:#65a30d;background:#F1F7E8;"><i class="fas fa-cash-register"></i></span>
+        <span class="tile-title">Petty Cash &amp; Cash Advance</span>
+        <span class="tile-desc">Small cash transactions</span>
+      </button>
+
+      <button class="tile reveal" onclick="location.href='./RFP_andReverse_Auction_Navigatingscreen.html'">
+        <span class="tile-icon" style="color:#a21caf;background:#FAE8FF;"><i class="fas fa-gavel"></i></span>
+        <span class="tile-title">Sourcing – RFP &amp; Reverse Auction</span>
+        <span class="tile-desc">RFPs &amp; auctions</span>
+      </button>
+
+      <button class="tile reveal" onclick="location.href='./Buyer_portal_manageRFQ.html'">
+        <span class="tile-icon" style="color:#3b82f6;background:#EFF6FF;"><i class="fas fa-clipboard-list"></i></span>
+        <span class="tile-title">Manage RFQ</span>
+        <span class="tile-desc">Create &amp; monitor RFQs</span>
+      </button>
+
+      <button class="tile reveal" onclick="location.href='./Buyer_.manageasn.html'">
+        <span class="tile-icon" style="color:#7c3aed;background:#F5F3FF;"><i class="fas fa-shipping-fast"></i></span>
+        <span class="tile-title">Manage ASN</span>
+        <span class="tile-desc">Advance Shipment Notices</span>
+      </button>
+
+      <button class="tile reveal" onclick="location.href='./Buyer_Vendorlist.html'">
+        <span class="tile-icon" style="color:#059669;background:#ECFDF5;"><i class="fas fa-truck"></i></span>
+        <span class="tile-title">Suppliers</span>
+        <span class="tile-desc">Supplier directory &amp; score</span>
+      </button>
+
+      <button class="tile reveal" onclick="location.href='./Buyer_Inquires.html'">
+        <span class="tile-icon" style="color:#06b6d4;background:#ECFEFF;"><i class="fas fa-question-circle"></i></span>
+        <span class="tile-title">Inquiries</span>
+        <span class="tile-desc">Raise &amp; track queries</span>
+      </button>
+
+      <button class="tile reveal" onclick="location.href='./Reports_Buyer.html'">
+        <span class="tile-icon" style="color:#374151;background:#F3F4F6;"><i class="fas fa-chart-bar"></i></span>
+        <span class="tile-title">Reports</span>
+        <span class="tile-desc">Export and analyze</span>
+      </button>
+
+      <button class="tile reveal" onclick="location.href='Asset_Master.html'">
+        <span class="tile-icon" style="color:#0891b2;background:#ECFEFF;"><i class="fas fa-boxes"></i></span>
+        <span class="tile-title">Asset Master</span>
+        <span class="tile-desc">Manage asset data</span>
+      </button>
+
+      <button class="tile reveal" onclick="document.getElementById('notificationPanel').classList.toggle('hidden')">
+        <span class="tile-icon" style="color:#ef4444;background:#FEF2F2;"><i class="fas fa-bell"></i></span>
+        <span class="tile-title">Notifications</span>
+        <span class="tile-desc">Recent system updates</span>
+      </button>
+
+      <button class="tile reveal" onclick="location.href='./Bulk_processing.html'">
+        <span class="tile-icon" style="color:#2563eb;background:#EFF6FF;"><i class="fas fa-layer-group"></i></span>
+        <span class="tile-title">Bulk Processing Center</span>
+        <span class="tile-desc">Process PR/PO/Invoices in bulk</span>
+      </button>
+    </section>
+
+    <!-- Notification Panel (sample) -->
+    <div id="notificationPanel" class="hidden max-w-2xl mx-auto mt-8 box-white ring-gradient p-6 reveal">
+      <h3 class="text-xl font-semibold text-blue-700 mb-4 flex items-center gap-2">
+        <i class="fas fa-bell text-red-500"></i> Notifications
+      </h3>
+      <ul class="divide-y divide-blue-50">
+        <li class="py-3 flex items-start gap-3">
+          <span class="inline-block mt-1 text-blue-500"><i class="fas fa-check-circle"></i></span>
+          <div>
+            <div class="font-semibold text-gray-800">PO #1001 Approved</div>
+            <div class="text-sm text-gray-500">Your purchase order #1001 has been approved.</div>
+            <div class="text-xs text-gray-400 mt-1">2 hours ago</div>
+          </div>
+        </li>
+        <li class="py-3 flex items-start gap-3">
+          <span class="inline-block mt-1 text-yellow-500"><i class="fas fa-exclamation-triangle"></i></span>
+          <div>
+            <div class="font-semibold text-gray-800">Budget Limit Warning</div>
+            <div class="text-sm text-gray-500">Marketing budget exceeded 90% utilization.</div>
+            <div class="text-xs text-gray-400 mt-1">Today, 09:15 AM</div>
+          </div>
+        </li>
+        <li class="py-3 flex items-start gap-3">
+          <span class="inline-block mt-1 text-green-500"><i class="fas fa-file-invoice"></i></span>
+          <div>
+            <div class="font-semibold text-gray-800">Invoice #INV-2024 Received</div>
+            <div class="text-sm text-gray-500">New invoice from Supplier X received.</div>
+            <div class="text-xs text-gray-400 mt-1">Yesterday, 5:30 PM</div>
+          </div>
+        </li>
+        <li class="py-3 flex items-start gap-3">
+          <span class="inline-block mt-1 text-purple-500"><i class="fas fa-user-plus"></i></span>
+          <div>
+            <div class="font-semibold text-gray-800">New Supplier Registered</div>
+            <div class="text-sm text-gray-500">Supplier Y is now active.</div>
+            <div class="text-xs text-gray-400 mt-1">Yesterday, 11:00 AM</div>
+          </div>
+        </li>
+      </ul>
+      <div class="mt-4">
+        <button onclick="document.getElementById('notificationPanel').classList.add('hidden')" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600" type="button">
+          <i class="fas fa-check"></i> Acknowledge All
+        </button>
+      </div>
+    </div>
+  </main>
+
+    <!-- Floating Action Button for Quick Add -->
+    <button class="fab" title="Quick Add" onclick="alert('Quick Add: PR, PO, RFQ, Supplier, etc.')">
+      <i class="fas fa-plus"></i>
+    </button>
+
+  <script>
+    // Header blur on scroll
+    const header = document.getElementById('app-header');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 6) header.classList.add('header-blur');
+      else header.classList.remove('header-blur');
+    });
+
+    // Reveal on view
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('show'); });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+    // Profile dropdown
+    const profileBtn = document.getElementById('profileMenuButton');
+    const profileDropdown = document.getElementById('profileDropdown');
+    if (profileBtn) {
+      profileBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        profileDropdown.classList.toggle('hidden');
+      });
+      document.addEventListener('click', (e) => {
+        if (!profileDropdown.contains(e.target) && !profileBtn.contains(e.target)) {
+          profileDropdown.classList.add('hidden');
+        }
+      });
+    }
+
+    // Mobile menu toggle
+    const mobileBtn = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    mobileBtn.addEventListener('click', () => {
+      const expanded = mobileBtn.getAttribute('aria-expanded') === 'true';
+      mobileBtn.setAttribute('aria-expanded', String(!expanded));
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    // Theme toggle (light only visual cue)
+    const themeToggle = document.getElementById('themeToggle');
+    themeToggle?.addEventListener('click', () => {
+      themeToggle.classList.toggle('bg-yellow-50');
+      themeToggle.innerHTML = themeToggle.innerHTML.includes('sun') ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+    });
+
+    // Notifications shortcut
+    document.getElementById('notificationsButton')?.addEventListener('click', () => {
+      document.getElementById('notificationPanel')?.classList.toggle('hidden');
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    });
+  </script>
+</body>
+</html>

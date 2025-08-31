@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Savings (MTD) - Buyer Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .savings-card:hover { transform: translateY(-2px); transition: all 0.3s ease; }
+        .progress-ring { transform: rotate(-90deg); }
+        .animate-counter { animation: counter 2s ease-in-out; }
+        .gradient-green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .gradient-blue { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+        .gradient-purple { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+        .gradient-orange { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .savings-trend-up { color: #10b981; }
+        .savings-trend-down { color: #ef4444; }
+        .chart-bar { transition: height 0.8s ease-in-out; }
+        
+        @keyframes counter {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .pulse-green { animation: pulse-green 2s infinite; }
+        @keyframes pulse-green {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <button onclick="navigateToBuyerDashboard()" class="mr-4 p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200" title="Back to Buyer Dashboard">
+                        <i class="fas fa-arrow-left text-gray-600"></i>
+                    </button>
+                    <h1 class="text-xl font-semibold text-gray-900">Savings (MTD)</h1>
+                    <span class="ml-3 px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+                        <i class="fas fa-check-circle mr-1"></i>On Track
+                    </span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-500">August 2025</span>
+                    <button class="p-2 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-download text-gray-600"></i>
+                    </button>
+                    <button onclick="openSettingsModal()" class="p-2 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-cog text-gray-600"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Breadcrumb Navigation -->
+        <nav class="flex mb-6" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li class="inline-flex items-center">
+                    <button onclick="navigateToBuyerDashboard()" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors duration-200">
+                        <i class="fas fa-home w-4 h-4 mr-2"></i>
+                        Buyer Dashboard
+                    </button>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <i class="fas fa-chevron-right w-4 h-4 text-gray-400 mx-1"></i>
+                        <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">Savings (MTD)</span>
+                    </div>
+                </li>
+            </ol>
+        </nav>
+        <!-- Main Savings Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <!-- MTD Savings -->
+            <div class="md:col-span-2 bg-white rounded-xl shadow-sm p-6 savings-card gradient-green text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-green-100 text-sm font-medium">Month-to-Date Savings</p>
+                        <p class="text-4xl font-bold animate-counter">₹83.2L</p>
+                        <p class="text-green-200 text-sm mt-1">
+                            <i class="fas fa-arrow-up mr-1"></i>
+                            +12.5% vs last month
+                        </p>
+                    </div>
+                    <div class="relative">
+                        <!-- Circular Progress -->
+                        <svg class="w-20 h-20 progress-ring" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="8"/>
+                            <circle cx="50" cy="50" r="45" fill="none" stroke="white" stroke-width="8" 
+                                    stroke-dasharray="283" stroke-dashoffset="85" stroke-linecap="round"/>
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span class="text-white font-bold text-sm">70%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Target Achievement -->
+            <div class="bg-white rounded-xl shadow-sm p-6 savings-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Target Achievement</p>
+                        <p class="text-3xl font-bold text-blue-600">70%</p>
+                        <p class="text-sm text-green-500">₹83.2L / ₹1.19Cr</p>
+                    </div>
+                    <div class="p-3 bg-blue-100 rounded-full">
+                        <i class="fas fa-bullseye text-blue-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-blue-500 h-2 rounded-full chart-bar" style="width: 70%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Days Remaining -->
+            <div class="bg-white rounded-xl shadow-sm p-6 savings-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Days Remaining</p>
+                        <p class="text-3xl font-bold text-orange-600">5</p>
+                        <p class="text-sm text-orange-500">To reach ₹1.19Cr</p>
+                    </div>
+                    <div class="p-3 bg-orange-100 rounded-full">
+                        <i class="fas fa-calendar-alt text-orange-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Savings Breakdown & Trend -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Savings by Category -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">Savings by Category</h3>
+                    <span class="text-sm text-gray-500">August 2025</span>
+                </div>
+                
+                <div class="space-y-4">
+                    <!-- Contract Negotiations -->
+                    <div class="savings-category-item">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 bg-green-500 rounded-full mr-3"></div>
+                                <span class="font-medium text-gray-900">Contract Negotiations</span>
+                                <span class="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">High Impact</span>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold text-gray-900">₹34.5L</p>
+                                <p class="text-sm text-green-600">41.5%</p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-green-500 h-2 rounded-full chart-bar" style="width: 41.5%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Volume Discounts -->
+                    <div class="savings-category-item">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 bg-blue-500 rounded-full mr-3"></div>
+                                <span class="font-medium text-gray-900">Volume Discounts</span>
+                                <span class="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">Strategic</span>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold text-gray-900">₹22.8L</p>
+                                <p class="text-sm text-blue-600">27.4%</p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full chart-bar" style="width: 27.4%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Process Optimization -->
+                    <div class="savings-category-item">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 bg-purple-500 rounded-full mr-3"></div>
+                                <span class="font-medium text-gray-900">Process Optimization</span>
+                                <span class="ml-2 px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">Efficiency</span>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold text-gray-900">₹15.2L</p>
+                                <p class="text-sm text-purple-600">18.3%</p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-purple-500 h-2 rounded-full chart-bar" style="width: 18.3%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Vendor Competition -->
+                    <div class="savings-category-item">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 bg-orange-500 rounded-full mr-3"></div>
+                                <span class="font-medium text-gray-900">Vendor Competition</span>
+                                <span class="ml-2 px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">Market</span>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold text-gray-900">₹10.7L</p>
+                                <p class="text-sm text-orange-600">12.8%</p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-orange-500 h-2 rounded-full chart-bar" style="width: 12.8%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daily Savings Trend -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">Daily Savings Trend</h3>
+                    <div class="flex space-x-2">
+                        <span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
+                            <i class="fas fa-arrow-up mr-1"></i>Trending Up
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Mini Chart -->
+                <div class="relative h-40 mb-4">
+                    <div class="flex items-end justify-between h-full">
+                        <div class="flex flex-col items-center w-8">
+                            <div class="bg-green-400 rounded-t w-6 chart-bar" style="height: 60px;" title="Week 1: ₹18.5L"></div>
+                            <span class="text-xs text-gray-500 mt-1">W1</span>
+                        </div>
+                        <div class="flex flex-col items-center w-8">
+                            <div class="bg-green-500 rounded-t w-6 chart-bar" style="height: 75px;" title="Week 2: ₹22.1L"></div>
+                            <span class="text-xs text-gray-500 mt-1">W2</span>
+                        </div>
+                        <div class="flex flex-col items-center w-8">
+                            <div class="bg-green-600 rounded-t w-6 chart-bar" style="height: 90px;" title="Week 3: ₹25.8L"></div>
+                            <span class="text-xs text-gray-500 mt-1">W3</span>
+                        </div>
+                        <div class="flex flex-col items-center w-8">
+                            <div class="bg-green-700 rounded-t w-6 chart-bar pulse-green" style="height: 85px;" title="Week 4: ₹16.8L (Partial)"></div>
+                            <span class="text-xs text-gray-500 mt-1">W4</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weekly Summary -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="text-center p-3 bg-green-50 rounded-lg">
+                        <p class="text-sm text-gray-600">Best Week</p>
+                        <p class="text-lg font-bold text-green-600">₹25.8L</p>
+                        <p class="text-xs text-green-600">Week 3</p>
+                    </div>
+                    <div class="text-center p-3 bg-blue-50 rounded-lg">
+                        <p class="text-sm text-gray-600">Avg/Week</p>
+                        <p class="text-lg font-bold text-blue-600">₹20.8L</p>
+                        <p class="text-xs text-blue-600">Consistent</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Savings Opportunities & Recent Achievements -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Recent Savings Achievements -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">Recent Achievements</h3>
+                    <button onclick="viewAllAchievements()" class="text-green-600 hover:text-green-800 text-sm font-medium">
+                        View All
+                    </button>
+                </div>
+                
+                <div class="space-y-4">
+                    <!-- Major Achievement -->
+                    <div class="achievement-item p-4 bg-green-50 border border-green-200 rounded-lg">
+                        <div class="flex items-start">
+                            <div class="p-2 bg-green-100 rounded-full mr-3">
+                                <i class="fas fa-trophy text-green-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-900">IT Hardware Contract Renegotiation</p>
+                                <p class="text-sm text-gray-600 mt-1">Successfully negotiated 18% reduction with TechCorp</p>
+                                <div class="flex items-center mt-2 space-x-3">
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">₹12.5L saved</span>
+                                    <span class="text-xs text-gray-500">Aug 24, 2025</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Achievement -->
+                    <div class="achievement-item p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div class="flex items-start">
+                            <div class="p-2 bg-blue-100 rounded-full mr-3">
+                                <i class="fas fa-handshake text-blue-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-900">Office Supplies Bulk Purchase</p>
+                                <p class="text-sm text-gray-600 mt-1">Consolidated vendors for 25% volume discount</p>
+                                <div class="flex items-center mt-2 space-x-3">
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">₹8.3L saved</span>
+                                    <span class="text-xs text-gray-500">Aug 22, 2025</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Process Improvement -->
+                    <div class="achievement-item p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                        <div class="flex items-start">
+                            <div class="p-2 bg-purple-100 rounded-full mr-3">
+                                <i class="fas fa-cogs text-purple-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-900">Automated Procurement Workflow</p>
+                                <p class="text-sm text-gray-600 mt-1">Reduced processing time by 40%</p>
+                                <div class="flex items-center mt-2 space-x-3">
+                                    <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">₹6.2L saved</span>
+                                    <span class="text-xs text-gray-500">Aug 20, 2025</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Market Analysis -->
+                    <div class="achievement-item p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                        <div class="flex items-start">
+                            <div class="p-2 bg-orange-100 rounded-full mr-3">
+                                <i class="fas fa-chart-line text-orange-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-900">Market Price Analysis</p>
+                                <p class="text-sm text-gray-600 mt-1">Identified over-pricing in 3 categories</p>
+                                <div class="flex items-center mt-2 space-x-3">
+                                    <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">₹4.1L saved</span>
+                                    <span class="text-xs text-gray-500">Aug 18, 2025</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Opportunities -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">Upcoming Opportunities</h3>
+                    <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
+                        ₹45.8L Potential
+                    </span>
+                </div>
+                
+                <div class="space-y-4">
+                    <!-- High Priority Opportunity -->
+                    <div class="opportunity-item p-4 border border-red-200 bg-red-50 rounded-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center">
+                                <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
+                                <span class="font-medium text-gray-900">Marketing Contract Renewal</span>
+                            </div>
+                            <span class="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">High Priority</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-2">Expires Sep 15, 2025 • Potential 22% savings</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-lg font-bold text-red-600">₹18.5L</span>
+                            <button onclick="viewOpportunity('marketing-renewal')" class="text-red-600 hover:text-red-800 text-sm font-medium">
+                                Action Required
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Medium Priority -->
+                    <div class="opportunity-item p-4 border border-yellow-200 bg-yellow-50 rounded-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center">
+                                <i class="fas fa-clock text-yellow-600 mr-2"></i>
+                                <span class="font-medium text-gray-900">Cloud Services Review</span>
+                            </div>
+                            <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">Medium</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-2">Usage optimization • Potential 15% reduction</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-lg font-bold text-yellow-600">₹12.3L</span>
+                            <button onclick="viewOpportunity('cloud-review')" class="text-yellow-600 hover:text-yellow-800 text-sm font-medium">
+                                Schedule Review
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Future Opportunity -->
+                    <div class="opportunity-item p-4 border border-green-200 bg-green-50 rounded-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center">
+                                <i class="fas fa-lightbulb text-green-600 mr-2"></i>
+                                <span class="font-medium text-gray-900">Vendor Consolidation</span>
+                            </div>
+                            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Future</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-2">Q4 2025 initiative • Multiple categories</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-lg font-bold text-green-600">₹15.0L</span>
+                            <button onclick="viewOpportunity('vendor-consolidation')" class="text-green-600 hover:text-green-800 text-sm font-medium">
+                                Plan Initiative
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress to Next Target -->
+                <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium text-blue-800">September Target Progress</span>
+                        <span class="text-sm text-blue-600">₹35.8L remaining</span>
+                    </div>
+                    <div class="w-full bg-blue-200 rounded-full h-2">
+                        <div class="bg-blue-600 h-2 rounded-full chart-bar" style="width: 70%"></div>
+                    </div>
+                    <p class="text-xs text-blue-600 mt-1">On track to achieve ₹1.19Cr monthly target</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Actions -->
+        <div class="bg-white rounded-xl shadow-sm p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-semibold text-gray-900">Quick Actions</h3>
+                <div class="flex space-x-2">
+                    <button onclick="exportSavingsReport()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm">
+                        <i class="fas fa-download mr-2"></i>Export Report
+                    </button>
+                    <button onclick="scheduleSavingsReview()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">
+                        <i class="fas fa-calendar mr-2"></i>Schedule Review
+                    </button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <button onclick="viewDetailedAnalysis()" class="flex items-center justify-center p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-gray-700">
+                    <i class="fas fa-chart-bar mr-2"></i>
+                    <span class="text-sm font-medium">Detailed Analysis</span>
+                </button>
+                <button onclick="setUpAlerts()" class="flex items-center justify-center p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-gray-700">
+                    <i class="fas fa-bell mr-2"></i>
+                    <span class="text-sm font-medium">Setup Alerts</span>
+                </button>
+                <button onclick="compareTargets()" class="flex items-center justify-center p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-gray-700">
+                    <i class="fas fa-balance-scale mr-2"></i>
+                    <span class="text-sm font-medium">Compare Targets</span>
+                </button>
+                <button onclick="forecastSavings()" class="flex items-center justify-center p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-gray-700">
+                    <i class="fas fa-crystal-ball mr-2"></i>
+                    <span class="text-sm font-medium">Forecast</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data for savings tracking
+        const savingsData = {
+            currentMonth: {
+                target: 11900000, // ₹1.19Cr in rupees
+                achieved: 8320000, // ₹83.2L in rupees
+                percentage: 70,
+                daysRemaining: 5,
+                growthVsLastMonth: 12.5
+            },
+            categories: [
+                {
+                    name: 'Contract Negotiations',
+                    amount: 3450000,
+                    percentage: 41.5,
+                    color: 'green',
+                    impact: 'High Impact',
+                    deals: [
+                        { vendor: 'TechCorp Solutions', amount: 1250000, date: '2025-08-24', type: 'IT Hardware' },
+                        { vendor: 'Global Office Supplies', amount: 850000, date: '2025-08-20', type: 'Office Supplies' },
+                        { vendor: 'Marketing Partners Inc', amount: 1350000, date: '2025-08-15', type: 'Marketing Services' }
+                    ]
+                },
+                {
+                    name: 'Volume Discounts',
+                    amount: 2280000,
+                    percentage: 27.4,
+                    color: 'blue',
+                    impact: 'Strategic',
+                    deals: [
+                        { vendor: 'Bulk Office Solutions', amount: 830000, date: '2025-08-22', type: 'Office Supplies' },
+                        { vendor: 'Tech Equipment Ltd', amount: 950000, date: '2025-08-18', type: 'IT Equipment' },
+                        { vendor: 'Stationery Wholesale', amount: 500000, date: '2025-08-12', type: 'Stationery' }
+                    ]
+                },
+                {
+                    name: 'Process Optimization',
+                    amount: 1520000,
+                    percentage: 18.3,
+                    color: 'purple',
+                    impact: 'Efficiency',
+                    improvements: [
+                        { process: 'Automated Approval Workflow', savings: 620000, timeReduction: '40%' },
+                        { process: 'Digital Invoice Processing', savings: 450000, timeReduction: '35%' },
+                        { process: 'Vendor Portal Integration', savings: 450000, timeReduction: '25%' }
+                    ]
+                },
+                {
+                    name: 'Vendor Competition',
+                    amount: 1070000,
+                    percentage: 12.8,
+                    color: 'orange',
+                    impact: 'Market',
+                    competitions: [
+                        { category: 'Cloud Services', participants: 5, savings: 410000 },
+                        { category: 'Security Solutions', participants: 4, savings: 350000 },
+                        { category: 'Maintenance Services', participants: 3, savings: 310000 }
+                    ]
+                }
+            ],
+            weeklyTrend: [
+                { week: 1, amount: 1850000, target: 2975000, percentage: 62 },
+                { week: 2, amount: 2210000, target: 2975000, percentage: 74 },
+                { week: 3, amount: 2580000, target: 2975000, percentage: 87 },
+                { week: 4, amount: 1680000, target: 2380000, percentage: 71, partial: true }
+            ],
+            achievements: [
+                {
+                    id: 'it-hardware-renegotiation',
+                    title: 'IT Hardware Contract Renegotiation',
+                    description: 'Successfully negotiated 18% reduction with TechCorp',
+                    amount: 1250000,
+                    date: '2025-08-24',
+                    type: 'Contract',
+                    impact: 'High',
+                    details: {
+                        vendor: 'TechCorp Solutions',
+                        originalAmount: 6944444,
+                        newAmount: 5694444,
+                        savingsPercentage: 18,
+                        contractDuration: '24 months',
+                        renewalDate: '2027-08-24'
+                    }
+                },
+                {
+                    id: 'office-supplies-bulk',
+                    title: 'Office Supplies Bulk Purchase',
+                    description: 'Consolidated vendors for 25% volume discount',
+                    amount: 830000,
+                    date: '2025-08-22',
+                    type: 'Volume',
+                    impact: 'Medium',
+                    details: {
+                        vendorsConsolidated: ['Global Office', 'Quick Supply', 'Office Depot'],
+                        finalVendor: 'Bulk Office Solutions',
+                        volumeIncrease: '300%',
+                        discountAchieved: 25,
+                        annualSavings: 3320000
+                    }
+                }
+            ],
+            opportunities: [
+                {
+                    id: 'marketing-renewal',
+                    title: 'Marketing Contract Renewal',
+                    description: 'Expires Sep 15, 2025 • Potential 22% savings',
+                    potentialSavings: 1850000,
+                    priority: 'High',
+                    deadline: '2025-09-15',
+                    currentSpend: 8409090,
+                    estimatedNewSpend: 6559091,
+                    actions: [
+                        'Request vendor proposals',
+                        'Conduct market analysis',
+                        'Negotiate terms',
+                        'Finalize agreement'
+                    ]
+                },
+                {
+                    id: 'cloud-review',
+                    title: 'Cloud Services Review',
+                    description: 'Usage optimization • Potential 15% reduction',
+                    potentialSavings: 1230000,
+                    priority: 'Medium',
+                    deadline: '2025-09-30',
+                    currentSpend: 8200000,
+                    estimatedNewSpend: 6970000,
+                    actions: [
+                        'Analyze usage patterns',
+                        'Optimize resource allocation',
+                        'Renegotiate pricing tiers',
+                        'Implement cost controls'
+                    ]
+                }
+            ],
+            settings: {
+                alerts: {
+                    savingsTarget: { enabled: true, threshold: 80, email: true, sms: false },
+                    monthlyDeadline: { enabled: true, daysBeforeAlert: 7, email: true, sms: true },
+                    opportunities: { enabled: true, minAmount: 500000, email: true, sms: false },
+                    achievements: { enabled: true, email: true, sms: false }
+                },
+                targets: {
+                    monthly: 11900000,
+                    quarterly: 35700000,
+                    annual: 142800000
+                },
+                preferences: {
+                    currency: 'INR',
+                    dateFormat: 'DD/MM/YYYY',
+                    reportFrequency: 'weekly',
+                    dashboardRefresh: 30
+                }
+            }
+        };
+
+        // Settings Modal HTML
+        const settingsModalHTML = `
+            <div id="settingsModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+                <div class="relative top-10 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/4 shadow-lg rounded-md bg-white max-h-screen overflow-y-auto">
+                    <div class="mt-3">
+                        <div class="flex items-center justify-between pb-4 border-b border-gray-200">
+                            <h3 class="text-xl font-medium text-gray-900">Savings Settings</h3>
+                            <button onclick="closeSettingsModal()" class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="mt-6">
+                            <!-- Settings Tabs -->
+                            <div class="border-b border-gray-200">
+                                <nav class="-mb-px flex space-x-8">
+                                    <button onclick="showSettingsTab('alerts')" class="settings-tab-btn border-b-2 border-blue-500 py-2 px-1 text-sm font-medium text-blue-600">
+                                        Alerts & Notifications
+                                    </button>
+                                    <button onclick="showSettingsTab('targets')" class="settings-tab-btn border-b-2 border-transparent py-2 px-1 text-sm font-medium text-gray-500 hover:text-gray-700">
+                                        Targets & Goals
+                                    </button>
+                                    <button onclick="showSettingsTab('preferences')" class="settings-tab-btn border-b-2 border-transparent py-2 px-1 text-sm font-medium text-gray-500 hover:text-gray-700">
+                                        Preferences
+                                    </button>
+                                </nav>
+                            </div>
+
+                            <!-- Alerts Tab -->
+                            <div id="alertsTab" class="settings-tab-content mt-6">
+                                <h4 class="text-lg font-medium text-gray-900 mb-4">Alert Configuration</h4>
+                                
+                                <!-- Savings Target Alerts -->
+                                <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <label class="text-sm font-medium text-gray-700">Savings Target Alerts</label>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" id="savingsTargetEnabled" checked class="rounded border-gray-300 text-blue-600">
+                                            <span class="ml-2 text-sm text-gray-600">Enabled</span>
+                                        </label>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div>
+                                            <label class="block text-sm text-gray-600">Alert Threshold</label>
+                                            <select id="savingsThreshold" class="mt-1 block w-full rounded-md border-gray-300">
+                                                <option value="70">70%</option>
+                                                <option value="80" selected>80%</option>
+                                                <option value="90">90%</option>
+                                            </select>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <input type="checkbox" id="savingsEmail" checked class="rounded border-gray-300 text-blue-600">
+                                            <label class="ml-2 text-sm text-gray-700">Email alerts</label>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <input type="checkbox" id="savingsSMS" class="rounded border-gray-300 text-blue-600">
+                                            <label class="ml-2 text-sm text-gray-700">SMS alerts</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Monthly Deadline Alerts -->
+                                <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <label class="text-sm font-medium text-gray-700">Monthly Deadline Alerts</label>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" id="deadlineEnabled" checked class="rounded border-gray-300 text-blue-600">
+                                            <span class="ml-2 text-sm text-gray-600">Enabled</span>
+                                        </label>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div>
+                                            <label class="block text-sm text-gray-600">Days Before Alert</label>
+                                            <select id="deadlineDays" class="mt-1 block w-full rounded-md border-gray-300">
+                                                <option value="3">3 days</option>
+                                                <option value="7" selected>7 days</option>
+                                                <option value="14">14 days</option>
+                                            </select>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <input type="checkbox" id="deadlineEmail" checked class="rounded border-gray-300 text-blue-600">
+                                            <label class="ml-2 text-sm text-gray-700">Email alerts</label>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <input type="checkbox" id="deadlineSMS" checked class="rounded border-gray-300 text-blue-600">
+                                            <label class="ml-2 text-sm text-gray-700">SMS alerts</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Opportunity Alerts -->
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <label class="text-sm font-medium text-gray-700">Opportunity Alerts</label>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" id="opportunityEnabled" checked class="rounded border-gray-300 text-blue-600">
+                                            <span class="ml-2 text-sm text-gray-600">Enabled</span>
+                                        </label>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div>
+                                            <label class="block text-sm text-gray-600">Minimum Amount</label>
+                                            <select id="opportunityAmount" class="mt-1 block w-full rounded-md border-gray-300">
+                                                <option value="250000">₹2.5L</option>
+                                                <option value="500000" selected>₹5L</option>
+                                                <option value="1000000">₹10L</option>
+                                            </select>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <input type="checkbox" id="opportunityEmail" checked class="rounded border-gray-300 text-blue-600">
+                                            <label class="ml-2 text-sm text-gray-700">Email alerts</label>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <input type="checkbox" id="opportunitySMS" class="rounded border-gray-300 text-blue-600">
+                                            <label class="ml-2 text-sm text-gray-700">SMS alerts</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Targets Tab -->
+                            <div id="targetsTab" class="settings-tab-content hidden mt-6">
+                                <h4 class="text-lg font-medium text-gray-900 mb-4">Savings Targets</h4>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div class="bg-blue-50 p-4 rounded-lg">
+                                        <label class="block text-sm font-medium text-blue-700 mb-2">Monthly Target</label>
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">₹</span>
+                                            <input type="text" id="monthlyTarget" value="1,19,00,000" 
+                                                   class="pl-8 w-full rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500">
+                                        </div>
+                                        <p class="text-xs text-blue-600 mt-1">Current: ₹1.19Cr</p>
+                                    </div>
+
+                                    <div class="bg-green-50 p-4 rounded-lg">
+                                        <label class="block text-sm font-medium text-green-700 mb-2">Quarterly Target</label>
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">₹</span>
+                                            <input type="text" id="quarterlyTarget" value="3,57,00,000" 
+                                                   class="pl-8 w-full rounded-md border-gray-300 focus:ring-green-500 focus:border-green-500">
+                                        </div>
+                                        <p class="text-xs text-green-600 mt-1">Current: ₹3.57Cr</p>
+                                    </div>
+
+                                    <div class="bg-purple-50 p-4 rounded-lg">
+                                        <label class="block text-sm font-medium text-purple-700 mb-2">Annual Target</label>
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">₹</span>
+                                            <input type="text" id="annualTarget" value="14,28,00,000" 
+                                                   class="pl-8 w-full rounded-md border-gray-300 focus:ring-purple-500 focus:border-purple-500">
+                                        </div>
+                                        <p class="text-xs text-purple-600 mt-1">Current: ₹14.28Cr</p>
+                                    </div>
+                                </div>
+
+                                <!-- Target History -->
+                                <div class="mt-6">
+                                    <h5 class="text-sm font-medium text-gray-700 mb-3">Target History</h5>
+                                    <div class="bg-gray-50 rounded-lg p-4">
+                                        <div class="space-y-2">
+                                            <div class="flex items-center justify-between text-sm">
+                                                <span>Q3 2025 (Current)</span>
+                                                <span class="text-green-600">₹3.57Cr (On track)</span>
+                                            </div>
+                                            <div class="flex items-center justify-between text-sm">
+                                                <span>Q2 2025</span>
+                                                <span class="text-green-600">₹3.42Cr (Achieved)</span>
+                                            </div>
+                                            <div class="flex items-center justify-between text-sm">
+                                                <span>Q1 2025</span>
+                                                <span class="text-blue-600">₹3.15Cr (Achieved)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Preferences Tab -->
+                            <div id="preferencesTab" class="settings-tab-content hidden mt-6">
+                                <h4 class="text-lg font-medium text-gray-900 mb-4">Display Preferences</h4>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Currency Format</label>
+                                        <select id="currencyFormat" class="w-full rounded-md border-gray-300">
+                                            <option value="INR" selected>Indian Rupees (₹)</option>
+                                            <option value="USD">US Dollars ($)</option>
+                                            <option value="EUR">Euros (€)</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Date Format</label>
+                                        <select id="dateFormat" class="w-full rounded-md border-gray-300">
+                                            <option value="DD/MM/YYYY" selected>DD/MM/YYYY</option>
+                                            <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                                            <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Report Frequency</label>
+                                        <select id="reportFrequency" class="w-full rounded-md border-gray-300">
+                                            <option value="daily">Daily</option>
+                                            <option value="weekly" selected>Weekly</option>
+                                            <option value="monthly">Monthly</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Dashboard Refresh (seconds)</label>
+                                        <select id="dashboardRefresh" class="w-full rounded-md border-gray-300">
+                                            <option value="15">15 seconds</option>
+                                            <option value="30" selected>30 seconds</option>
+                                            <option value="60">60 seconds</option>
+                                            <option value="0">Manual only</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Export Settings -->
+                                <div class="mt-6">
+                                    <h5 class="text-sm font-medium text-gray-700 mb-3">Export Settings</h5>
+                                    <div class="bg-gray-50 rounded-lg p-4">
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                            <div class="flex items-center">
+                                                <input type="checkbox" id="includeDetails" checked class="rounded border-gray-300 text-blue-600">
+                                                <label class="ml-2 text-sm text-gray-700">Include detailed breakdowns</label>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <input type="checkbox" id="includeCharts" checked class="rounded border-gray-300 text-blue-600">
+                                                <label class="ml-2 text-sm text-gray-700">Include charts & graphs</label>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <input type="checkbox" id="includeComments" class="rounded border-gray-300 text-blue-600">
+                                                <label class="ml-2 text-sm text-gray-700">Include comments</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-end pt-6 border-t border-gray-200 space-x-2">
+                            <button onclick="closeSettingsModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
+                                Cancel
+                            </button>
+                            <button onclick="resetSettings()" class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700">
+                                Reset to Defaults
+                            </button>
+                            <button onclick="saveSettings()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Add settings modal to page
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.insertAdjacentHTML('beforeend', settingsModalHTML);
+        });
+
+        // Settings Functions
+        function openSettingsModal() {
+            document.getElementById('settingsModal').classList.remove('hidden');
+            loadCurrentSettings();
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settingsModal').classList.add('hidden');
+        }
+
+        function showSettingsTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.settings-tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.settings-tab-btn').forEach(btn => {
+                btn.classList.remove('border-blue-500', 'text-blue-600');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.remove('hidden');
+            
+            // Set active tab button
+            event.target.classList.remove('border-transparent', 'text-gray-500');
+            event.target.classList.add('border-blue-500', 'text-blue-600');
+        }
+
+        function loadCurrentSettings() {
+            const settings = savingsData.settings;
+            
+            // Load alert settings
+            document.getElementById('savingsTargetEnabled').checked = settings.alerts.savingsTarget.enabled;
+            document.getElementById('savingsThreshold').value = settings.alerts.savingsTarget.threshold;
+            document.getElementById('savingsEmail').checked = settings.alerts.savingsTarget.email;
+            document.getElementById('savingsSMS').checked = settings.alerts.savingsTarget.sms;
+            
+            // Load other settings...
+            document.getElementById('currencyFormat').value = settings.preferences.currency;
+            document.getElementById('dateFormat').value = settings.preferences.dateFormat;
+            document.getElementById('reportFrequency').value = settings.preferences.reportFrequency;
+            document.getElementById('dashboardRefresh').value = settings.preferences.dashboardRefresh;
+        }
+
+        function saveSettings() {
+            // Collect all settings
+            const newSettings = {
+                alerts: {
+                    savingsTarget: {
+                        enabled: document.getElementById('savingsTargetEnabled').checked,
+                        threshold: parseInt(document.getElementById('savingsThreshold').value),
+                        email: document.getElementById('savingsEmail').checked,
+                        sms: document.getElementById('savingsSMS').checked
+                    },
+                    // ... other alert settings
+                },
+                preferences: {
+                    currency: document.getElementById('currencyFormat').value,
+                    dateFormat: document.getElementById('dateFormat').value,
+                    reportFrequency: document.getElementById('reportFrequency').value,
+                    dashboardRefresh: parseInt(document.getElementById('dashboardRefresh').value)
+                }
+            };
+            
+            // Update global settings
+            savingsData.settings = { ...savingsData.settings, ...newSettings };
+            
+            // Show success message
+            showNotification('Settings saved successfully!', 'success');
+            closeSettingsModal();
+            
+            // Apply new settings
+            applySettings();
+        }
+
+        function resetSettings() {
+            if (confirm('Reset all settings to default values?')) {
+                // Reset to defaults
+                savingsData.settings = {
+                    alerts: {
+                        savingsTarget: { enabled: true, threshold: 80, email: true, sms: false },
+                        monthlyDeadline: { enabled: true, daysBeforeAlert: 7, email: true, sms: true },
+                        opportunities: { enabled: true, minAmount: 500000, email: true, sms: false }
+                    },
+                    preferences: {
+                        currency: 'INR',
+                        dateFormat: 'DD/MM/YYYY',
+                        reportFrequency: 'weekly',
+                        dashboardRefresh: 30
+                    }
+                };
+                
+                loadCurrentSettings();
+                showNotification('Settings reset to defaults', 'info');
+            }
+        }
+
+        function applySettings() {
+            // Apply dashboard refresh interval
+            const refreshInterval = savingsData.settings.preferences.dashboardRefresh;
+            if (refreshInterval > 0) {
+                setInterval(() => {
+                    console.log('Dashboard auto-refresh');
+                    // Simulate data refresh
+                }, refreshInterval * 1000);
+            }
+        }
+
+        // Enhanced Interactive Functions
+        function viewAllAchievements() {
+            const achievementsHTML = `
+                <div class="max-w-4xl mx-auto">
+                    <h3 class="text-xl font-semibold mb-4">All Savings Achievements</h3>
+                    ${savingsData.achievements.map(achievement => `
+                        <div class="bg-white border border-gray-200 rounded-lg p-4 mb-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-medium text-gray-900">${achievement.title}</h4>
+                                <span class="px-2 py-1 bg-green-100 text-green-800 text-sm rounded-full">
+                                    ₹${(achievement.amount / 100000).toFixed(1)}L
+                                </span>
+                            </div>
+                            <p class="text-gray-600 mb-2">${achievement.description}</p>
+                            <div class="flex items-center text-sm text-gray-500">
+                                <span>${formatDate(achievement.date)}</span>
+                                <span class="mx-2">•</span>
+                                <span>${achievement.type}</span>
+                                <span class="mx-2">•</span>
+                                <span class="${achievement.impact === 'High' ? 'text-red-600' : 'text-orange-600'}">${achievement.impact} Impact</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            showModal('Savings Achievements', achievementsHTML);
+        }
+
+        function viewOpportunity(opportunityId) {
+            const opportunity = savingsData.opportunities.find(opp => opp.id === opportunityId);
+            if (!opportunity) return;
+            
+            const opportunityHTML = `
+                <div class="max-w-2xl mx-auto">
+                    <div class="mb-6">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">${opportunity.title}</h3>
+                        <p class="text-gray-600">${opportunity.description}</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <p class="text-sm text-green-600 font-medium">Potential Savings</p>
+                            <p class="text-2xl font-bold text-green-700">₹${(opportunity.potentialSavings / 100000).toFixed(1)}L</p>
+                        </div>
+                        <div class="bg-red-50 p-4 rounded-lg">
+                            <p class="text-sm text-red-600 font-medium">Deadline</p>
+                            <p class="text-lg font-bold text-red-700">${formatDate(opportunity.deadline)}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h4 class="font-medium text-gray-900 mb-3">Action Items</h4>
+                        <div class="space-y-2">
+                            ${opportunity.actions.map((action, index) => `
+                                <div class="flex items-center">
+                                    <div class="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-medium mr-3">
+                                        ${index + 1}
+                                    </div>
+                                    <span class="text-gray-700">${action}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-3">
+                        <button onclick="assignOpportunity('${opportunityId}')" class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700">
+                            Assign to Team
+                        </button>
+                        <button onclick="scheduleReview('${opportunityId}')" class="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700">
+                            Schedule Review
+                        </button>
+                    </div>
+                </div>
+            `;
+            showModal('Opportunity Details', opportunityHTML);
+        }
+
+        function exportSavingsReport() {
+            const reportData = {
+                reportDate: new Date().toLocaleDateString(),
+                summary: {
+                    mtdSavings: savingsData.currentMonth.achieved,
+                    targetAchievement: savingsData.currentMonth.percentage,
+                    categoryBreakdown: savingsData.categories
+                },
+                achievements: savingsData.achievements,
+                opportunities: savingsData.opportunities
+            };
+            
+            // Simulate PDF generation
+            showNotification('Generating savings report PDF...', 'info');
+            
+            setTimeout(() => {
+                // Create downloadable content
+                const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `savings_report_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showNotification('Report exported successfully!', 'success');
+            }, 2000);
+        }
+
+        function scheduleSavingsReview() {
+            const scheduleHTML = `
+                <div class="max-w-md mx-auto">
+                    <h3 class="text-lg font-semibold mb-4">Schedule Savings Review Meeting</h3>
+                    <form onsubmit="confirmSchedule(event)">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Meeting Title</label>
+                                <input type="text" value="Monthly Savings Review" class="w-full rounded-md border-gray-300" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Date & Time</label>
+                                <input type="datetime-local" class="w-full rounded-md border-gray-300" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Attendees</label>
+                                <textarea class="w-full rounded-md border-gray-300" rows="3" 
+                                          placeholder="Enter email addresses, one per line"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Agenda Items</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" checked class="rounded border-gray-300 text-blue-600">
+                                        <span class="ml-2 text-sm">Review MTD performance</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" checked class="rounded border-gray-300 text-blue-600">
+                                        <span class="ml-2 text-sm">Discuss upcoming opportunities</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" class="rounded border-gray-300 text-blue-600">
+                                        <span class="ml-2 text-sm">Review target adjustments</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700">
+                                Schedule Meeting
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            showModal('Schedule Review', scheduleHTML);
+        }
+
+        // Navigation Functions
+        function navigateToBuyerDashboard() {
+            // Check if BuyerDashboard.html exists, otherwise show confirmation
+            const buyerDashboardPath = 'BuyerDashboard.html';
+            
+            // Show a brief loading indicator
+            showNotification('Navigating to Buyer Dashboard...', 'info');
+            
+            // Navigate after a short delay to show the notification
+            setTimeout(() => {
+                try {
+                    window.location.href = buyerDashboardPath;
+                } catch (error) {
+                    // Fallback navigation methods
+                    if (window.history && window.history.length > 1) {
+                        window.history.back();
+                    } else {
+                        // If no history, try to go to the dashboard
+                        window.location.href = './BuyerDashboard.html';
+                    }
+                }
+            }, 500);
+        }
+
+        // Enhanced navigation with confirmation for unsaved changes
+        function navigateWithConfirmation() {
+            // Check if there are any unsaved settings or changes
+            const hasUnsavedChanges = checkForUnsavedChanges();
+            
+            if (hasUnsavedChanges) {
+                const confirmLeave = confirm('You have unsaved changes. Are you sure you want to leave this page?');
+                if (!confirmLeave) {
+                    return false;
+                }
+            }
+            
+            navigateToBuyerDashboard();
+            return true;
+        }
+
+        // Check for unsaved changes in settings or forms
+        function checkForUnsavedChanges() {
+            // Check if settings modal is open with unsaved changes
+            const settingsModal = document.getElementById('settingsModal');
+            if (settingsModal && !settingsModal.classList.contains('hidden')) {
+                // In a real implementation, you would compare current form values with saved values
+                return false; // For now, assume no unsaved changes
+            }
+            return false;
+        }
+
+        // Utility Functions
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-IN');
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            }).format(amount);
+        }
+
+        function showModal(title, content) {
+            const modalHTML = `
+                <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" onclick="closeModal()">
+                    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white" onclick="event.stopPropagation()">
+                        <div class="flex items-center justify-between pb-3 border-b border-gray-200">
+                            <h3 class="text-lg font-semibold">${title}</h3>
+                            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="mt-4">
+                            ${content}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const existingModal = document.querySelector('.fixed.inset-0.z-50');
+            if (existingModal) existingModal.remove();
+            
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+
+        function closeModal() {
+            const modal = document.querySelector('.fixed.inset-0.z-50');
+            if (modal) modal.remove();
+        }
+
+        function showNotification(message, type = 'info') {
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                warning: 'bg-yellow-500',
+                info: 'bg-blue-500'
+            };
+            
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-opacity duration-300`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Initialize enhanced functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update settings button to be functional
+            const settingsBtn = document.querySelector('.fas.fa-cog').parentElement;
+            if (settingsBtn) {
+                settingsBtn.onclick = openSettingsModal;
+            }
+            
+            // Enhanced Interactive Functions continued...
+
+        function viewDetailedAnalysis() {
+            const analysisHTML = `
+                <div class="max-w-6xl mx-auto">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <h4 class="font-medium text-blue-900 mb-2">Performance Metrics</h4>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span>Achievement Rate:</span>
+                                    <span class="font-medium">${savingsData.currentMonth.percentage}%</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Growth Rate:</span>
+                                    <span class="font-medium text-green-600">+${savingsData.currentMonth.growthVsLastMonth}%</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Efficiency Score:</span>
+                                    <span class="font-medium">8.7/10</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <h4 class="font-medium text-green-900 mb-2">Category Performance</h4>
+                            ${savingsData.categories.map(category => `
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span>${category.name.split(' ')[0]}:</span>
+                                    <span class="font-medium">${category.percentage}%</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <div class="bg-purple-50 p-4 rounded-lg">
+                            <h4 class="font-medium text-purple-900 mb-2">Trend Analysis</h4>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span>Best Week:</span>
+                                    <span class="font-medium">Week 3 (₹25.8L)</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Avg Weekly:</span>
+                                    <span class="font-medium">₹20.8L</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Trend:</span>
+                                    <span class="font-medium text-green-600">Positive</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="font-medium text-gray-900 mb-3">Detailed Breakdown</h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white rounded border">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Category</th>
+                                        <th class="px-4 py-2 text-right text-sm font-medium text-gray-700">Amount</th>
+                                        <th class="px-4 py-2 text-right text-sm font-medium text-gray-700">% of Total</th>
+                                        <th class="px-4 py-2 text-right text-sm font-medium text-gray-700">Deals</th>
+                                        <th class="px-4 py-2 text-center text-sm font-medium text-gray-700">Impact</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    ${savingsData.categories.map(category => `
+                                        <tr>
+                                            <td class="px-4 py-2 text-sm text-gray-900">${category.name}</td>
+                                            <td class="px-4 py-2 text-sm text-right font-medium">₹${(category.amount / 100000).toFixed(1)}L</td>
+                                            <td class="px-4 py-2 text-sm text-right">${category.percentage}%</td>
+                                            <td class="px-4 py-2 text-sm text-right">${category.deals ? category.deals.length : '-'}</td>
+                                            <td class="px-4 py-2 text-center">
+                                                <span class="px-2 py-1 text-xs rounded-full ${
+                                                    category.impact === 'High Impact' ? 'bg-red-100 text-red-800' :
+                                                    category.impact === 'Strategic' ? 'bg-blue-100 text-blue-800' :
+                                                    category.impact === 'Efficiency' ? 'bg-purple-100 text-purple-800' :
+                                                    'bg-orange-100 text-orange-800'
+                                                }">${category.impact}</span>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+            showModal('Detailed Savings Analysis', analysisHTML);
+        }
+
+        function setUpAlerts() {
+            openSettingsModal();
+            setTimeout(() => showSettingsTab('alerts'), 100);
+        }
+
+        function compareTargets() {
+            const compareHTML = `
+                <div class="max-w-4xl mx-auto">
+                    <h3 class="text-xl font-semibold mb-6">Target Comparison Analysis</h3>
+                    
+                    <!-- Current vs Previous Period -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-blue-50 p-6 rounded-lg text-center">
+                            <h4 class="font-medium text-blue-900 mb-2">Current Month</h4>
+                            <p class="text-3xl font-bold text-blue-700">₹83.2L</p>
+                            <p class="text-sm text-blue-600">70% of ₹1.19Cr target</p>
+                        </div>
+                        <div class="bg-gray-50 p-6 rounded-lg text-center">
+                            <h4 class="font-medium text-gray-900 mb-2">Last Month</h4>
+                            <p class="text-3xl font-bold text-gray-700">₹74.1L</p>
+                            <p class="text-sm text-gray-600">65% of ₹1.14Cr target</p>
+                        </div>
+                        <div class="bg-green-50 p-6 rounded-lg text-center">
+                            <h4 class="font-medium text-green-900 mb-2">Improvement</h4>
+                            <p class="text-3xl font-bold text-green-700">+12.3%</p>
+                            <p class="text-sm text-green-600">₹9.1L increase</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Quarterly Comparison -->
+                    <div class="bg-white border border-gray-200 rounded-lg p-6">
+                        <h4 class="font-medium text-gray-900 mb-4">Quarterly Performance</h4>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-gray-700">Q3 2025 (Current)</span>
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-64 bg-gray-200 rounded-full h-2">
+                                        <div class="bg-blue-500 h-2 rounded-full" style="width: 70%"></div>
+                                    </div>
+                                    <span class="text-sm font-medium text-blue-600">70% • ₹2.5Cr</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-gray-700">Q2 2025</span>
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-64 bg-gray-200 rounded-full h-2">
+                                        <div class="bg-green-500 h-2 rounded-full" style="width: 105%"></div>
+                                    </div>
+                                    <span class="text-sm font-medium text-green-600">105% • ₹3.6Cr</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-gray-700">Q1 2025</span>
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-64 bg-gray-200 rounded-full h-2">
+                                        <div class="bg-orange-500 h-2 rounded-full" style="width: 85%"></div>
+                                    </div>
+                                    <span class="text-sm font-medium text-orange-600">85% • ₹2.8Cr</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            showModal('Target Comparison', compareHTML);
+        }
+
+        function forecastSavings() {
+            const forecastHTML = `
+                <div class="max-w-5xl mx-auto">
+                    <h3 class="text-xl font-semibold mb-6">Savings Forecast Analysis</h3>
+                    
+                    <!-- Current Month Projection -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-blue-50 p-6 rounded-lg">
+                            <h4 class="font-medium text-blue-900 mb-2">Month-End Projection</h4>
+                            <p class="text-2xl font-bold text-blue-700">₹1.24Cr</p>
+                            <p class="text-sm text-blue-600">104% of target • +₹5L buffer</p>
+                            <div class="mt-3 text-xs text-blue-500">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Based on current trend + pending opportunities
+                            </div>
+                        </div>
+                        
+                        <div class="bg-green-50 p-6 rounded-lg">
+                            <h4 class="font-medium text-green-900 mb-2">Q3 Projection</h4>
+                            <p class="text-2xl font-bold text-green-700">₹3.8Cr</p>
+                            <p class="text-sm text-green-600">106% of target • Exceeding goal</p>
+                            <div class="mt-3 text-xs text-green-500">
+                                <i class="fas fa-trending-up mr-1"></i>
+                                Strong performance trajectory
+                            </div>
+                        </div>
+                        
+                        <div class="bg-purple-50 p-6 rounded-lg">
+                            <h4 class="font-medium text-purple-900 mb-2">Annual Projection</h4>
+                            <p class="text-2xl font-bold text-purple-700">₹15.2Cr</p>
+                            <p class="text-sm text-purple-600">106% of target • On track</p>
+                            <div class="mt-3 text-xs text-purple-500">
+                                <i class="fas fa-chart-line mr-1"></i>
+                                Consistent growth pattern
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recommended Actions -->
+                    <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+                        <h4 class="font-medium text-blue-900 mb-4">Recommended Actions</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <h5 class="text-sm font-medium text-blue-800">Immediate (This Week)</h5>
+                                <ul class="text-sm text-blue-700 space-y-1">
+                                    <li>• Accelerate marketing contract renewal</li>
+                                    <li>• Complete cloud services optimization</li>
+                                    <li>• Finalize Q4 bulk purchase agreements</li>
+                                </ul>
+                            </div>
+                            <div class="space-y-2">
+                                <h5 class="text-sm font-medium text-blue-800">Next Month</h5>
+                                <ul class="text-sm text-blue-700 space-y-1">
+                                    <li>• Launch vendor consolidation project</li>
+                                    <li>• Review all recurring service contracts</li>
+                                    <li>• Implement advanced analytics tools</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            showModal('Savings Forecast', forecastHTML);
+        }
+
+        // Initialize all functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add settings modal to page
+            document.body.insertAdjacentHTML('beforeend', settingsModalHTML);
+            
+            // Animate progress bars and charts
+            setTimeout(() => {
+                document.querySelectorAll('.chart-bar').forEach(bar => {
+                    bar.style.transition = 'all 1s ease-in-out';
+                });
+            }, 500);
+
+            // Add hover effects to cards
+            document.querySelectorAll('.savings-card').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.classList.add('shadow-lg');
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.classList.remove('shadow-lg');
+                });
+            });
+
+            // Initialize keyboard shortcuts for navigation
+            document.addEventListener('keydown', function(e) {
+                // Alt + B for back to dashboard
+                if (e.altKey && e.key === 'b') {
+                    e.preventDefault();
+                    navigateToBuyerDashboard();
+                }
+                
+                // Escape key to close modals
+                if (e.key === 'Escape') {
+                    closeModal();
+                    closeSettingsModal();
+                }
+            });
+
+            // Apply initial settings
+            applySettings();
+            
+            // Start real-time updates simulation
+            setTimeout(() => {
+                simulateRealTimeUpdates();
+            }, 5000);
+
+            // Simulate real-time updates (basic version)
+            setInterval(() => {
+                console.log('Savings metrics updated');
+            }, 60000);
+        });
+
+        // Counter animation for main savings amount
+        function animateCounter(element, target, duration = 2000) {
+            const start = 0;
+            const increment = target / (duration / 16);
+            let current = start;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+                element.textContent = `₹${current.toFixed(1)}L`;
+            }, 16);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PR & PO Tracking - Buyer Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body{font-family:'Inter',sans-serif}
+    .card{transition:transform .2s ease, box-shadow .2s ease}
+    .card:hover{transform:translateY(-2px); box-shadow:0 10px 25px rgba(0,0,0,.07)}
+    .gradient-blue{background:linear-gradient(135deg,#3b82f6 0%,#1d4ed8 100%)}
+    .gradient-green{background:linear-gradient(135deg,#10b981 0%,#059669 100%)}
+    .gradient-purple{background:linear-gradient(135deg,#8b5cf6 0%,#7c3aed 100%)}
+    .gradient-orange{background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%)}
+    .gradient-red{background:linear-gradient(135deg,#ef4444 0%,#dc2626 100%)}
+    .gradient-yellow{background:linear-gradient(135deg,#eab308 0%,#ca8a04 100%)}
+    .gradient-teal{background:linear-gradient(135deg,#14b8a6 0%,#0d9488 100%)}
+    .badge{padding:.25rem .5rem; border-radius:9999px; font-size:.75rem; font-weight:600}
+    .pill{padding:.125rem .5rem; border-radius:9999px; font-size:.75rem; font-weight:600}
+    
+    .timeline-item{position:relative;padding-left:2rem}
+    .timeline-item::before{content:'';position:absolute;left:0.375rem;top:0.5rem;width:0.5rem;height:0.5rem;border-radius:50%;background:#d1d5db}
+    .timeline-item::after{content:'';position:absolute;left:0.625rem;top:1rem;width:2px;height:calc(100% - 0.5rem);background:#e5e7eb}
+    .timeline-item:last-child::after{display:none}
+    .timeline-item.completed::before{background:#10b981}
+    .timeline-item.current::before{background:#f59e0b;animation:pulse 2s infinite}
+    .timeline-item.delayed::before{background:#ef4444}
+    
+    .progress-bar{height:0.5rem;background:#e5e7eb;border-radius:0.25rem;overflow:hidden}
+    .progress-fill{height:100%;transition:width 0.3s ease}
+    
+    .status-draft{background:#f3f4f6;color:#374151;border:1px solid #d1d5db}
+    .status-submitted{background:#fef3c7;color:#92400e;border:1px solid #fcd34d}
+    .status-approved{background:#d1fae5;color:#065f46;border:1px solid #a7f3d0}
+    .status-rejected{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
+    .status-in-progress{background:#dbeafe;color:#1e40af;border:1px solid #93c5fd}
+    .status-completed{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
+    .status-cancelled{background:#f5f5f5;color:#525252;border:1px solid #d4d4d8}
+    
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <!-- Header -->
+  <header class="bg-white border-b">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="h-16 flex items-center justify-between">
+        <div class="flex items-center">
+          <button class="mr-3 p-2 rounded-lg hover:bg-gray-100" title="Back to Buyer Dashboard (Alt+B)" onclick="navBack()">
+            <i class="fas fa-arrow-left text-gray-600"></i>
+          </button>
+          <h1 class="text-xl font-semibold text-gray-900">PR & PO Tracking</h1>
+          <span class="ml-3 badge bg-green-100 text-green-800"><i class="fas fa-route mr-1"></i>Live Tracking</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="exportTrackingReport()" class="p-2 rounded-lg hover:bg-gray-100" title="Export Report"><i class="fas fa-download text-gray-600"></i></button>
+          <button onclick="refreshTracking()" class="p-2 rounded-lg hover:bg-gray-100" title="Refresh"><i class="fas fa-sync-alt text-gray-600"></i></button>
+          <button onclick="openTrackingSettings()" class="p-2 rounded-lg hover:bg-gray-100" title="Settings"><i class="fas fa-cog text-gray-600"></i></button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Breadcrumb -->
+    <nav class="flex mb-6" aria-label="Breadcrumb">
+      <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+          <button onclick="navBack()" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+            <i class="fas fa-home w-4 h-4 mr-2"></i>Buyer Dashboard
+          </button>
+        </li>
+        <li class="inline-flex items-center text-sm text-gray-500">
+          <i class="fas fa-chevron-right w-4 h-4 text-gray-400 mx-1"></i>
+          PR & PO Tracking
+        </li>
+      </ol>
+    </nav>
+
+    <!-- Tracking Overview Metrics -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
+      <div class="bg-white rounded-xl p-6 card">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Active PRs</p>
+            <p class="text-3xl font-bold text-blue-600">10</p>
+            <p class="text-xs text-blue-600">In workflow</p>
+          </div>
+          <div class="p-3 bg-blue-100 rounded-full"><i class="fas fa-file-alt text-blue-600"></i></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-6 card">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Active POs</p>
+            <p class="text-3xl font-bold text-green-600">11</p>
+            <p class="text-xs text-green-600">Being processed</p>
+          </div>
+          <div class="p-3 bg-green-100 rounded-full"><i class="fas fa-shopping-cart text-green-600"></i></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-6 card">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Completed</p>
+            <p class="text-3xl font-bold text-purple-600">4</p>
+            <p class="text-xs text-purple-600">This month</p>
+          </div>
+          <div class="p-3 bg-purple-100 rounded-full"><i class="fas fa-check-circle text-purple-600"></i></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-6 card">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Issues</p>
+            <p class="text-3xl font-bold text-red-600">4</p>
+            <p class="text-xs text-red-600">Need attention</p>
+          </div>
+          <div class="p-3 bg-red-100 rounded-full"><i class="fas fa-exclamation-triangle text-red-600"></i></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-6 card">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Avg. PR Cycle</p>
+            <p class="text-3xl font-bold text-orange-600">5.2</p>
+            <p class="text-xs text-orange-600">Days (PR to PO)</p>
+          </div>
+          <div class="p-3 bg-orange-100 rounded-full"><i class="fas fa-clock text-orange-600"></i></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-6 card">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Total Value</p>
+            <p class="text-3xl font-bold text-teal-600">₹2.8Cr</p>
+            <p class="text-xs text-teal-600">Under tracking</p>
+          </div>
+          <div class="p-3 bg-teal-100 rounded-full"><i class="fas fa-indian-rupee-sign text-teal-600"></i></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Search & Filters -->
+    <section class="bg-white rounded-xl p-6 card mb-8">
+      <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 flex-1">
+          <div>
+            <label class="text-sm text-gray-600">Search ID</label>
+            <input id="searchId" class="w-full border rounded-lg p-2" placeholder="PR/PO Number" oninput="applyFilters()" />
+          </div>
+          <div>
+            <label class="text-sm text-gray-600">Type</label>
+            <select id="fType" class="w-full border rounded-lg p-2" onchange="applyFilters()">
+              <option value="">All Types</option>
+              <option>PR</option>
+              <option>PO</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-sm text-gray-600">Status</label>
+            <select id="fStatus" class="w-full border rounded-lg p-2" onchange="applyFilters()">
+              <option value="">All Status</option>
+              <option>Draft</option>
+              <option>Submitted</option>
+              <option>Approved</option>
+              <option>In Progress</option>
+              <option>Completed</option>
+              <option>Rejected</option>
+              <option>Cancelled</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-sm text-gray-600">Department</label>
+            <select id="fDepartment" class="w-full border rounded-lg p-2" onchange="applyFilters()">
+              <option value="">All Departments</option>
+              <option>IT</option>
+              <option>Operations</option>
+              <option>Marketing</option>
+              <option>Finance</option>
+              <option>HR</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-sm text-gray-600">Priority</label>
+            <select id="fPriority" class="w-full border rounded-lg p-2" onchange="applyFilters()">
+              <option value="">All Priority</option>
+              <option>Urgent</option>
+              <option>High</option>
+              <option>Medium</option>
+              <option>Low</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="px-3 py-2 gradient-blue text-white rounded-lg hover:opacity-90" onclick="applyFilters()"><i class="fas fa-search mr-2"></i>Search</button>
+          <button class="px-3 py-2 border rounded-lg hover:bg-gray-50" onclick="resetFilters()">Reset</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tracking Table -->
+    <section class="bg-white rounded-xl overflow-hidden card mb-8">
+      <div class="px-6 py-4 border-b flex items-center justify-between">
+        <h3 class="text-lg font-semibold text-gray-900"><i class="fas fa-list-ul mr-2 text-blue-600"></i>PR & PO Tracking List</h3>
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-gray-500" id="trackingCount">Showing 42 items</span>
+          <button class="px-3 py-2 gradient-green text-white rounded-lg hover:opacity-90" onclick="exportVisible()"><i class="fas fa-file-export mr-2"></i>Export Visible</button>
+        </div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">ID & Type</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Title</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Requestor/Dept</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Amount</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Progress</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Timeline</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="trackingTable" class="bg-white divide-y"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Recent Activity Timeline -->
+    <section class="bg-white rounded-xl p-6 card">
+      <h3 class="text-lg font-semibold text-gray-900 mb-6"><i class="fas fa-history mr-2 text-green-600"></i>Recent Tracking Activity</h3>
+      <div id="activityTimeline" class="space-y-4 max-h-96 overflow-y-auto"></div>
+    </section>
+  </main>
+
+  <!-- Tracking Details Modal -->
+  <div id="modal" class="hidden fixed inset-0 bg-gray-700/50 z-50">
+    <div class="relative max-w-5xl mx-auto bg-white rounded-xl shadow-xl mt-8 max-h-[85vh] overflow-y-auto">
+      <div class="flex items-center justify-between px-6 py-4 border-b">
+        <h3 class="text-lg font-semibold" id="modalTitle">Tracking Details</h3>
+        <button class="p-2 hover:bg-gray-100 rounded-lg" onclick="closeModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div id="modalBody" class="p-6"></div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="hidden fixed top-4 right-4 text-white px-4 py-2 rounded-lg shadow-lg"></div>
+
+  <script>
+    const Rs = n => '₹' + (Number(n)||0).toLocaleString('en-IN');
+    const el = id => document.getElementById(id);
+
+    function navBack(){ try{ showToast('Back to Buyer Dashboard','info'); setTimeout(()=>location.href='BuyerDashboard.html',350);}catch{ history.back(); } }
+
+    // Enhanced tracking data with detailed PR and PO workflows
+    const trackingData = [
+      // Purchase Requests (PRs)
+      {
+        id: 'PR-2024-001',
+        type: 'PR',
+        title: 'Marketing Campaign Supplies',
+        requestor: 'Priya Sharma',
+        department: 'Marketing',
+        amount: 250000,
+        status: 'Finance Approval',
+        progress: 65,
+        priority: 'High',
+        createdDate: '2024-01-15',
+        expectedCompletion: '2024-02-15',
+        currentStage: 'Finance Approval',
+        description: 'Digital marketing campaign materials, banners, promotional items',
+        justification: 'Q1 product launch campaign requirements',
+        budgetCode: 'MKT-2024-Q1',
+        deliveryDate: '2024-02-15',
+        items: [
+          { description: 'Banner Printing', quantity: 50, unitPrice: 2500, total: 125000 },
+          { description: 'Promotional Items', quantity: 1000, unitPrice: 125, total: 125000 }
+        ],
+        nextApprover: 'Amit Singh (Finance Head)',
+        timeline: [
+          { stage: 'Request Created', status: 'completed', date: '15 Jan 2024', user: 'Priya Sharma', comments: 'Campaign materials for Q1 launch', time: '09:15 AM' },
+          { stage: 'Supervisor Review', status: 'completed', date: '15 Jan 2024', user: 'Marketing Supervisor', comments: 'Budget allocation verified', time: '02:30 PM' },
+          { stage: 'Department Head Approval', status: 'completed', date: '16 Jan 2024', user: 'Rajesh Kumar', comments: 'Approved with priority marking', time: '11:45 AM' },
+          { stage: 'Finance Approval', status: 'current', date: '', user: 'Amit Singh', comments: '', time: '' },
+          { stage: 'Procurement Review', status: 'pending', date: '', user: 'Procurement Team', comments: '', time: '' },
+          { stage: 'Final Approval', status: 'pending', date: '', user: 'CEO', comments: '', time: '' }
+        ]
+      },
+      {
+        id: 'PR-2024-002',
+        type: 'PR',
+        title: 'IT Equipment Upgrade',
+        requestor: 'Suresh Kumar',
+        department: 'IT',
+        amount: 1520000,
+        status: 'CEO Approval',
+        progress: 85,
+        priority: 'High',
+        createdDate: '2024-01-12',
+        expectedCompletion: '2024-03-01',
+        currentStage: 'CEO Approval',
+        description: 'Server hardware upgrade and laptop replacement',
+        justification: 'Critical infrastructure upgrade to support business growth',
+        budgetCode: 'IT-CAP-2024',
+        deliveryDate: '2024-03-01',
+        items: [
+          { description: 'Dell Server R750', quantity: 2, unitPrice: 450000, total: 900000 },
+          { description: 'Business Laptops', quantity: 15, unitPrice: 42000, total: 630000 }
+        ],
+        nextApprover: 'CEO',
+        timeline: [
+          { stage: 'Request Created', status: 'completed', date: '12 Jan 2024', user: 'Suresh Kumar', comments: 'Critical infrastructure needs', time: '10:00 AM' },
+          { stage: 'Technical Review', status: 'completed', date: '12 Jan 2024', user: 'Senior IT Analyst', comments: 'Technical specifications verified', time: '03:15 PM' },
+          { stage: 'IT Head Approval', status: 'completed', date: '13 Jan 2024', user: 'IT Head', comments: 'High priority approval', time: '09:30 AM' },
+          { stage: 'Finance Approval', status: 'completed', date: '14 Jan 2024', user: 'Finance Head', comments: 'Budget allocation confirmed', time: '11:20 AM' },
+          { stage: 'Procurement Review', status: 'completed', date: '15 Jan 2024', user: 'Procurement Head', comments: 'Vendor evaluation complete', time: '02:45 PM' },
+          { stage: 'CEO Approval', status: 'current', date: '', user: 'CEO', comments: '', time: '' }
+        ]
+      },
+      {
+        id: 'PR-2024-003',
+        type: 'PR',
+        title: 'Office Supplies Quarterly',
+        requestor: 'Admin Team',
+        department: 'Admin',
+        amount: 85000,
+        status: 'Completed',
+        progress: 100,
+        priority: 'Medium',
+        createdDate: '2024-01-08',
+        expectedCompletion: '2024-01-25',
+        currentStage: 'Completed',
+        description: 'Quarterly office supplies replenishment',
+        justification: 'Regular operational requirements',
+        budgetCode: 'ADM-OPR-2024',
+        deliveryDate: '2024-01-25',
+        completedDate: '2024-01-20',
+        items: [
+          { description: 'Stationery Items', quantity: 1, unitPrice: 45000, total: 45000 },
+          { description: 'Printer Supplies', quantity: 1, unitPrice: 40000, total: 40000 }
+        ],
+        nextApprover: 'None',
+        timeline: [
+          { stage: 'Request Created', status: 'completed', date: '08 Jan 2024', user: 'Admin Team', comments: 'Routine quarterly supplies', time: '08:45 AM' },
+          { stage: 'Supervisor Review', status: 'completed', date: '08 Jan 2024', user: 'Admin Supervisor', comments: 'Standard approval', time: '01:20 PM' },
+          { stage: 'Department Head Approval', status: 'completed', date: '09 Jan 2024', user: 'Admin Head', comments: 'Approved for processing', time: '10:15 AM' },
+          { stage: 'Finance Approval', status: 'completed', date: '09 Jan 2024', user: 'Finance Team', comments: 'Budget available', time: '03:30 PM' },
+          { stage: 'Procurement Processing', status: 'completed', date: '10 Jan 2024', user: 'Procurement Team', comments: 'Converted to PO', time: '09:00 AM' }
+        ]
+      },
+      {
+        id: 'PR-2024-004',
+        type: 'PR',
+        title: 'Training Programs Annual',
+        requestor: 'HR Department',
+        department: 'HR',
+        amount: 180000,
+        status: 'Rejected',
+        progress: 40,
+        priority: 'Medium',
+        createdDate: '2024-01-05',
+        expectedCompletion: '2024-02-20',
+        currentStage: 'Rejected',
+        description: 'Annual employee training and development programs',
+        justification: 'Employee skill development and compliance training',
+        budgetCode: 'HR-TRN-2024',
+        rejectionReason: 'Budget reallocation needed - resubmit in Q2',
+        timeline: [
+          { stage: 'Request Created', status: 'completed', date: '05 Jan 2024', user: 'HR Team', comments: 'Annual training requirements', time: '11:30 AM' },
+          { stage: 'HR Head Review', status: 'completed', date: '06 Jan 2024', user: 'HR Head', comments: 'Training plan approved', time: '02:15 PM' },
+          { stage: 'Finance Review', status: 'completed', date: '08 Jan 2024', user: 'Finance Team', comments: 'Budget constraints identified', time: '10:45 AM' },
+          { stage: 'Budget Approval', status: 'rejected', date: '09 Jan 2024', user: 'CFO', comments: 'Budget reallocation required', time: '04:20 PM' }
+        ]
+      },
+      // Purchase Orders (POs)
+      {
+        id: 'PO-2024-001',
+        type: 'PO',
+        title: 'Office Furniture Purchase',
+        requestor: 'Procurement Team',
+        department: 'Admin',
+        amount: 830000,
+        status: 'Supplier Processing',
+        progress: 75,
+        priority: 'Medium',
+        createdDate: '2024-01-10',
+        expectedCompletion: '2024-02-15',
+        currentStage: 'Production/Processing',
+        supplier: 'Global Furniture Ltd',
+        supplierContact: 'supplier@globalfurniture.com',
+        paymentTerms: '30 Days Net',
+        deliveryDate: '2024-02-15',
+        shippingAddress: 'Corporate Office, Bangalore',
+        poType: 'Standard PO',
+        linkedPR: 'PR-2024-004',
+        items: [
+          { description: 'Executive Desks', quantity: 10, unitPrice: 25000, total: 250000 },
+          { description: 'Office Chairs', quantity: 25, unitPrice: 12000, total: 300000 },
+          { description: 'Meeting Tables', quantity: 3, unitPrice: 45000, total: 135000 },
+          { description: 'Storage Cabinets', quantity: 15, unitPrice: 18000, total: 270000 }
+        ],
+        nextAction: 'Awaiting Delivery Confirmation',
+        timeline: [
+          { stage: 'PO Created', status: 'completed', date: '10 Jan 2024', user: 'Procurement Team', comments: 'Generated from PR-2024-004', time: '10:30 AM' },
+          { stage: 'Finance Verification', status: 'completed', date: '10 Jan 2024', user: 'Finance Team', comments: 'Budget and pricing verified', time: '02:15 PM' },
+          { stage: 'Legal Review', status: 'completed', date: '11 Jan 2024', user: 'Legal Team', comments: 'Terms and conditions approved', time: '09:20 AM' },
+          { stage: 'Department Approval', status: 'completed', date: '11 Jan 2024', user: 'Admin Head', comments: 'Final approval granted', time: '11:45 AM' },
+          { stage: 'Sent to Supplier', status: 'completed', date: '11 Jan 2024', user: 'System', comments: 'PO transmitted electronically', time: '03:00 PM' },
+          { stage: 'Supplier Acknowledgment', status: 'completed', date: '12 Jan 2024', user: 'Global Furniture Ltd', comments: 'Order accepted, processing initiated', time: '10:15 AM' },
+          { stage: 'Production/Processing', status: 'current', date: '', user: 'Supplier', comments: '', time: '' },
+          { stage: 'Delivery', status: 'pending', date: '', user: 'Supplier', comments: '', time: '' },
+          { stage: 'Goods Receipt', status: 'pending', date: '', user: 'Warehouse Team', comments: '', time: '' },
+          { stage: 'Invoice Processing', status: 'pending', date: '', user: 'Finance Team', comments: '', time: '' }
+        ]
+      },
+      {
+        id: 'PO-2024-002',
+        type: 'PO',
+        title: 'Software Licenses Annual',
+        requestor: 'IT Procurement',
+        department: 'IT',
+        amount: 1280000,
+        status: 'Invoice Processing',
+        progress: 90,
+        priority: 'High',
+        createdDate: '2024-01-05',
+        expectedCompletion: '2024-01-20',
+        currentStage: 'Payment Processing',
+        supplier: 'Microsoft India Pvt Ltd',
+        supplierContact: 'enterprise@microsoft.com',
+        paymentTerms: '15 Days Net',
+        deliveryDate: '2024-01-20',
+        shippingAddress: 'IT Department, Head Office',
+        poType: 'Service PO',
+        linkedPR: 'PR-2024-005',
+        items: [
+          { description: 'Office 365 Enterprise Licenses', quantity: 100, unitPrice: 8500, total: 850000 },
+          { description: 'Azure Cloud Credits', quantity: 1, unitPrice: 430000, total: 430000 }
+        ],
+        nextAction: 'Payment Processing',
+        timeline: [
+          { stage: 'PO Created', status: 'completed', date: '05 Jan 2024', user: 'IT Procurement', comments: 'Annual license renewal', time: '09:00 AM' },
+          { stage: 'Technical Verification', status: 'completed', date: '05 Jan 2024', user: 'IT Architecture Team', comments: 'License requirements validated', time: '11:30 AM' },
+          { stage: 'Finance Approval', status: 'completed', date: '05 Jan 2024', user: 'Finance Head', comments: 'Budget pre-approved', time: '02:45 PM' },
+          { stage: 'IT Head Approval', status: 'completed', date: '06 Jan 2024', user: 'IT Head', comments: 'Critical business requirement', time: '08:30 AM' },
+          { stage: 'Sent to Supplier', status: 'completed', date: '06 Jan 2024', user: 'System', comments: 'Electronic PO transmission', time: '10:00 AM' },
+          { stage: 'Supplier Acknowledgment', status: 'completed', date: '06 Jan 2024', user: 'Microsoft', comments: 'Order confirmed and processed', time: '11:15 AM' },
+          { stage: 'License Activation', status: 'completed', date: '07 Jan 2024', user: 'Microsoft', comments: 'Licenses activated successfully', time: '09:45 AM' },
+          { stage: 'Delivery Confirmation', status: 'completed', date: '07 Jan 2024', user: 'IT Team', comments: 'Access verified and documented', time: '03:20 PM' },
+          { stage: 'Invoice Received', status: 'completed', date: '08 Jan 2024', user: 'Finance Team', comments: 'Invoice processing initiated', time: '10:30 AM' },
+          { stage: 'Payment Processing', status: 'current', date: '', user: 'Finance Team', comments: '', time: '' }
+        ]
+      },
+      {
+        id: 'PO-2024-003',
+        type: 'PO',
+        title: 'Catering Services Contract',
+        requestor: 'HR Team',
+        department: 'HR',
+        amount: 420000,
+        status: 'Active',
+        progress: 100,
+        priority: 'Medium',
+        createdDate: '2024-01-03',
+        expectedCompletion: 'Ongoing Service',
+        currentStage: 'Service Delivery',
+        supplier: 'Fresh Meals Catering',
+        supplierContact: 'orders@freshmeals.com',
+        paymentTerms: 'Monthly Payment',
+        deliveryDate: 'Ongoing Service',
+        shippingAddress: 'Office Cafeteria',
+        poType: 'Service Contract',
+        linkedPR: 'PR-2024-006',
+        items: [
+          { description: 'Daily Lunch Service', quantity: 30, unitPrice: 8500, total: 255000 },
+          { description: 'Evening Snacks', quantity: 30, unitPrice: 2500, total: 75000 },
+          { description: 'Special Event Catering', quantity: 12, unitPrice: 7500, total: 90000 }
+        ],
+        nextAction: 'Monthly Review',
+        timeline: [
+          { stage: 'PO Created', status: 'completed', date: '03 Jan 2024', user: 'HR Team', comments: 'Annual catering contract', time: '11:00 AM' },
+          { stage: 'Vendor Evaluation', status: 'completed', date: '03 Jan 2024', user: 'HR Manager', comments: 'Quality and pricing assessment', time: '02:30 PM' },
+          { stage: 'Finance Approval', status: 'completed', date: '04 Jan 2024', user: 'Finance Team', comments: 'Annual budget allocation', time: '09:15 AM' },
+          { stage: 'HR Head Approval', status: 'completed', date: '04 Jan 2024', user: 'HR Head', comments: 'Service level agreement reviewed', time: '11:45 AM' },
+          { stage: 'Contract Execution', status: 'completed', date: '05 Jan 2024', user: 'Legal Team', comments: 'Contract terms finalized', time: '10:20 AM' },
+          { stage: 'Service Commencement', status: 'completed', date: '08 Jan 2024', user: 'Fresh Meals', comments: 'Service delivery started', time: '08:00 AM' },
+          { stage: 'Ongoing Service', status: 'completed', date: '08 Jan 2024', user: 'Supplier', comments: 'Daily service delivery', time: 'Ongoing' }
+        ]
+      },
+      {
+        id: 'PO-2024-004',
+        type: 'PO',
+        title: 'Security System Upgrade',
+        requestor: 'Security Team',
+        department: 'Security',
+        amount: 650000,
+        status: 'Delivered',
+        progress: 100,
+        priority: 'High',
+        createdDate: '2023-12-28',
+        expectedCompletion: '2024-01-15',
+        currentStage: 'Completed',
+        supplier: 'SecureTech Solutions',
+        supplierContact: 'support@securetech.com',
+        paymentTerms: '30 Days Net',
+        deliveryDate: '2024-01-15',
+        shippingAddress: 'Main Office Building',
+        poType: 'Standard PO',
+        linkedPR: 'PR-2023-089',
+        completedDate: '2024-01-14',
+        items: [
+          { description: 'CCTV Camera Systems', quantity: 20, unitPrice: 15000, total: 300000 },
+          { description: 'Access Control Systems', quantity: 8, unitPrice: 25000, total: 200000 },
+          { description: 'Installation & Configuration', quantity: 1, unitPrice: 150000, total: 150000 }
+        ],
+        nextAction: 'None - Completed',
+        timeline: [
+          { stage: 'PO Created', status: 'completed', date: '28 Dec 2023', user: 'Security Team', comments: 'Urgent security upgrade', time: '02:00 PM' },
+          { stage: 'Technical Review', status: 'completed', date: '29 Dec 2023', user: 'IT Security', comments: 'Technical specifications approved', time: '10:30 AM' },
+          { stage: 'Security Head Approval', status: 'completed', date: '29 Dec 2023', user: 'Security Head', comments: 'High priority approval', time: '03:15 PM' },
+          { stage: 'Finance Approval', status: 'completed', date: '02 Jan 2024', user: 'Finance Team', comments: 'Emergency budget allocation', time: '09:45 AM' },
+          { stage: 'Sent to Supplier', status: 'completed', date: '02 Jan 2024', user: 'System', comments: 'Urgent PO transmitted', time: '11:00 AM' },
+          { stage: 'Supplier Acknowledgment', status: 'completed', date: '03 Jan 2024', user: 'SecureTech', comments: 'Expedited processing confirmed', time: '08:30 AM' },
+          { stage: 'Installation Scheduled', status: 'completed', date: '08 Jan 2024', user: 'SecureTech', comments: 'Installation team scheduled', time: '02:20 PM' },
+          { stage: 'Installation Completed', status: 'completed', date: '12 Jan 2024', user: 'SecureTech', comments: 'System installed and tested', time: '05:30 PM' },
+          { stage: 'Delivery & Sign-off', status: 'completed', date: '14 Jan 2024', user: 'Security Team', comments: 'System accepted and operational', time: '11:15 AM' }
+        ]
+      },
+      // Additional Purchase Requests
+      {
+        id: 'PR-2024-005',
+        type: 'PR',
+        title: 'Research Lab Equipment',
+        requestor: 'Dr. Anita Desai',
+        department: 'R&D',
+        amount: 2800000,
+        status: 'Draft',
+        progress: 10,
+        priority: 'Medium',
+        createdDate: '2024-01-18',
+        expectedCompletion: '2024-03-15',
+        currentStage: 'Initial Review',
+        description: 'Advanced research laboratory equipment for product development',
+        justification: 'Critical for new product research and development initiatives',
+        budgetCode: 'RD-LAB-2024',
+        deliveryDate: '2024-03-15',
+        items: [
+          { description: 'Spectrophotometer', quantity: 1, unitPrice: 1200000, total: 1200000 },
+          { description: 'Chemical Analyzer', quantity: 1, unitPrice: 800000, total: 800000 },
+          { description: 'Lab Furniture & Setup', quantity: 1, unitPrice: 800000, total: 800000 }
+        ],
+        nextApprover: 'R&D Supervisor',
+        timeline: [
+          { stage: 'Request Created', status: 'completed', date: '18 Jan 2024', user: 'Dr. Anita Desai', comments: 'Equipment requirements for Q2 research', time: '02:30 PM' },
+          { stage: 'Initial Review', status: 'current', date: '', user: 'R&D Supervisor', comments: '', time: '' },
+          { stage: 'Technical Evaluation', status: 'pending', date: '', user: 'Technical Team', comments: '', time: '' },
+          { stage: 'R&D Head Approval', status: 'pending', date: '', user: 'R&D Head', comments: '', time: '' },
+          { stage: 'Finance Approval', status: 'pending', date: '', user: 'Finance Head', comments: '', time: '' },
+          { stage: 'CEO Approval', status: 'pending', date: '', user: 'CEO', comments: '', time: '' }
+        ]
+      },
+      {
+        id: 'PR-2024-006',
+        type: 'PR',
+        title: 'Vehicle Fleet Maintenance',
+        requestor: 'Transport Manager',
+        department: 'Operations',
+        amount: 320000,
+        status: 'Submitted',
+        progress: 30,
+        priority: 'High',
+        createdDate: '2024-01-17',
+        expectedCompletion: '2024-02-10',
+        currentStage: 'Department Review',
+        description: 'Quarterly maintenance and repairs for company vehicle fleet',
+        justification: 'Mandatory maintenance to ensure vehicle safety and compliance',
+        budgetCode: 'OPS-VEH-2024',
+        deliveryDate: '2024-02-10',
+        items: [
+          { description: 'Engine Servicing', quantity: 12, unitPrice: 15000, total: 180000 },
+          { description: 'Tire Replacement', quantity: 20, unitPrice: 4500, total: 90000 },
+          { description: 'General Repairs', quantity: 1, unitPrice: 50000, total: 50000 }
+        ],
+        nextApprover: 'Operations Head',
+        timeline: [
+          { stage: 'Request Created', status: 'completed', date: '17 Jan 2024', user: 'Transport Manager', comments: 'Quarterly fleet maintenance due', time: '11:00 AM' },
+          { stage: 'Supervisor Review', status: 'completed', date: '17 Jan 2024', user: 'Fleet Supervisor', comments: 'Maintenance schedule verified', time: '04:15 PM' },
+          { stage: 'Department Review', status: 'current', date: '', user: 'Operations Head', comments: '', time: '' },
+          { stage: 'Finance Approval', status: 'pending', date: '', user: 'Finance Team', comments: '', time: '' },
+          { stage: 'Procurement Processing', status: 'pending', date: '', user: 'Procurement Team', comments: '', time: '' }
+        ]
+      },
+      {
+        id: 'PR-2024-007',
+        type: 'PR',
+        title: 'Employee Wellness Program',
+        requestor: 'Wellness Coordinator',
+        department: 'HR',
+        amount: 450000,
+        status: 'Under Review',
+        progress: 55,
+        priority: 'Medium',
+        createdDate: '2024-01-14',
+        expectedCompletion: '2024-02-28',
+        currentStage: 'Budget Review',
+        description: 'Comprehensive employee wellness and health programs',
+        justification: 'Employee health and wellness initiative for improved productivity',
+        budgetCode: 'HR-WEL-2024',
+        deliveryDate: '2024-02-28',
+        items: [
+          { description: 'Gym Equipment', quantity: 1, unitPrice: 200000, total: 200000 },
+          { description: 'Wellness Sessions', quantity: 24, unitPrice: 8000, total: 192000 },
+          { description: 'Health Checkup Packages', quantity: 100, unitPrice: 580, total: 58000 }
+        ],
+        nextApprover: 'Finance Head',
+        timeline: [
+          { stage: 'Request Created', status: 'completed', date: '14 Jan 2024', user: 'Wellness Coordinator', comments: 'Annual wellness program planning', time: '09:45 AM' },
+          { stage: 'HR Review', status: 'completed', date: '15 Jan 2024', user: 'HR Manager', comments: 'Program benefits assessed', time: '11:30 AM' },
+          { stage: 'HR Head Approval', status: 'completed', date: '16 Jan 2024', user: 'HR Head', comments: 'Employee wellness priority', time: '02:20 PM' },
+          { stage: 'Budget Review', status: 'current', date: '', user: 'Finance Head', comments: '', time: '' },
+          { stage: 'Final Approval', status: 'pending', date: '', user: 'Management', comments: '', time: '' }
+        ]
+      },
+      {
+        id: 'PR-2024-008',
+        type: 'PR',
+        title: 'Cloud Infrastructure Migration',
+        requestor: 'Cloud Architect',
+        department: 'IT',
+        amount: 1890000,
+        status: 'Approved',
+        progress: 95,
+        priority: 'High',
+        createdDate: '2024-01-09',
+        expectedCompletion: '2024-01-25',
+        currentStage: 'PO Generation',
+        description: 'Migration of legacy systems to cloud infrastructure',
+        justification: 'Critical infrastructure modernization for scalability and security',
+        budgetCode: 'IT-CLD-2024',
+        deliveryDate: '2024-01-25',
+        items: [
+          { description: 'AWS Cloud Credits', quantity: 1, unitPrice: 1200000, total: 1200000 },
+          { description: 'Migration Services', quantity: 1, unitPrice: 490000, total: 490000 },
+          { description: 'Training & Support', quantity: 1, unitPrice: 200000, total: 200000 }
+        ],
+        nextApprover: 'None - Approved',
+        timeline: [
+          { stage: 'Request Created', status: 'completed', date: '09 Jan 2024', user: 'Cloud Architect', comments: 'Infrastructure modernization initiative', time: '10:00 AM' },
+          { stage: 'Technical Review', status: 'completed', date: '09 Jan 2024', user: 'Senior Architect', comments: 'Architecture approved', time: '03:30 PM' },
+          { stage: 'IT Head Approval', status: 'completed', date: '10 Jan 2024', user: 'IT Head', comments: 'Strategic priority approval', time: '09:15 AM' },
+          { stage: 'Finance Approval', status: 'completed', date: '11 Jan 2024', user: 'CFO', comments: 'Capital expenditure approved', time: '11:45 AM' },
+          { stage: 'CEO Approval', status: 'completed', date: '12 Jan 2024', user: 'CEO', comments: 'Strategic infrastructure investment', time: '08:30 AM' },
+          { stage: 'PO Generation', status: 'current', date: '', user: 'Procurement Team', comments: '', time: '' }
+        ]
+      },
+      {
+        id: 'PR-2024-009',
+        type: 'PR',
+        title: 'Manufacturing Equipment Upgrade',
+        requestor: 'Production Manager',
+        department: 'Manufacturing',
+        amount: 3200000,
+        status: 'On Hold',
+        progress: 45,
+        priority: 'Medium',
+        createdDate: '2024-01-11',
+        expectedCompletion: '2024-04-15',
+        currentStage: 'Budget Allocation',
+        description: 'Upgrade of manufacturing line equipment for increased capacity',
+        justification: 'Production capacity enhancement to meet growing demand',
+        budgetCode: 'MFG-EQP-2024',
+        deliveryDate: '2024-04-15',
+        items: [
+          { description: 'CNC Machine', quantity: 2, unitPrice: 1200000, total: 2400000 },
+          { description: 'Conveyor System', quantity: 1, unitPrice: 500000, total: 500000 },
+          { description: 'Quality Control Equipment', quantity: 1, unitPrice: 300000, total: 300000 }
+        ],
+        nextApprover: 'CFO - Budget Review',
+        holdReason: 'Pending budget reallocation for Q2',
+        timeline: [
+          { stage: 'Request Created', status: 'completed', date: '11 Jan 2024', user: 'Production Manager', comments: 'Capacity expansion requirement', time: '08:00 AM' },
+          { stage: 'Technical Assessment', status: 'completed', date: '12 Jan 2024', user: 'Engineering Team', comments: 'Technical feasibility confirmed', time: '02:45 PM' },
+          { stage: 'Manufacturing Head Approval', status: 'completed', date: '13 Jan 2024', user: 'Manufacturing Head', comments: 'Production priority approved', time: '10:30 AM' },
+          { stage: 'Budget Allocation', status: 'on-hold', date: '15 Jan 2024', user: 'CFO', comments: 'Budget reallocation pending Q2 review', time: '04:00 PM' },
+          { stage: 'Final Approval', status: 'pending', date: '', user: 'Board', comments: '', time: '' }
+        ]
+      },
+      {
+        id: 'PR-2024-010',
+        type: 'PR',
+        title: 'Marketing Conference Sponsorship',
+        requestor: 'Marketing Director',
+        department: 'Marketing',
+        amount: 850000,
+        status: 'Cancelled',
+        progress: 25,
+        priority: 'Low',
+        createdDate: '2024-01-13',
+        expectedCompletion: '2024-03-01',
+        currentStage: 'Cancelled',
+        description: 'Sponsorship for industry marketing conference and exhibition',
+        justification: 'Brand visibility and networking opportunities',
+        budgetCode: 'MKT-EVT-2024',
+        cancellationReason: 'Event cancelled by organizers due to venue issues',
+        timeline: [
+          { stage: 'Request Created', status: 'completed', date: '13 Jan 2024', user: 'Marketing Director', comments: 'Conference sponsorship opportunity', time: '11:15 AM' },
+          { stage: 'Marketing Review', status: 'completed', date: '14 Jan 2024', user: 'Marketing Manager', comments: 'ROI analysis completed', time: '03:20 PM' },
+          { stage: 'Request Cancelled', status: 'cancelled', date: '16 Jan 2024', user: 'System', comments: 'Event cancelled by organizers', time: '09:00 AM' }
+        ]
+      },
+      // Additional Purchase Orders
+      {
+        id: 'PO-2024-005',
+        type: 'PO',
+        title: 'Printing Services Annual Contract',
+        requestor: 'Admin Team',
+        department: 'Admin',
+        amount: 680000,
+        status: 'Pending Approval',
+        progress: 20,
+        priority: 'Medium',
+        createdDate: '2024-01-16',
+        expectedCompletion: '2024-02-01',
+        currentStage: 'Legal Review',
+        supplier: 'PrintMaster Solutions',
+        supplierContact: 'contracts@printmaster.com',
+        paymentTerms: '45 Days Net',
+        deliveryDate: 'Annual Contract',
+        shippingAddress: 'All Office Locations',
+        poType: 'Service Contract',
+        linkedPR: 'PR-2024-011',
+        items: [
+          { description: 'Monthly Printing Quota', quantity: 12, unitPrice: 35000, total: 420000 },
+          { description: 'Design Services', quantity: 12, unitPrice: 15000, total: 180000 },
+          { description: 'Rush Job Services', quantity: 12, unitPrice: 6667, total: 80000 }
+        ],
+        nextAction: 'Legal Review Completion',
+        timeline: [
+          { stage: 'PO Created', status: 'completed', date: '16 Jan 2024', user: 'Admin Team', comments: 'Annual printing services contract', time: '10:30 AM' },
+          { stage: 'Vendor Qualification', status: 'completed', date: '16 Jan 2024', user: 'Procurement Team', comments: 'Vendor credentials verified', time: '03:45 PM' },
+          { stage: 'Legal Review', status: 'current', date: '', user: 'Legal Team', comments: '', time: '' },
+          { stage: 'Contract Approval', status: 'pending', date: '', user: 'Admin Head', comments: '', time: '' },
+          { stage: 'Contract Execution', status: 'pending', date: '', user: 'Legal Team', comments: '', time: '' }
+        ]
+      },
+      {
+        id: 'PO-2024-006',
+        type: 'PO',
+        title: 'Network Infrastructure Upgrade',
+        requestor: 'Network Team',
+        department: 'IT',
+        amount: 1450000,
+        status: 'Supplier Confirmed',
+        progress: 85,
+        priority: 'High',
+        createdDate: '2024-01-08',
+        expectedCompletion: '2024-01-30',
+        currentStage: 'Installation Scheduled',
+        supplier: 'TechNet Solutions',
+        supplierContact: 'support@technet.com',
+        paymentTerms: '30 Days Net',
+        deliveryDate: '2024-01-28',
+        shippingAddress: 'IT Data Center, Main Building',
+        poType: 'Standard PO',
+        linkedPR: 'PR-2024-012',
+        items: [
+          { description: 'Network Switches', quantity: 8, unitPrice: 85000, total: 680000 },
+          { description: 'Fiber Optic Cables', quantity: 500, unitPrice: 850, total: 425000 },
+          { description: 'Installation & Configuration', quantity: 1, unitPrice: 345000, total: 345000 }
+        ],
+        nextAction: 'Installation & Configuration',
+        timeline: [
+          { stage: 'PO Created', status: 'completed', date: '08 Jan 2024', user: 'Network Team', comments: 'Critical network upgrade', time: '09:00 AM' },
+          { stage: 'Technical Approval', status: 'completed', date: '08 Jan 2024', user: 'Network Architect', comments: 'Technical specifications approved', time: '01:30 PM' },
+          { stage: 'IT Head Approval', status: 'completed', date: '09 Jan 2024', user: 'IT Head', comments: 'Infrastructure priority', time: '10:15 AM' },
+          { stage: 'Finance Approval', status: 'completed', date: '09 Jan 2024', user: 'Finance Head', comments: 'Budget allocation confirmed', time: '03:20 PM' },
+          { stage: 'Sent to Supplier', status: 'completed', date: '10 Jan 2024', user: 'System', comments: 'PO transmitted to supplier', time: '09:30 AM' },
+          { stage: 'Supplier Confirmation', status: 'completed', date: '11 Jan 2024', user: 'TechNet Solutions', comments: 'Order confirmed, equipment reserved', time: '11:45 AM' },
+          { stage: 'Equipment Delivery', status: 'completed', date: '15 Jan 2024', user: 'TechNet Solutions', comments: 'All equipment delivered to site', time: '02:00 PM' },
+          { stage: 'Installation Scheduled', status: 'current', date: '', user: 'TechNet Solutions', comments: '', time: '' },
+          { stage: 'Testing & Commissioning', status: 'pending', date: '', user: 'Network Team', comments: '', time: '' }
+        ]
+      },
+      {
+        id: 'PO-2024-007',
+        type: 'PO',
+        title: 'Consulting Services - Process Optimization',
+        requestor: 'Operations Team',
+        department: 'Operations',
+        amount: 950000,
+        status: 'In Progress',
+        progress: 60,
+        priority: 'Medium',
+        createdDate: '2024-01-07',
+        expectedCompletion: '2024-03-30',
+        currentStage: 'Service Delivery',
+        supplier: 'Efficiency Experts Ltd',
+        supplierContact: 'projects@efficiencyexperts.com',
+        paymentTerms: 'Milestone Based',
+        deliveryDate: '2024-03-30',
+        shippingAddress: 'Operations Department',
+        poType: 'Professional Services',
+        linkedPR: 'PR-2024-013',
+        items: [
+          { description: 'Process Analysis Phase', quantity: 1, unitPrice: 350000, total: 350000 },
+          { description: 'Optimization Implementation', quantity: 1, unitPrice: 400000, total: 400000 },
+          { description: 'Training & Documentation', quantity: 1, unitPrice: 200000, total: 200000 }
+        ],
+        nextAction: 'Implementation Phase Completion',
+        timeline: [
+          { stage: 'PO Created', status: 'completed', date: '07 Jan 2024', user: 'Operations Team', comments: 'Process optimization initiative', time: '08:30 AM' },
+          { stage: 'Scope Definition', status: 'completed', date: '08 Jan 2024', user: 'Operations Head', comments: 'Project scope finalized', time: '11:00 AM' },
+          { stage: 'Legal & Compliance Review', status: 'completed', date: '09 Jan 2024', user: 'Legal Team', comments: 'Contract terms reviewed', time: '02:15 PM' },
+          { stage: 'Operations Head Approval', status: 'completed', date: '10 Jan 2024', user: 'Operations Head', comments: 'Strategic improvement project', time: '09:45 AM' },
+          { stage: 'Contract Execution', status: 'completed', date: '11 Jan 2024', user: 'Legal Team', comments: 'Service agreement executed', time: '04:30 PM' },
+          { stage: 'Analysis Phase', status: 'completed', date: '12 Jan 2024', user: 'Efficiency Experts', comments: 'Current process analysis completed', time: '05:00 PM' },
+          { stage: 'Service Delivery', status: 'current', date: '', user: 'Efficiency Experts', comments: '', time: '' },
+          { stage: 'Implementation', status: 'pending', date: '', user: 'Operations Team', comments: '', time: '' },
+          { stage: 'Project Closure', status: 'pending', date: '', user: 'Operations Team', comments: '', time: '' }
+        ]
+      },
+      {
+        id: 'PO-2024-008',
+        type: 'PO',
+        title: 'Employee Transportation Services',
+        requestor: 'HR Operations',
+        department: 'HR',
+        amount: 1200000,
+        status: 'Rejected',
+        progress: 30,
+        priority: 'Low',
+        createdDate: '2024-01-06',
+        expectedCompletion: '2024-02-15',
+        currentStage: 'Rejected',
+        supplier: 'City Transport Services',
+        supplierContact: 'bookings@citytransport.com',
+        paymentTerms: 'Monthly Payment',
+        deliveryDate: 'Monthly Service',
+        shippingAddress: 'Multiple Pickup Points',
+        poType: 'Service Contract',
+        linkedPR: 'PR-2024-014',
+        rejectionReason: 'Service cost exceeds budget allocation - seeking alternative providers',
+        items: [
+          { description: 'Daily Employee Shuttle', quantity: 12, unitPrice: 85000, total: 1020000 },
+          { description: 'Special Event Transportation', quantity: 12, unitPrice: 15000, total: 180000 }
+        ],
+        timeline: [
+          { stage: 'PO Created', status: 'completed', date: '06 Jan 2024', user: 'HR Operations', comments: 'Employee transportation contract', time: '10:00 AM' },
+          { stage: 'Vendor Evaluation', status: 'completed', date: '07 Jan 2024', user: 'HR Manager', comments: 'Service provider assessment', time: '02:30 PM' },
+          { stage: 'Cost Analysis', status: 'completed', date: '08 Jan 2024', user: 'Finance Team', comments: 'Budget impact analysis', time: '11:15 AM' },
+          { stage: 'Budget Approval', status: 'rejected', date: '09 Jan 2024', user: 'Finance Head', comments: 'Cost exceeds allocated budget', time: '03:45 PM' }
+        ]
+      },
+      {
+        id: 'PO-2024-009',
+        type: 'PO',
+        title: 'Quality Management Software License',
+        requestor: 'Quality Team',
+        department: 'Quality Assurance',
+        amount: 380000,
+        status: 'Delivered',
+        progress: 100,
+        priority: 'Medium',
+        createdDate: '2024-01-04',
+        expectedCompletion: '2024-01-20',
+        currentStage: 'Completed',
+        supplier: 'QualityPro Software Inc',
+        supplierContact: 'licensing@qualitypro.com',
+        paymentTerms: '15 Days Net',
+        deliveryDate: '2024-01-15',
+        shippingAddress: 'Digital Delivery',
+        poType: 'Software License',
+        linkedPR: 'PR-2024-015',
+        completedDate: '2024-01-15',
+        items: [
+          { description: 'Quality Management Suite License', quantity: 50, unitPrice: 6500, total: 325000 },
+          { description: 'Implementation & Training', quantity: 1, unitPrice: 55000, total: 55000 }
+        ],
+        nextAction: 'None - Completed',
+        timeline: [
+          { stage: 'PO Created', status: 'completed', date: '04 Jan 2024', user: 'Quality Team', comments: 'Quality management system upgrade', time: '09:30 AM' },
+          { stage: 'Technical Review', status: 'completed', date: '04 Jan 2024', user: 'IT Team', comments: 'Software compatibility verified', time: '01:20 PM' },
+          { stage: 'Quality Head Approval', status: 'completed', date: '05 Jan 2024', user: 'Quality Head', comments: 'Process improvement initiative', time: '10:45 AM' },
+          { stage: 'Finance Approval', status: 'completed', date: '05 Jan 2024', user: 'Finance Team', comments: 'License budget approved', time: '03:15 PM' },
+          { stage: 'Sent to Supplier', status: 'completed', date: '06 Jan 2024', user: 'System', comments: 'Purchase order transmitted', time: '08:00 AM' },
+          { stage: 'License Delivery', status: 'completed', date: '08 Jan 2024', user: 'QualityPro Software', comments: 'License keys delivered', time: '11:30 AM' },
+          { stage: 'Implementation', status: 'completed', date: '12 Jan 2024', user: 'IT Team', comments: 'Software installed and configured', time: '04:20 PM' },
+          { stage: 'User Training', status: 'completed', date: '15 Jan 2024', user: 'QualityPro Software', comments: 'Training sessions completed', time: '02:30 PM' },
+          { stage: 'Go-Live', status: 'completed', date: '15 Jan 2024', user: 'Quality Team', comments: 'System deployed successfully', time: '05:00 PM' }
+        ]
+      },
+      {
+        id: 'PO-2024-010',
+        type: 'PO',
+        title: 'Raw Materials Procurement',
+        requestor: 'Procurement Team',
+        department: 'Manufacturing',
+        amount: 2200000,
+        status: 'Delayed',
+        progress: 40,
+        priority: 'High',
+        createdDate: '2024-01-02',
+        expectedCompletion: '2024-01-25',
+        currentStage: 'Supplier Production Delay',
+        supplier: 'Materials Plus Ltd',
+        supplierContact: 'orders@materialsplus.com',
+        paymentTerms: '60 Days Net',
+        deliveryDate: '2024-01-25',
+        shippingAddress: 'Manufacturing Plant, Industrial Area',
+        poType: 'Standard PO',
+        linkedPR: 'PR-2024-016',
+        isDelayed: true,
+        delayReason: 'Supplier facing raw material shortage, delivery postponed by 2 weeks',
+        items: [
+          { description: 'Steel Sheets Grade A', quantity: 500, unitPrice: 2800, total: 1400000 },
+          { description: 'Aluminum Rods', quantity: 200, unitPrice: 3200, total: 640000 },
+          { description: 'Chemical Coating Materials', quantity: 100, unitPrice: 1600, total: 160000 }
+        ],
+        nextAction: 'Supplier Production Update',
+        timeline: [
+          { stage: 'PO Created', status: 'completed', date: '02 Jan 2024', user: 'Procurement Team', comments: 'Monthly raw material order', time: '08:00 AM' },
+          { stage: 'Quality Specifications Review', status: 'completed', date: '02 Jan 2024', user: 'Quality Team', comments: 'Material specifications approved', time: '11:45 AM' },
+          { stage: 'Manufacturing Head Approval', status: 'completed', date: '03 Jan 2024', user: 'Manufacturing Head', comments: 'Production requirements confirmed', time: '09:30 AM' },
+          { stage: 'Finance Approval', status: 'completed', date: '03 Jan 2024', user: 'Finance Head', comments: 'Working capital allocation', time: '02:15 PM' },
+          { stage: 'Sent to Supplier', status: 'completed', date: '04 Jan 2024', user: 'System', comments: 'Purchase order issued', time: '10:00 AM' },
+          { stage: 'Supplier Acknowledgment', status: 'completed', date: '05 Jan 2024', user: 'Materials Plus Ltd', comments: 'Order confirmed with delivery schedule', time: '03:30 PM' },
+          { stage: 'Production Started', status: 'delayed', date: '10 Jan 2024', user: 'Materials Plus Ltd', comments: 'Production delayed due to raw material shortage', time: '11:00 AM' },
+          { stage: 'Quality Inspection', status: 'pending', date: '', user: 'Quality Team', comments: '', time: '' },
+          { stage: 'Delivery', status: 'pending', date: '', user: 'Supplier', comments: '', time: '' }
+        ]
+      },
+      {
+        id: 'PO-2024-011',
+        type: 'PO',
+        title: 'Office Renovation Project',
+        requestor: 'Facilities Team',
+        department: 'Admin',
+        amount: 1800000,
+        status: 'Cancelled',
+        progress: 15,
+        priority: 'Medium',
+        createdDate: '2024-01-01',
+        expectedCompletion: '2024-02-28',
+        currentStage: 'Cancelled',
+        supplier: 'ModernSpace Interiors',
+        supplierContact: 'projects@modernspace.com',
+        paymentTerms: 'Progress Payment',
+        deliveryDate: '2024-02-28',
+        shippingAddress: 'Office Floor 3 & 4',
+        poType: 'Project Contract',
+        linkedPR: 'PR-2024-017',
+        cancellationReason: 'Project scope changed - splitting into multiple phases',
+        items: [
+          { description: 'Interior Design & Planning', quantity: 1, unitPrice: 200000, total: 200000 },
+          { description: 'Construction & Renovation', quantity: 1, unitPrice: 1200000, total: 1200000 },
+          { description: 'Furniture & Fixtures', quantity: 1, unitPrice: 400000, total: 400000 }
+        ],
+        timeline: [
+          { stage: 'PO Created', status: 'completed', date: '01 Jan 2024', user: 'Facilities Team', comments: 'Office modernization project', time: '10:00 AM' },
+          { stage: 'Design Review', status: 'completed', date: '02 Jan 2024', user: 'Admin Head', comments: 'Initial design concepts approved', time: '02:30 PM' },
+          { stage: 'Project Cancelled', status: 'cancelled', date: '05 Jan 2024', user: 'Management', comments: 'Scope revision - phased approach adopted', time: '11:15 AM' }
+        ]
+      }
+    ];
+
+    const recentActivity = [
+      {
+        time: '2024-01-18 02:30 PM',
+        action: 'New PR Created',
+        id: 'PR-2024-005',
+        user: 'Dr. Anita Desai',
+        icon: 'fas fa-file-plus',
+        color: 'text-blue-600'
+      },
+      {
+        time: '2024-01-16 03:45 PM',
+        action: 'PO Pending Legal Review',
+        id: 'PO-2024-005',
+        user: 'Legal Team',
+        icon: 'fas fa-gavel',
+        color: 'text-orange-600'
+      },
+      {
+        time: '2024-01-15 05:00 PM',
+        action: 'Software Go-Live Completed',
+        id: 'PO-2024-009',
+        user: 'Quality Team',
+        icon: 'fas fa-rocket',
+        color: 'text-green-600'
+      },
+      {
+        time: '2024-01-14 11:15 AM',
+        action: 'Security System Delivered',
+        id: 'PO-2024-004',
+        user: 'Security Team',
+        icon: 'fas fa-shield-alt',
+        color: 'text-green-600'
+      },
+      {
+        time: '2024-01-12 10:15 AM',
+        action: 'Furniture Supplier Acknowledged',
+        id: 'PO-2024-001',
+        user: 'Global Furniture Ltd',
+        icon: 'fas fa-handshake',
+        color: 'text-blue-600'
+      },
+      {
+        time: '2024-01-11 04:00 PM',
+        action: 'Network Equipment Delivered',
+        id: 'PO-2024-006',
+        user: 'TechNet Solutions',
+        icon: 'fas fa-truck',
+        color: 'text-green-600'
+      },
+      {
+        time: '2024-01-10 11:00 AM',
+        action: 'Production Delay Reported',
+        id: 'PO-2024-010',
+        user: 'Materials Plus Ltd',
+        icon: 'fas fa-exclamation-triangle',
+        color: 'text-red-600'
+      },
+      {
+        time: '2024-01-10 09:00 AM',
+        action: 'PR Converted to PO',
+        id: 'PR-2024-003',
+        user: 'Procurement Team',
+        icon: 'fas fa-exchange-alt',
+        color: 'text-purple-600'
+      },
+      {
+        time: '2024-01-09 04:20 PM',
+        action: 'Training PR Rejected',
+        id: 'PR-2024-004',
+        user: 'CFO',
+        icon: 'fas fa-times-circle',
+        color: 'text-red-600'
+      },
+      {
+        time: '2024-01-08 10:30 AM',
+        action: 'Software License Invoice Received',
+        id: 'PO-2024-002',
+        user: 'Finance Team',
+        icon: 'fas fa-file-invoice',
+        color: 'text-orange-600'
+      }
+    ];
+
+    function loadTrackingTable() {
+      const tbody = el('trackingTable');
+      tbody.innerHTML = '';
+      
+      trackingData.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-gray-50';
+        
+        const daysElapsed = Math.floor((new Date() - new Date(item.createdDate)) / (1000 * 60 * 60 * 24));
+        
+        tr.innerHTML = `
+          <td class="px-6 py-4">
+            <div class="font-medium text-gray-900">${item.id}</div>
+            <div class="text-sm ${item.type === 'PR' ? 'text-blue-600' : 'text-green-600'}">${item.type} ${getPriorityBadge(item.priority)}</div>
+          </td>
+          <td class="px-6 py-4">
+            <div class="font-medium text-gray-900">${item.title}</div>
+            <div class="text-sm text-gray-600">${item.currentStage}</div>
+          </td>
+          <td class="px-6 py-4">
+            <div class="font-medium">${item.requestor}</div>
+            <div class="text-sm text-gray-600">${item.department}</div>
+          </td>
+          <td class="px-6 py-4 font-semibold">${Rs(item.amount)}</td>
+          <td class="px-6 py-4">${getStatusBadge(item.status)}</td>
+          <td class="px-6 py-4">
+            <div class="progress-bar mb-1">
+              <div class="progress-fill ${getProgressColor(item.status)}" style="width: ${item.progress}%"></div>
+            </div>
+            <div class="text-xs text-gray-600">${item.progress}% Complete</div>
+            ${item.isDelayed ? '<div class="text-xs text-red-600 font-medium">⚠ Delayed</div>' : ''}
+          </td>
+          <td class="px-6 py-4 text-sm">
+            <div>${new Date(item.createdDate).toLocaleDateString('en-IN')}</div>
+            <div class="text-xs text-gray-500">${daysElapsed} days elapsed</div>
+            ${item.completedDate ? `<div class="text-xs text-green-600">Completed: ${new Date(item.completedDate).toLocaleDateString('en-IN')}</div>` : `<div class="text-xs text-blue-600">Expected: ${new Date(item.expectedCompletion).toLocaleDateString('en-IN')}</div>`}
+          </td>
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-2">
+              <button class="text-blue-600 hover:text-blue-800" title="View Timeline" onclick="viewTimeline('${item.id}')"><i class="fas fa-timeline"></i></button>
+              <button class="text-green-600 hover:text-green-800" title="Track Status" onclick="trackStatus('${item.id}')"><i class="fas fa-route"></i></button>
+              <button class="text-purple-600 hover:text-purple-800" title="View Details" onclick="viewDetails('${item.id}')"><i class="fas fa-info-circle"></i></button>
+              ${item.status === 'In Progress' && !item.isDelayed ? `<button class="text-orange-600 hover:text-orange-800" title="Update Status" onclick="updateStatus('${item.id}')"><i class="fas fa-edit"></i></button>` : ''}
+            </div>
+          </td>
+        `;
+        
+        tbody.appendChild(tr);
+      });
+    }
+
+    function loadActivityTimeline() {
+      const timeline = el('activityTimeline');
+      timeline.innerHTML = '';
+      
+      recentActivity.forEach(activity => {
+        const div = document.createElement('div');
+        div.className = 'flex items-start gap-3 p-3 bg-gray-50 rounded-lg';
+        div.innerHTML = `
+          <div class="p-2 bg-white rounded-full">
+            <i class="${activity.icon} ${activity.color}"></i>
+          </div>
+          <div class="flex-1">
+            <div class="font-medium text-gray-900">${activity.action}</div>
+            <div class="text-sm text-gray-600">${activity.id} • ${activity.user}</div>
+            <div class="text-xs text-gray-500">${activity.time}</div>
+          </div>
+        `;
+        timeline.appendChild(div);
+      });
+    }
+
+    function getPriorityBadge(priority) {
+      const badges = {
+        'Urgent': 'pill bg-red-100 text-red-800',
+        'High': 'pill bg-orange-100 text-orange-800',
+        'Medium': 'pill bg-blue-100 text-blue-800',
+        'Low': 'pill bg-green-100 text-green-800'
+      };
+      return `<span class="${badges[priority] || 'pill bg-gray-100 text-gray-800'}">${priority}</span>`;
+    }
+
+    function getStatusBadge(status) {
+      return `<span class="badge status-${status.toLowerCase().replace(' ', '-')}">${status}</span>`;
+    }
+
+    function getProgressColor(status) {
+      switch(status) {
+        case 'Completed': return 'bg-green-500';
+        case 'In Progress': return 'bg-blue-500';
+        case 'Approved': return 'bg-purple-500';
+        case 'Rejected': return 'bg-red-500';
+        case 'Cancelled': return 'bg-gray-500';
+        default: return 'bg-yellow-500';
+      }
+    }
+
+    function viewTimeline(id) {
+      const item = trackingData.find(i => i.id === id);
+      if (!item) return;
+      
+      const timelineHtml = item.timeline.map(step => {
+        const statusClass = step.status === 'completed' ? 'completed' : 
+                           step.status === 'current' ? 'current' : 
+                           step.status === 'rejected' ? 'rejected' :
+                           step.status === 'delayed' ? 'delayed' : 'pending';
+        return `
+          <div class="timeline-item ${statusClass}">
+            <div class="flex justify-between items-start">
+              <div class="flex-1">
+                <div class="font-medium text-gray-900">${step.stage}</div>
+                <div class="text-sm text-gray-600">${step.user}</div>
+                <div class="text-xs text-gray-500">${step.date} ${step.time}</div>
+                ${step.comments ? `<div class="text-xs text-blue-600 mt-1 italic">"${step.comments}"</div>` : ''}
+              </div>
+              <div class="ml-4">
+                ${step.status === 'completed' ? '<i class="fas fa-check-circle text-green-500"></i>' :
+                  step.status === 'current' ? '<i class="fas fa-clock text-blue-500"></i>' :
+                  step.status === 'rejected' ? '<i class="fas fa-times-circle text-red-500"></i>' :
+                  step.status === 'delayed' ? '<i class="fas fa-exclamation-triangle text-orange-500"></i>' :
+                  '<i class="fas fa-circle text-gray-300"></i>'}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      const itemDetailsHtml = item.type === 'PR' ? `
+        <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-6">
+          <h4 class="font-semibold text-blue-900 flex items-center">
+            <i class="fas fa-file-alt mr-2"></i>${item.id} - Purchase Request
+          </h4>
+          <div class="text-sm text-blue-700 mt-2">
+            <div><strong>Description:</strong> ${item.description}</div>
+            <div class="mt-1"><strong>Justification:</strong> ${item.justification}</div>
+            <div class="mt-1"><strong>Budget Code:</strong> ${item.budgetCode}</div>
+            <div class="mt-1"><strong>Next Approver:</strong> ${item.nextApprover || 'None'}</div>
+          </div>
+        </div>
+        
+        ${item.items && item.items.length > 0 ? `
+        <div class="bg-gray-50 p-4 rounded-lg mb-6">
+          <h5 class="font-medium text-gray-900 mb-3">Requested Items</h5>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="px-3 py-2 text-left">Description</th>
+                  <th class="px-3 py-2 text-center">Qty</th>
+                  <th class="px-3 py-2 text-right">Unit Price</th>
+                  <th class="px-3 py-2 text-right">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${item.items.map(itm => `
+                <tr class="border-t border-gray-200">
+                  <td class="px-3 py-2">${itm.description}</td>
+                  <td class="px-3 py-2 text-center">${itm.quantity}</td>
+                  <td class="px-3 py-2 text-right">${Rs(itm.unitPrice)}</td>
+                  <td class="px-3 py-2 text-right font-medium">${Rs(itm.total)}</td>
+                </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        ` : ''}
+      ` : `
+        <div class="bg-green-50 border border-green-200 p-4 rounded-lg mb-6">
+          <h4 class="font-semibold text-green-900 flex items-center">
+            <i class="fas fa-shopping-cart mr-2"></i>${item.id} - Purchase Order
+          </h4>
+          <div class="text-sm text-green-700 mt-2">
+            <div><strong>Supplier:</strong> ${item.supplier}</div>
+            <div class="mt-1"><strong>Contact:</strong> ${item.supplierContact}</div>
+            <div class="mt-1"><strong>Payment Terms:</strong> ${item.paymentTerms}</div>
+            <div class="mt-1"><strong>PO Type:</strong> ${item.poType}</div>
+            <div class="mt-1"><strong>Linked PR:</strong> ${item.linkedPR || 'N/A'}</div>
+            <div class="mt-1"><strong>Next Action:</strong> ${item.nextAction}</div>
+          </div>
+        </div>
+        
+        ${item.items && item.items.length > 0 ? `
+        <div class="bg-gray-50 p-4 rounded-lg mb-6">
+          <h5 class="font-medium text-gray-900 mb-3">Purchase Order Items</h5>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="px-3 py-2 text-left">Description</th>
+                  <th class="px-3 py-2 text-center">Qty</th>
+                  <th class="px-3 py-2 text-right">Unit Price</th>
+                  <th class="px-3 py-2 text-right">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${item.items.map(itm => `
+                <tr class="border-t border-gray-200">
+                  <td class="px-3 py-2">${itm.description}</td>
+                  <td class="px-3 py-2 text-center">${itm.quantity}</td>
+                  <td class="px-3 py-2 text-right">${Rs(itm.unitPrice)}</td>
+                  <td class="px-3 py-2 text-right font-medium">${Rs(itm.total)}</td>
+                </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        ` : ''}
+      `;
+      
+      const body = `
+        <div class="space-y-6 max-h-96 overflow-y-auto">
+          ${itemDetailsHtml}
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h5 class="font-medium text-gray-900 mb-3">Progress Overview</h5>
+              <div class="progress-bar mb-2">
+                <div class="progress-fill ${getProgressColor(item.status)}" style="width: ${item.progress}%"></div>
+              </div>
+              <div class="text-sm text-gray-600">${item.progress}% Complete</div>
+              <div class="text-sm mt-2">
+                <span class="font-medium">Current Stage:</span> ${item.currentStage}
+              </div>
+              ${item.isDelayed ? `<div class="mt-2 text-sm text-red-600 font-medium">⚠ Status: Delayed</div><div class="text-xs text-red-600">${item.delayReason}</div>` : ''}
+            </div>
+            
+            <div>
+              <h5 class="font-medium text-gray-900 mb-3">Key Information</h5>
+              <div class="space-y-1 text-sm">
+                <div><span class="font-medium">Amount:</span> ${Rs(item.amount)}</div>
+                <div><span class="font-medium">Department:</span> ${item.department}</div>
+                <div><span class="font-medium">Priority:</span> ${item.priority}</div>
+                <div><span class="font-medium">Requestor:</span> ${item.requestor}</div>
+                <div><span class="font-medium">Created:</span> ${new Date(item.createdDate).toLocaleDateString('en-IN')}</div>
+                ${item.completedDate ? 
+                  `<div><span class="font-medium">Completed:</span> ${new Date(item.completedDate).toLocaleDateString('en-IN')}</div>` : 
+                  `<div><span class="font-medium">Expected:</span> ${item.expectedCompletion === 'Ongoing Service' ? 'Ongoing Service' : new Date(item.expectedCompletion).toLocaleDateString('en-IN')}</div>`
+                }
+                ${item.deliveryDate && item.deliveryDate !== 'Ongoing Service' ? `<div><span class="font-medium">Delivery Date:</span> ${new Date(item.deliveryDate).toLocaleDateString('en-IN')}</div>` : ''}
+              </div>
+            </div>
+          </div>
+          
+          <div>
+            <h5 class="font-medium text-gray-900 mb-4">Detailed ${item.type === 'PR' ? 'Approval' : 'Processing'} Timeline</h5>
+            <div class="space-y-4">
+              ${timelineHtml}
+            </div>
+          </div>
+          
+          ${item.rejectionReason ? `
+            <div class="bg-red-50 border border-red-200 p-4 rounded-lg">
+              <h5 class="font-medium text-red-900 mb-2">Rejection Details</h5>
+              <div class="text-sm text-red-800">${item.rejectionReason}</div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+      
+      el('modalTitle').textContent = `${item.type === 'PR' ? 'Purchase Request' : 'Purchase Order'} Timeline - ${item.id}`;
+      el('modalBody').innerHTML = body;
+      openModal();
+    }
+
+    function trackStatus(id) {
+      const item = trackingData.find(i => i.id === id);
+      if (!item) return;
+      
+      showToast(`Tracking ${item.id} - Current stage: ${item.currentStage}`, 'info');
+    }
+
+    function viewDetails(id) {
+      viewTimeline(id); // Same as timeline view for now
+    }
+
+    function updateStatus(id) {
+      const item = trackingData.find(i => i.id === id);
+      if (!item) return;
+      
+      showToast(`Status update form for ${item.id} would open here`, 'info');
+    }
+
+    function applyFilters() {
+      const searchId = el('searchId').value.toLowerCase();
+      const type = el('fType').value;
+      const status = el('fStatus').value;
+      const department = el('fDepartment').value;
+      const priority = el('fPriority').value;
+      
+      let filtered = trackingData;
+      
+      if (searchId) filtered = filtered.filter(item => 
+        item.id.toLowerCase().includes(searchId) || 
+        item.title.toLowerCase().includes(searchId)
+      );
+      if (type) filtered = filtered.filter(item => item.type === type);
+      if (status) filtered = filtered.filter(item => item.status === status);
+      if (department) filtered = filtered.filter(item => item.department === department);
+      if (priority) filtered = filtered.filter(item => item.priority === priority);
+      
+      // Update the table with filtered data
+      const tbody = el('trackingTable');
+      tbody.innerHTML = '';
+      
+      filtered.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200';
+        tr.innerHTML = `
+          <td class="py-4 px-4">
+            <div class="font-semibold ${item.type === 'PR' ? 'text-blue-600' : 'text-green-600'}">${item.id}</div>
+            <div class="text-sm text-gray-600">${item.title}</div>
+          </td>
+          <td class="py-4 px-4">
+            <span class="pill ${item.type === 'PR' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}">${item.type}</span>
+          </td>
+          <td class="py-4 px-4">
+            <div class="text-sm font-medium text-gray-900">${item.department}</div>
+            <div class="text-xs text-gray-500">${item.requestor}</div>
+          </td>
+          <td class="py-4 px-4">
+            ${getStatusBadge(item.status)}
+            <div class="text-xs text-gray-500 mt-1">${item.currentStage}</div>
+          </td>
+          <td class="py-4 px-4">
+            <div class="progress-bar mb-1">
+              <div class="progress-fill ${getProgressColor(item.status)}" style="width: ${item.progress}%"></div>
+            </div>
+            <div class="text-xs text-gray-600">${item.progress}%</div>
+          </td>
+          <td class="py-4 px-4">
+            ${getPriorityBadge(item.priority)}
+          </td>
+          <td class="py-4 px-4 font-semibold text-gray-900">
+            ${Rs(item.amount)}
+          </td>
+          <td class="py-4 px-4 text-sm text-gray-600">
+            ${new Date(item.createdDate).toLocaleDateString('en-IN')}
+          </td>
+          <td class="py-4 px-4">
+            <div class="flex gap-2">
+              <button onclick="viewTimeline('${item.id}')" class="btn btn-sm bg-blue-100 text-blue-700 hover:bg-blue-200" title="View Timeline">
+                <i class="fas fa-timeline mr-1"></i>Timeline
+              </button>
+              <button onclick="trackStatus('${item.id}')" class="btn btn-sm bg-green-100 text-green-700 hover:bg-green-200" title="Track Status">
+                <i class="fas fa-search-location mr-1"></i>Track
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      
+      el('trackingCount').textContent = `Showing ${filtered.length} items`;
+      showToast(`Filtered to ${filtered.length} items`, 'info');
+    }
+
+    function resetFilters() {
+      el('searchId').value = '';
+      el('fType').value = '';
+      el('fStatus').value = '';
+      el('fDepartment').value = '';
+      el('fPriority').value = '';
+      el('trackingCount').textContent = `Showing ${trackingData.length} items`;
+      showToast('Filters reset', 'info');
+    }
+
+    function exportVisible() {
+      showToast('Exporting visible tracking data...', 'info');
+      setTimeout(() => {
+        showToast('Tracking report exported successfully!', 'success');
+      }, 2000);
+    }
+
+    function exportTrackingReport() {
+      showToast('Generating comprehensive tracking report...', 'info');
+      setTimeout(() => {
+        showToast('Complete tracking report exported!', 'success');
+      }, 2500);
+    }
+
+    function refreshTracking() {
+      showToast('Refreshing tracking data...', 'info');
+      loadTrackingTable();
+      loadActivityTimeline();
+      setTimeout(() => {
+        showToast('Tracking data updated!', 'success');
+      }, 1500);
+    }
+
+    function openTrackingSettings() {
+      showToast('Opening tracking preferences...', 'info');
+    }
+
+    // Modal & Toast
+    function openModal() { el('modal').classList.remove('hidden'); }
+    function closeModal() { el('modal').classList.add('hidden'); }
+    function showToast(msg, type = 'info') {
+      const t = el('toast');
+      const colors = {success: 'bg-green-600', info: 'bg-blue-600', warning: 'bg-yellow-600', error: 'bg-red-600'};
+      t.className = `fixed top-4 right-4 text-white px-4 py-2 rounded-lg shadow-lg ${colors[type] || 'bg-gray-800'}`;
+      t.textContent = msg;
+      t.classList.remove('hidden');
+      setTimeout(() => t.classList.add('hidden'), 2500);
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      loadTrackingTable();
+      loadActivityTimeline();
+      
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.altKey && (e.key === 'b' || e.key === 'B')) {
+          e.preventDefault();
+          navBack();
+        }
+        if (e.key === 'Escape') closeModal();
+        if (e.ctrlKey && e.key === 'f') {
+          e.preventDefault();
+          el('searchId').focus();
+        }
+      });
+      
+      // Auto-refresh every 60 seconds
+      setInterval(refreshTracking, 60000);
+      
+      showToast('PR & PO Tracking system loaded', 'info');
+    });
+  </script>
+</body>
+</html>

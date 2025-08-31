@@ -1,0 +1,396 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Reports - Vendor Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap"
+    rel="stylesheet"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+  />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #F5F5F5;
+      color: #212121;
+    }
+    /* Sidebar background */
+    /* aside {
+      background-color: #6A1B9A;
+    } */
+    /* Sidebar text */
+    /* aside nav a {
+      color: #D1C4E9;
+    } */
+    /* aside nav a:hover {
+      color: #FFFFFF;
+    } */
+    /* Sidebar icons */
+    /* aside nav a i {
+      color: inherit;
+    } */
+    /* Scrollbar for sidebar nav */
+    /* aside nav::-webkit-scrollbar {
+      width: 6px;
+    } */
+    /* aside nav::-webkit-scrollbar-thumb {
+      background-color: rgba(255 255 255 / 0.3);
+      border-radius: 3px;
+    } */
+    /* Scrollbar for lists */
+    /* ul::-webkit-scrollbar {
+      width: 8px;
+    } */
+    /* ul::-webkit-scrollbar-thumb {
+      background-color: rgba(138, 43, 226, 0.5);
+      border-radius: 4px;
+    } */
+    /* Scrollbar for Firefox */
+    /* ul {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(138, 43, 226, 0.5) transparent;
+    } */
+    /* Section titles */
+    /* h1, h2 {
+      color: #6A1B9A;
+    } */
+    /* Cards */
+    /* .card {
+      background-color: white;
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+    } */
+    /* Chart container */
+    /* .chart-container {
+      max-width: 100%;
+      height: 200px;
+    } */
+    /* Modal backdrop */
+    /* .modal-backdrop {
+      background-color: rgba(0,0,0,0.5);
+    } */
+  </style>
+</head>
+<body class="min-h-screen flex">
+  <!-- Sidebar -->
+   <!-- Sidebar -->
+   <aside class="bg-primary w-20 flex flex-col items-center py-6 space-y-6">
+    <nav class="flex flex-col space-y-6 text-white text-xs font-normal w-full">
+     <a class="flex flex-col items-center space-y-1 opacity-100" href="">
+    <!-- <img src="https://www.mitsubishielectric-railway.eu/wp-content/uploads/2020/06/ME-Logo_mit-Claim_rgb.jpg" alt="Mitsubishi Electric logo" class="mx-auto mb-6 max-w-[180px] w-full"/> -->
+     </a>
+     <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="BuyerVendorApproval.html">
+      <i class="fas fa-file-invoice text-xs">
+      </i>
+      <span>
+       Purchase
+       <br/>
+       Orders
+      </span>
+     </a>
+     <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="Buyer_Vendorlist.html">
+      <i class="fas fa-check-circle text-xs">
+      </i>
+      <span>
+       Approvals
+      </span>
+     </a>
+     <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="Buyer_.manageasn.html">
+      <i class="fas fa-truck text-xs">
+      </i>
+      <span>
+       Suppliers
+      </span>
+     </a>
+     <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="Buyer_Inquires.html">
+      <i class="fas fa-question-circle text-xs">
+      </i>
+      <span>
+       Inquiries
+      </span>
+     </a>
+     <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="Buyer_report.html">
+      <i class="fas fa-chart-bar text-xs">
+      </i>
+      <span>
+       Reports
+      </span>
+     </a>
+     <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="Buyer_settings.html">
+      <i class="fas fa-cog text-xs">
+      </i>
+      <span>
+       Settings
+      </span>
+     </a>
+    </nav>
+   </aside>
+
+  <!-- Main content -->
+  <main class="flex-1 p-6 md:p-10 flex flex-col space-y-8">
+    <header class="flex items-center justify-between">
+      <h1 class="text-2xl font-extrabold text-[#6A1B9A]">Reports</h1>
+      <div class="flex space-x-4 text-gray-600 text-xl">
+        <button aria-label="Notifications" class="hover:text-gray-900">
+          <i class="fas fa-bell"></i>
+        </button>
+        <button aria-label="User profile" class="hover:text-gray-900">
+          <i class="fas fa-user"></i>
+        </button>
+      </div>
+    </header>
+
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Purchase Spend Card -->
+      <div class="card flex flex-col">
+        <h2 class="text-lg font-semibold mb-4 text-[#6A1B9A]">Purchase Spend</h2>
+        <div class="chart-container">
+          <canvas id="purchaseSpendChart" aria-label="Line chart showing purchase spend over months" role="img"></canvas>
+        </div>
+      </div>
+
+      <!-- On Time Delivery Card -->
+      <div class="card flex flex-col">
+        <h2 class="text-lg font-semibold mb-4 text-[#6A1B9A]">On Time Delivery</h2>
+        <div class="chart-container">
+          <canvas id="onTimeDeliveryChart" aria-label="Bar chart showing on time delivery percentage" role="img"></canvas>
+        </div>
+      </div>
+
+      <!-- Other Reports Card -->
+      <div class="card flex flex-col">
+        <h2 class="text-lg font-semibold mb-4 text-[#6A1B9A]">Other Reports</h2>
+        <ul id="otherReportsList" class="list-disc list-inside text-sm text-gray-900 space-y-2 cursor-pointer">
+          <li data-report="Supplier Performance">Supplier Performance</li>
+          <li data-report="Order Accuracy">Order Accuracy</li>
+          <li data-report="Cost Savings">Cost Savings</li>
+          <li data-report="Inventory Turnover">Inventory Turnover</li>
+          <li data-report="Quality Metrics">Quality Metrics</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal -->
+  <div id="modalBackdrop" class="fixed inset-0 hidden items-center justify-center modal-backdrop z-50">
+    <div class="bg-white rounded-lg shadow-lg max-w-lg w-full p-6 relative max-h-[80vh] overflow-y-auto">
+      <button id="closeModalBtn" aria-label="Close modal" class="absolute top-3 right-3 text-gray-600 hover:text-gray-900 text-xl">
+        <i class="fas fa-times"></i>
+      </button>
+      <h3 id="modalTitle" class="text-xl font-semibold mb-4 text-gray-900">Report Details</h3>
+      <div id="modalContent" class="text-gray-900 text-sm space-y-2"></div>
+    </div>
+  </div>
+
+  <script>
+    // Purchase Spend Line Chart
+    const purchaseSpendCtx = document.getElementById('purchaseSpendChart').getContext('2d');
+    const purchaseSpendChart = new Chart(purchaseSpendCtx, {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        datasets: [{
+          label: 'Spend ($K)',
+          data: [50, 60, 55, 70, 90, 85, 80, 75, 95, 100, 110, 105],
+          borderColor: '#6A1B9A',
+          backgroundColor: 'rgba(106, 27, 154, 0.2)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 3,
+          pointBackgroundColor: '#6A1B9A',
+          borderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              color: '#212121',
+              stepSize: 20,
+            },
+            grid: {
+              color: '#E0E0E0',
+            }
+          },
+          x: {
+            ticks: {
+              color: '#212121',
+            },
+            grid: {
+              color: '#E0E0E0',
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            labels: {
+              color: '#6A1B9A',
+              font: { weight: 'bold' }
+            }
+          },
+          tooltip: {
+            backgroundColor: '#6A1B9A',
+            titleColor: '#fff',
+            bodyColor: '#fff',
+            cornerRadius: 4,
+            padding: 8,
+          }
+        }
+      }
+    });
+
+    // On Time Delivery Bar Chart
+    const onTimeDeliveryCtx = document.getElementById('onTimeDeliveryChart').getContext('2d');
+    const onTimeDeliveryChart = new Chart(onTimeDeliveryCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'On Time %',
+          data: [95, 92, 90, 93, 96, 94],
+          backgroundColor: '#8E24AA',
+          borderRadius: 4,
+          barPercentage: 0.6,
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100,
+            ticks: {
+              color: '#212121',
+              stepSize: 10,
+              callback: function(value) {
+                return value + '%';
+              }
+            },
+            grid: {
+              color: '#E0E0E0',
+            }
+          },
+          x: {
+            ticks: {
+              color: '#212121',
+            },
+            grid: {
+              display: false,
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false,
+          },
+          tooltip: {
+            backgroundColor: '#6A1B9A',
+            titleColor: '#fff',
+            bodyColor: '#fff',
+            cornerRadius: 4,
+            padding: 8,
+            callbacks: {
+              label: function(context) {
+                return context.parsed.y + '% On Time';
+              }
+            }
+          }
+        }
+      }
+    });
+
+    // Modal elements
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalContent = document.getElementById('modalContent');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+
+    // Report details data
+    const reportDetails = {
+      'Supplier Performance': [
+        'Supplier A: 98% on-time delivery',
+        'Supplier B: 95% quality compliance',
+        'Supplier C: 92% order accuracy',
+      ],
+      'Order Accuracy': [
+        'Total orders checked: 1200',
+        'Accuracy rate: 97.5%',
+        'Errors reduced by 3% compared to last quarter',
+      ],
+      'Cost Savings': [
+        'Savings from negotiated contracts: $150,000',
+        'Reduced shipping costs by 5%',
+        'Optimized inventory holding costs',
+      ],
+      'Inventory Turnover': [
+        'Average turnover rate: 8.5 times/year',
+        'Improved turnover by 10% YoY',
+        'Reduced obsolete stock by 15%',
+      ],
+      'Quality Metrics': [
+        'Defect rate: 0.8%',
+        'Customer complaints reduced by 12%',
+        'Quality audits passed: 98%',
+      ],
+    };
+
+    // Open modal with report details
+    function openModal(reportName) {
+      modalTitle.textContent = reportName;
+      modalContent.innerHTML = '';
+      const details = reportDetails[reportName];
+      if (!details) {
+        modalContent.textContent = 'No details available.';
+        return;
+      }
+      const ul = document.createElement('ul');
+      ul.className = 'list-disc list-inside space-y-1';
+      details.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item;
+        ul.appendChild(li);
+      });
+      modalContent.appendChild(ul);
+      modalBackdrop.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    // Close modal function
+    function closeModal() {
+      modalBackdrop.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    // Event listeners
+    closeModalBtn.addEventListener('click', closeModal);
+    modalBackdrop.addEventListener('click', (e) => {
+      if (e.target === modalBackdrop) {
+        closeModal();
+      }
+    });
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !modalBackdrop.classList.contains('hidden')) {
+        closeModal();
+      }
+    });
+
+    // Add click listeners to other reports list items
+    document.getElementById('otherReportsList').addEventListener('click', (e) => {
+      const li = e.target.closest('li');
+      if (!li) return;
+      const reportName = li.getAttribute('data-report');
+      if (reportName) {
+        openModal(reportName);
+      }
+    });
+  </script>
+</body>
+</html>

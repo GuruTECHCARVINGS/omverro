@@ -1,0 +1,404 @@
+<html lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <title>Vendor Portal - Settings</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+  />
+  <style>
+    :root {
+      --purple-primary: #8e24aa;
+      --gray-light-bg: #f5f5f5;
+      --gray-lighter-bg: #fafafa;
+      --gray-border: #e0e0e0;
+      --text-dark-gray: #212121;
+      --text-gray: #333333;
+    }
+  </style>
+</head>
+<body class="bg-[var(--gray-lighter-bg)] font-sans text-[var(--text-dark-gray)]">
+  <div class="flex min-h-screen">
+   <!-- Sidebar -->
+   <aside class="sidebar w-64 flex flex-col border-r border-gray-300 select-none">
+    <div class="flex items-center gap-3 px-6 py-6 border-b border-gray-300">
+     <img src="data:image/png;base64,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" alt="Company logo" class="w-6 h-6 object-contain"/>
+     <span class="font-semibold text-lg">
+      Vendor Portal
+     </span>
+    </div>
+    <nav class="flex flex-col gap-2 mt-6 px-4 flex-grow text-base font-medium">
+     <a href="vendordashboard.html" class="sidebar-active flex items-center gap-3 px-4 py-3 rounded-full transition">
+      <i class="fas fa-list-alt"></i>
+      Dashboard
+     </a>
+     <a href="Vendor_Order.html" class="flex items-center gap-3 px-4 py-3 rounded-full transition">
+      <i class="fas fa-clipboard-list"></i>
+      Orders
+     </a>
+     <a href="Vendor_Product_inventory.html" class="flex items-center gap-3 px-4 py-3 rounded-full transition">
+      <i class="fas fa-box-open"></i>
+      Products / Inventory
+     </a>
+     <a href="Vendor_payment.html" class="flex items-center gap-3 px-4 py-3 rounded-full transition">
+      <i class="fas fa-credit-card"></i>
+      Payments
+     </a>
+     <a href="Vendor_supporttickets.html" class="flex items-center gap-3 px-4 py-3 rounded-full transition">
+      <i class="fas fa-comments"></i>
+      Support Tickets
+     </a>
+     <a href="Vendor_analytics.html" class="flex items-center gap-3 px-4 py-3 rounded-full transition">
+      <i class="fas fa-chart-line"></i>
+      Analytics / Reports
+     </a>
+     <a href="Vendor_Settings.html" class="flex items-center gap-3 px-4 py-3 rounded-full transition">
+      <i class="fas fa-cog"></i>
+      Settings
+     </a>
+     <a href="Vendor_ASN.html" class="flex items-center gap-3 px-4 py-3 rounded-full transition">
+       <i class="fas fa-truck-loading text-lg">
+       </i>
+       ASN
+      </a>
+    </nav>
+    
+   </aside>
+    <!-- Main content -->
+    <main id="mainContent" class="flex-1 p-8 bg-white rounded-l-lg overflow-y-auto">
+      <h1 id="pageTitle" class="text-2xl font-bold mb-6 text-[var(--text-dark-gray)]">Settings</h1>
+      <div id="contentArea">
+        <section id="settingsSection" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <!-- User Profile & Access Control -->
+          <div class="bg-[var(--gray-light-bg)] p-6 rounded-md shadow cursor-pointer" data-section="userProfile">
+            <h2 class="text-xl font-semibold mb-4 text-[var(--text-dark-gray)] flex items-center gap-2">
+              <i class="fas fa-user-cog text-[var(--purple-primary)]"></i> User Profile &amp; Access Control
+            </h2>
+            <ul class="list-disc list-inside space-y-1 text-[var(--text-gray)]">
+              <li>Company profile info (name, contact, tax details)</li>
+              <li>Users &amp; roles (admin, viewer, approver)</li>
+              <li>Access rights and data visibility settings</li>
+            </ul>
+          </div>
+          <!-- Dashboard Layout & Widgets -->
+          <div class="bg-[var(--gray-light-bg)] p-6 rounded-md shadow cursor-pointer" data-section="dashboardLayout">
+            <h2 class="text-xl font-semibold mb-4 text-[var(--text-dark-gray)] flex items-center gap-2">
+              <i class="fas fa-th-large text-[var(--purple-primary)]"></i> Dashboard Layout &amp; Widgets
+            </h2>
+            <ul class="list-disc list-inside space-y-1 text-[var(--text-gray)]">
+              <li>Customizable widgets (e.g., open POs, pending invoices, payment status)</li>
+              <li>Filter/sort options for data views (date ranges, document types)</li>
+              <li>Chart &amp; KPI displays (delivery performance, invoice aging, etc.)</li>
+            </ul>
+          </div>
+          <!-- Notifications & Alerts -->
+          <div class="bg-[var(--gray-light-bg)] p-6 rounded-md shadow cursor-pointer" data-section="notifications">
+            <h2 class="text-xl font-semibold mb-4 text-[var(--text-dark-gray)] flex items-center gap-2">
+              <i class="fas fa-bell text-[var(--purple-primary)]"></i> Notifications &amp; Alerts
+            </h2>
+            <ul class="list-disc list-inside space-y-1 text-[var(--text-gray)]">
+              <li>Email/SMS notifications settings for:
+                <ul class="list-disc list-inside ml-5 space-y-1 mt-1">
+                  <li>New PO received</li>
+                  <li>Invoice approval/rejection</li>
+                  <li>Payment status updates</li>
+                </ul>
+              </li>
+              <li>Frequency and type of alerts</li>
+            </ul>
+          </div>
+          <!-- Document Management Settings -->
+          <div class="bg-[var(--gray-light-bg)] p-6 rounded-md shadow cursor-pointer" data-section="documentManagement">
+            <h2 class="text-xl font-semibold mb-4 text-[var(--text-dark-gray)] flex items-center gap-2">
+              <i class="fas fa-file-alt text-[var(--purple-primary)]"></i> Document Management Settings
+            </h2>
+            <ul class="list-disc list-inside space-y-1 text-[var(--text-gray)]">
+              <li>Upload/download templates for invoices, ASN (Advance Shipping Notice), etc.</li>
+              <li>Preferred document formats (PDF, XML, Excel)</li>
+              <li>OCR preferences if applicable (for scanned invoice processing)</li>
+            </ul>
+          </div>
+          <!-- Support & Feedback Options -->
+          <div class="bg-[var(--gray-light-bg)] p-6 rounded-md shadow cursor-pointer" data-section="supportFeedback">
+            <h2 class="text-xl font-semibold mb-4 text-[var(--text-dark-gray)] flex items-center gap-2">
+              <i class="fas fa-headset text-[var(--purple-primary)]"></i> Support &amp; Feedback Options
+            </h2>
+            <ul class="list-disc list-inside space-y-1 text-[var(--text-gray)]">
+              <li>Contact support form or chatbot access</li>
+              <li>Option to raise tickets or feedback from within the dashboard</li>
+            </ul>
+          </div>
+          <!-- Localization Settings -->
+          <div class="bg-[var(--gray-light-bg)] p-6 rounded-md shadow cursor-pointer" data-section="localization">
+            <h2 class="text-xl font-semibold mb-4 text-[var(--text-dark-gray)] flex items-center gap-2">
+              <i class="fas fa-globe text-[var(--purple-primary)]"></i> Localization Settings
+            </h2>
+            <ul class="list-disc list-inside space-y-1 text-[var(--text-gray)]">
+              <li>Language and currency preferences</li>
+              <li>Time zone settings</li>
+            </ul>
+          </div>
+        </section>
+        <section id="detailSection" class="mt-10 p-6 bg-[var(--gray-light-bg)] rounded-md shadow hidden">
+          <button id="backBtn" class="mb-4 px-4 py-2 bg-[var(--purple-primary)] text-white rounded hover:bg-[var(--purple-dark)]">
+            &larr; Back to Settings
+          </button>
+          <div id="detailContent" class="text-[var(--text-gray)]"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const sectionsData = {
+      userProfile: `
+        <h2 class="text-2xl font-semibold mb-4 text-[var(--text-dark-gray)]">User Profile & Access Control</h2>
+        <p class="mb-3">Manage company profile information including name, contact, and tax details. Define users and roles such as admin, viewer, and approver. Configure access rights and data visibility settings.</p>
+        <form class="space-y-4 max-w-lg">
+          <div>
+            <label class="block font-semibold mb-1" for="companyName">Company Name</label>
+            <input id="companyName" type="text" class="w-full border border-[var(--gray-border)] rounded px-3 py-2" placeholder="Enter company name" />
+          </div>
+          <div>
+            <label class="block font-semibold mb-1" for="contactEmail">Contact Email</label>
+            <input id="contactEmail" type="email" class="w-full border border-[var(--gray-border)] rounded px-3 py-2" placeholder="Enter contact email" />
+          </div>
+          <div>
+            <label class="block font-semibold mb-1" for="taxId">Tax ID</label>
+            <input id="taxId" type="text" class="w-full border border-[var(--gray-border)] rounded px-3 py-2" placeholder="Enter tax ID" />
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">User Roles</label>
+            <select id="userRole" class="w-full border border-[var(--gray-border)] rounded px-3 py-2">
+              <option>Admin</option>
+              <option>Viewer</option>
+              <option>Approver</option>
+            </select>
+          </div>
+          <button type="submit" class="bg-[var(--purple-primary)] text-white px-4 py-2 rounded hover:bg-[var(--purple-dark)]">Save</button>
+        </form>
+      `,
+      dashboardLayout: `
+        <h2 class="text-2xl font-semibold mb-4 text-[var(--text-dark-gray)]">Dashboard Layout & Widgets</h2>
+        <p class="mb-3">Customize your dashboard widgets such as open POs, pending invoices, and payment status. Use filter and sort options for data views including date ranges and document types. View charts and KPI displays for delivery performance, invoice aging, and more.</p>
+        <form class="space-y-4 max-w-lg">
+          <div>
+            <label class="block font-semibold mb-1">Select Widgets</label>
+            <div class="space-y-2">
+              <label><input type="checkbox" checked /> Open POs</label><br/>
+              <label><input type="checkbox" checked /> Pending Invoices</label><br/>
+              <label><input type="checkbox" /> Payment Status</label><br/>
+              <label><input type="checkbox" /> Delivery Performance Chart</label><br/>
+              <label><input type="checkbox" /> Invoice Aging Chart</label>
+            </div>
+          </div>
+          <div>
+            <label class="block font-semibold mb-1" for="dateRange">Date Range</label>
+            <select id="dateRange" class="w-full border border-[var(--gray-border)] rounded px-3 py-2">
+              <option>Last 7 days</option>
+              <option>Last 30 days</option>
+              <option>Last 90 days</option>
+              <option>Custom</option>
+            </select>
+          </div>
+          <button type="submit" class="bg-[var(--purple-primary)] text-white px-4 py-2 rounded hover:bg-[var(--purple-dark)]">Save</button>
+        </form>
+      `,
+      notifications: `
+        <h2 class="text-2xl font-semibold mb-4 text-[var(--text-dark-gray)]">Notifications & Alerts</h2>
+        <p class="mb-3">Configure email and SMS notifications for important events and set frequency and alert types.</p>
+        <form class="space-y-4 max-w-lg">
+          <div>
+            <label><input type="checkbox" checked /> New PO received</label><br/>
+            <label><input type="checkbox" checked /> Invoice approval/rejection</label><br/>
+            <label><input type="checkbox" /> Payment status updates</label>
+          </div>
+          <div>
+            <label class="block font-semibold mb-1" for="alertFrequency">Alert Frequency</label>
+            <select id="alertFrequency" class="w-full border border-[var(--gray-border)] rounded px-3 py-2">
+              <option>Immediate</option>
+              <option>Hourly</option>
+              <option>Daily</option>
+              <option>Weekly</option>
+            </select>
+          </div>
+          <button type="submit" class="bg-[var(--purple-primary)] text-white px-4 py-2 rounded hover:bg-[var(--purple-dark)]">Save</button>
+        </form>
+      `,
+      documentManagement: `
+        <h2 class="text-2xl font-semibold mb-4 text-[var(--text-dark-gray)]">Document Management Settings</h2>
+        <p class="mb-3">Manage templates and preferred document formats. Configure OCR preferences for scanned invoice processing.</p>
+        <form class="space-y-4 max-w-lg">
+          <div>
+            <label class="block font-semibold mb-1" for="templateUpload">Upload Template</label>
+            <input id="templateUpload" type="file" class="w-full border border-[var(--gray-border)] rounded px-3 py-2" />
+          </div>
+          <div>
+            <label class="block font-semibold mb-1" for="preferredFormat">Preferred Document Format</label>
+            <select id="preferredFormat" class="w-full border border-[var(--gray-border)] rounded px-3 py-2">
+              <option>PDF</option>
+              <option>XML</option>
+              <option>Excel</option>
+            </select>
+          </div>
+          <div>
+            <label><input type="checkbox" /> Enable OCR for scanned invoices</label>
+          </div>
+          <button type="submit" class="bg-[var(--purple-primary)] text-white px-4 py-2 rounded hover:bg-[var(--purple-dark)]">Save</button>
+        </form>
+      `,
+      supportFeedback: `
+        <h2 class="text-2xl font-semibold mb-4 text-[var(--text-dark-gray)]">Support & Feedback Options</h2>
+        <p class="mb-3">Access support form or chatbot and raise tickets or feedback from within the dashboard.</p>
+        <form class="space-y-4 max-w-lg">
+          <div>
+            <label class="block font-semibold mb-1" for="supportContact">Support Contact Email</label>
+            <input id="supportContact" type="email" class="w-full border border-[var(--gray-border)] rounded px-3 py-2" placeholder="support@example.com" />
+          </div>
+          <div>
+            <label class="block font-semibold mb-1" for="feedbackOption">Feedback Option</label>
+            <select id="feedbackOption" class="w-full border border-[var(--gray-border)] rounded px-3 py-2">
+              <option>Contact Form</option>
+              <option>Chatbot</option>
+              <option>Both</option>
+            </select>
+          </div>
+          <button type="submit" class="bg-[var(--purple-primary)] text-white px-4 py-2 rounded hover:bg-[var(--purple-dark)]">Save</button>
+        </form>
+      `,
+      localization: `
+        <h2 class="text-2xl font-semibold mb-4 text-[var(--text-dark-gray)]">Localization Settings</h2>
+        <p class="mb-3">Set language, currency preferences, and time zone settings.</p>
+        <form class="space-y-4 max-w-lg">
+          <div>
+            <label class="block font-semibold mb-1" for="languageSelect">Language</label>
+            <select id="languageSelect" class="w-full border border-[var(--gray-border)] rounded px-3 py-2">
+              <option>English</option>
+              <option>Spanish</option>
+              <option>French</option>
+              <option>German</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold mb-1" for="currencySelect">Currency</label>
+            <select id="currencySelect" class="w-full border border-[var(--gray-border)] rounded px-3 py-2">
+              <option>USD</option>
+              <option>EUR</option>
+              <option>JPY</option>
+              <option>GBP</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold mb-1" for="timezoneSelect">Time Zone</label>
+            <select id="timezoneSelect" class="w-full border border-[var(--gray-border)] rounded px-3 py-2">
+              <option>GMT-5 (Eastern Time)</option>
+              <option>GMT+0 (Greenwich Mean Time)</option>
+              <option>GMT+1 (Central European Time)</option>
+              <option>GMT+9 (Japan Standard Time)</option>
+            </select>
+          </div>
+          <button type="submit" class="bg-[var(--purple-primary)] text-white px-4 py-2 rounded hover:bg-[var(--purple-dark)]">Save</button>
+        </form>
+      `
+    };
+
+    const sidebarLinks = document.querySelectorAll('.sidebar-link');
+    const pageTitle = document.getElementById('pageTitle');
+    const contentArea = document.getElementById('contentArea');
+    const settingsSection = document.getElementById('settingsSection');
+
+    function clearActive() {
+      sidebarLinks.forEach(link => {
+        link.classList.remove('bg-[var(--purple-primary)]', 'text-white', 'font-semibold');
+        link.querySelector('i').classList.remove('text-white');
+        link.classList.add('text-[var(--text-gray)]');
+        link.querySelector('i').classList.add('text-[var(--text-gray)]');
+      });
+    }
+
+    function setActive(link) {
+      clearActive();
+      link.classList.add('bg-[var(--purple-primary)]', 'text-white', 'font-semibold');
+      link.querySelector('i').classList.remove('text-[var(--text-gray)]');
+      link.querySelector('i').classList.add('text-white');
+      link.classList.remove('text-[var(--text-gray)]');
+    }
+
+    sidebarLinks.forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        setActive(link);
+        const tab = link.getAttribute('data-tab');
+        if (tab === 'settings') {
+          pageTitle.textContent = 'Settings';
+          contentArea.innerHTML = '';
+          contentArea.appendChild(settingsSection);
+          settingsSection.classList.remove('hidden');
+          attachSettingsClick();
+        } else {
+          pageTitle.textContent = tab.charAt(0).toUpperCase() + tab.slice(1);
+          settingsSection.classList.add('hidden');
+          contentArea.innerHTML = `<p class="text-[var(--text-gray)]">Content for ${pageTitle.textContent} goes here.</p>`;
+        }
+      });
+    });
+
+    // Initialize with settings active
+    const defaultActive = Array.from(sidebarLinks).find(link => link.getAttribute('data-tab') === 'settings');
+    setActive(defaultActive);
+    contentArea.innerHTML = '';
+    contentArea.appendChild(settingsSection);
+    settingsSection.classList.remove('hidden');
+
+    // Add click handlers to settings cards
+    function attachSettingsClick() {
+      const cards = settingsSection.querySelectorAll('div[data-section]');
+      cards.forEach(card => {
+        card.addEventListener('click', () => {
+          showDetail(card.getAttribute('data-section'));
+        });
+      });
+    }
+
+    // Detail section
+    const detailSection = document.createElement('section');
+    detailSection.id = 'detailSection';
+    detailSection.className = 'mt-10 p-6 bg-[var(--gray-light-bg)] rounded-md shadow';
+    detailSection.style.display = 'none';
+
+    const backBtn = document.createElement('button');
+    backBtn.id = 'backBtn';
+    backBtn.className = 'mb-4 px-4 py-2 bg-[var(--purple-primary)] text-white rounded hover:bg-[var(--purple-dark)]';
+    backBtn.textContent = '← Back to Settings';
+    backBtn.addEventListener('click', () => {
+      detailSection.style.display = 'none';
+      settingsSection.style.display = 'grid';
+      pageTitle.textContent = 'Settings';
+    });
+
+    const detailContent = document.createElement('div');
+    detailContent.id = 'detailContent';
+    detailContent.className = 'text-[var(--text-gray)]';
+
+    detailSection.appendChild(backBtn);
+    detailSection.appendChild(detailContent);
+    contentArea.appendChild(detailSection);
+
+    function showDetail(sectionKey) {
+      detailContent.innerHTML = sectionsData[sectionKey] || '<p>No details available.</p>';
+      detailSection.style.display = 'block';
+      settingsSection.style.display = 'none';
+      pageTitle.textContent = sectionsData[sectionKey]
+        ? sectionKey
+            .replace(/([A-Z])/g, ' $1')
+            .replace(/^./, str => str.toUpperCase())
+        : 'Details';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    attachSettingsClick();
+  </script>
+</body>
+</html>

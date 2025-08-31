@@ -1,0 +1,79 @@
+{
+  "purchaseOrders": [
+    {
+      "id": "PO-1001",
+      "vendor": "ABC Supplies",
+      "date": "2023-01-15",
+      "amount": 1500.00,
+      "status": "Completed",
+      "items": [
+        {
+          "description": "Office Chairs",
+          "quantity": 10,
+          "unitPrice": 150.00
+        },
+        {
+          "description": "Desks",
+          "quantity": 5,
+          "unitPrice": 200.00
+        }
+      ]
+    },
+    {
+      "id": "PO-1002",
+      "vendor": "XYZ Technologies",
+      "date": "2023-02-20",
+      "amount": 12000.00,
+      "status": "Pending",
+      "items": [
+        {
+          "description": "Software Licenses",
+          "quantity": 20,
+          "unitPrice": 600.00
+        }
+      ]
+    },
+    {
+      "id": "PO-1003",
+      "vendor": "Office Supplies Co.",
+      "date": "2023-03-05",
+      "amount": 1200.00,
+      "status": "Completed",
+      "items": [
+        {
+          "description": "Stationery Supplies",
+          "quantity": 100,
+          "unitPrice": 12.00
+        }
+      ]
+    },
+    {
+      "id": "PO-1004",
+      "vendor": "IT Equipment Ltd.",
+      "date": "2023-04-10",
+      "amount": 25500.00,
+      "status": "In Progress",
+      "items": [
+        {
+          "description": "Laptops",
+          "quantity": 15,
+          "unitPrice": 1700.00
+        }
+      ]
+    },
+    {
+      "id": "PO-1005",
+      "vendor": "Consulting Services Inc.",
+      "date": "2023-05-25",
+      "amount": 8000.00,
+      "status": "Completed",
+      "items": [
+        {
+          "description": "Consulting Services",
+          "quantity": 1,
+          "unitPrice": 8000.00
+        }
+      ]
+    }
+  ]
+}

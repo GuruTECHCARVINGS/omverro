@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vendor Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .active { background-color: #2563eb; color: white; }
+  </style>
+</head>
+<body class="bg-[#f1f5f7] min-h-screen flex items-center justify-center p-4">
+  <div class="text-center max-w-xs w-full">
+    <img src="data:image/jpeg;base64,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" alt="Mitsubishi Electric logo" class="mx-auto mb-6 max-w-[180px] w-full"/>
+    <h1 class="text-4xl font-semibold text-gray-800 mb-4">Vendor Portal</h1>
+
+    <!-- Vendor/Buyer Toggle -->
+    <div class="inline-flex rounded-md border border-gray-300 overflow-hidden mb-6">
+      <button id="vendorBtn" class="bg-blue-600 text-white px-6 py-2 text-lg font-medium focus:outline-none" type="button" onclick="selectRole('vendor')">
+        Vendor
+      </button>
+      <button id="buyerBtn" class="bg-white text-gray-900 px-6 py-2 text-lg font-medium border-l border-gray-300 focus:outline-none" type="button" onclick="selectRole('buyer')">
+        Buyer
+      </button>
+    </div>
+
+    <form class="bg-white rounded-lg p-6 shadow-sm" id="loginForm">
+      <h2 class="text-2xl font-semibold text-gray-800 mb-6">Log in</h2>
+      <label for="email" class="block text-gray-900 text-sm mb-1 text-left">Email</label>
+      <input id="email" type="email" class="w-full mb-4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600" autocomplete="email" required />
+      <label for="password" class="block text-gray-900 text-sm mb-1 text-left">Password</label>
+      <input id="password" type="password" class="w-full mb-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600" autocomplete="current-password" required />
+      <div class="text-right mb-6">
+        <a href="#" class="text-blue-700 text-sm hover:underline">Forgot password?</a>
+      </div>
+      <button type="submit" class="w-full bg-blue-600 text-white text-lg font-medium py-2 rounded-md hover:bg-blue-700 focus:outline-none">
+        Log in
+      </button>
+      <div class="mt-4">
+        <a href="./Vendor_Registration_scrren.html" class="text-blue-700 text-base hover:underline">Register</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    // Set a default user type
+    let userType = 'vendor';
+  
+    function selectRole(role) {
+      const vendorBtn = document.getElementById('vendorBtn');
+      const buyerBtn = document.getElementById('buyerBtn');
+  
+      // Update the userType variable
+      userType = role;
+  
+      if (role === 'vendor') {
+        vendorBtn.classList.add('bg-blue-600', 'text-white');
+        vendorBtn.classList.remove('bg-white', 'text-gray-900');
+        buyerBtn.classList.add('bg-white', 'text-gray-900');
+        buyerBtn.classList.remove('bg-blue-600', 'text-white');
+      } else {
+        buyerBtn.classList.add('bg-blue-600', 'text-white');
+        buyerBtn.classList.remove('bg-white', 'text-gray-900');
+        vendorBtn.classList.add('bg-white', 'text-gray-900');
+        vendorBtn.classList.remove('bg-blue-600', 'text-white');
+      }
+    }
+  
+    // Login Form Submission
+    document.getElementById('loginForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+  
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+  
+      fetch('http://localhost:3000/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, type: userType })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          alert(`Welcome ${userType}! ${data.message}`);
+          // Redirect to the appropriate dashboard based on user type
+          if (userType === 'vendor') {
+            window.location.href = 'vendordashboard.html';
+          } else {
+            window.location.href = 'buyerdashboard.html';
+          }
+        } else {
+          alert(data.message);
+        }
+      })
+      .catch(error => {
+        alert('Login failed: ' + error.message);
+      });
+    });
+  </script>
+  
+</body>
+</html>

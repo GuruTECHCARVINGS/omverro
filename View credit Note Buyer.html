@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Buyer Portal – Credit Notes</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: linear-gradient(120deg,#f3f6fd 0%,#e9eafc 100%); color:#111827 }
+    .card { box-shadow: 0 8px 28px rgba(59,130,246,.08); border:1px solid #E5E7EB; border-radius:1rem; background:#fff; overflow: hidden }
+    .badge { font-size:.7rem; font-weight:700; padding:.2rem .5rem; border-radius:999px; border:1px solid; white-space:nowrap }
+    .badge.draft { background:#E5E7EB; color:#4B5563; border-color:#D1D5DB }
+    .badge.submitted { background:#DBEAFE; color:#1D4ED8; border-color:#BFDBFE }
+    .badge.pending { background:#FEF3C7; color:#92400E; border-color:#FDE68A }
+    .badge.approved { background:#ECFDF5; color:#047857; border-color:#A7F3D0 }
+    .badge.rejected { background:#FEE2E2; color:#991B1B; border-color:#FCA5A5 }
+    .badge.applied { background:#F3E8FF; color:#7C3AED; border-color:#E9D5FF }
+    .amount { overflow-wrap:anywhere; word-break:break-word; line-height:1.1 }
+    .num { white-space: nowrap; font-variant-numeric: tabular-nums; font-feature-settings: 'tnum' 1; }
+    .reveal { opacity:0; transform: translateY(8px); transition: .5s }
+    .reveal.show { opacity:1; transform: none }
+    .progress { height:8px; background:#E5E7EB; border-radius:999px; overflow:hidden }
+    .progress > span { display:block; height:100% }
+  .att-item { display:flex; align-items:center; justify-content:space-between; gap:.75rem; padding:.4rem .6rem; border-radius:.5rem; border:1px solid #E5E7EB }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button onclick="navBack()" class="h-10 w-10 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100" title="Back to Buyer Dashboard"><i class="fas fa-arrow-left"></i></button>
+        <div>
+          <h1 class="text-lg sm:text-xl font-bold text-gray-900">Credit Notes</h1>
+          <p class="text-xs text-gray-500 -mt-0.5">Create • Apply • Approve • Track</p>
+        </div>
+      </div>
+      <div class="hidden md:flex items-center gap-3">
+        <div class="relative">
+          <input id="q" type="search" placeholder="Search CN/Invoice/Supplier..." class="w-72 pl-10 pr-3 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none"/>
+          <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+        </div>
+        <button class="h-10 px-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700" onclick="exportCSV()"><i class="fas fa-file-export mr-1"></i>Export</button>
+        <button class="h-10 px-3 rounded-lg bg-gray-50 border hover:bg-gray-100" onclick="refreshData()"><i class="fas fa-sync-alt"></i></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- KPIs -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+      <div class="card p-5 reveal">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-gray-500">Total Credits</div>
+            <div id="kpiTotal" class="num text-2xl font-extrabold text-blue-700">--</div>
+            <div class="text-xs text-blue-600">Across filters</div>
+          </div>
+          <div class="p-3 bg-blue-100 rounded-full"><i class="fas fa-receipt text-blue-700"></i></div>
+        </div>
+      </div>
+      <div class="card p-5 reveal">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-gray-500">Approved</div>
+            <div id="kpiApproved" class="num text-2xl font-extrabold text-green-700">--</div>
+            <div class="text-xs text-green-600">Ready to apply</div>
+          </div>
+          <div class="p-3 bg-green-100 rounded-full"><i class="fas fa-check-circle text-green-700"></i></div>
+        </div>
+      </div>
+      <div class="card p-5 reveal">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-gray-500">Pending</div>
+            <div id="kpiPending" class="text-2xl font-extrabold text-amber-600">--</div>
+            <div class="text-xs text-amber-600">Draft/Submitted/Pending</div>
+          </div>
+          <div class="p-3 bg-amber-100 rounded-full"><i class="fas fa-hourglass-half text-amber-600"></i></div>
+        </div>
+      </div>
+      <div class="card p-5 reveal">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-gray-500">Applied</div>
+            <div id="kpiApplied" class="text-2xl font-extrabold text-purple-700">--</div>
+            <div class="text-xs text-purple-600">Fully or partially</div>
+          </div>
+          <div class="p-3 bg-purple-100 rounded-full"><i class="fas fa-clipboard-check text-purple-700"></i></div>
+        </div>
+      </div>
+      <div class="card p-5 reveal">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-gray-500">Balance Remaining</div>
+            <div id="kpiBalance" class="num text-2xl font-extrabold text-gray-900">--</div>
+            <div class="text-xs text-gray-600">Unapplied</div>
+          </div>
+          <div class="p-3 bg-gray-100 rounded-full"><i class="fas fa-wallet text-gray-700"></i></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="card p-5 mb-6 reveal">
+      <div class="grid grid-cols-1 md:grid-cols-7 gap-4">
+        <div class="md:col-span-2">
+          <label class="text-xs text-gray-500">Search</label>
+          <div class="relative">
+            <input id="fSearch" type="text" placeholder="CN/Invoice/Reason" class="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600"/>
+            <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+          </div>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Supplier</label>
+          <select id="fSupplier" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600"><option value="">All</option></select>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Status</label>
+          <select id="fStatus" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600">
+            <option value="">All</option>
+            <option>Draft</option>
+            <option>Submitted</option>
+            <option>Pending Approval</option>
+            <option>Approved</option>
+            <option>Rejected</option>
+            <option>Applied</option>
+            <option>Partially Applied</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Date From</label>
+          <input id="fFrom" type="date" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600"/>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Date To</label>
+          <input id="fTo" type="date" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600"/>
+        </div>
+        <div class="flex items-end gap-2">
+          <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" onclick="applyFilters()"><i class="fas fa-filter mr-1"></i>Apply</button>
+          <button class="px-4 py-2 bg-gray-50 border rounded-lg hover:bg-gray-100" onclick="resetFilters()"><i class="fas fa-undo mr-1"></i>Reset</button>
+        </div>
+      </div>
+      <div class="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-600">
+        Quick dates:
+        <button class="px-2.5 py-1 rounded border hover:bg-gray-50" onclick="setDatePreset('today')">Today</button>
+        <button class="px-2.5 py-1 rounded border hover:bg-gray-50" onclick="setDatePreset('last7')">Last 7</button>
+        <button class="px-2.5 py-1 rounded border hover:bg-gray-50" onclick="setDatePreset('month')">This Month</button>
+        <button class="px-2.5 py-1 rounded border hover:bg-gray-50" onclick="setDatePreset('clear')">Clear</button>
+      </div>
+    </section>
+
+    <!-- Toolbar -->
+    <section class="flex flex-col md:flex-row items-center justify-between gap-3 mb-3">
+      <div class="text-sm text-gray-600">Statuses include Draft, Submitted, Pending Approval, Approved, Rejected, Applied, Partially Applied.</div>
+      <div class="flex gap-2">
+        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" onclick="openCreate()"><i class="fas fa-plus mr-1"></i>Create Credit Note</button>
+        <button class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700" onclick="exportCSV()"><i class="fas fa-file-export mr-1"></i>Export</button>
+        <button class="px-4 py-2 bg-gray-50 border rounded-lg hover:bg-gray-100" onclick="refreshData()"><i class="fas fa-sync-alt"></i></button>
+      </div>
+    </section>
+
+    <!-- Table -->
+    <section class="card overflow-hidden reveal">
+      <div class="overflow-x-auto">
+        <table class="min-w-full">
+          <thead class="bg-gray-50 text-gray-600 text-xs uppercase">
+            <tr>
+              <th class="px-4 py-3 text-left min-w-[14rem]">Credit Note</th>
+              <th class="px-4 py-3 text-left min-w-[12rem]">Supplier</th>
+              <th class="px-4 py-3 text-left min-w-[10rem]">Date</th>
+              <th class="px-4 py-3 text-left min-w-[14rem]">Invoice / PO</th>
+              <th class="px-4 py-3 text-left min-w-[14rem]">Reason</th>
+              <th class="px-4 py-3 text-right min-w-[10rem]">Amount</th>
+              <th class="px-4 py-3 text-right min-w-[10rem]">Applied</th>
+              <th class="px-4 py-3 text-right min-w-[10rem]">Balance</th>
+              <th class="px-4 py-3 text-left min-w-[10rem]">Status</th>
+              <th class="px-4 py-3 text-left min-w-[12rem]">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tbody" class="text-sm"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal -->
+  <div id="modal" class="fixed inset-0 bg-black/30 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl w-full max-w-5xl shadow-2xl">
+      <div class="flex items-center justify-between px-5 py-4 border-b">
+        <h3 id="modalTitle" class="text-lg font-semibold text-gray-900">Credit Note</h3>
+        <button class="h-10 w-10 rounded-lg bg-gray-50 hover:bg-gray-100" onclick="closeModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div id="modalBody" class="p-5 max-h-[70vh] overflow-y-auto"></div>
+      <div id="modalFooter" class="px-5 py-4 border-t flex items-center justify-end gap-2"></div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed top-4 right-4 hidden text-white px-4 py-2 rounded-lg shadow-lg"></div>
+
+  <script>
+    // Utils
+    const $ = (id) => document.getElementById(id);
+    const Rs = (n) => new Intl.NumberFormat('en-IN', { style:'currency', currency:'INR', maximumFractionDigits: 0 }).format(n||0);
+    const showToast = (m, t='info') => { const el = $('toast'); const colors = {success:'bg-green-600', info:'bg-blue-600', warning:'bg-yellow-600', error:'bg-red-600'}; el.className = `fixed top-4 right-4 text-white px-4 py-2 rounded-lg shadow-lg ${colors[t]||colors.info}`; el.textContent = m; el.classList.remove('hidden'); setTimeout(()=> el.classList.add('hidden'), 2200); };
+    function navBack(){ window.location.href = 'BuyerDashboard.html'; }
+
+    // Sample invoices to apply against (stub)
+    const openInvoices = [
+      { id:'INV-2024-101', supplier:'Alpha Industries', amount: 450000 },
+      { id:'INV-2024-145', supplier:'Beta Solutions', amount: 1250000 },
+      { id:'INV-2025-003', supplier:'Global Tech', amount: 980000 },
+      { id:'INV-2025-014', supplier:'Zenith Supplies', amount: 1620000 },
+      { id:'INV-2025-020', supplier:'Nova Labs', amount: 540000 },
+    ];
+
+    // Credit notes dataset
+    const creditNotes = [
+      { id:'CN-2024-001', invoice:'INV-2024-101', po:'PO-2024-050', supplier:'Alpha Industries', date:'2024-08-10', reason:'Quantity short supply', type:'Quantity', amount: 250000, applied: 0, status:'Pending Approval', taxAdj: 0, comments:['Supplier acknowledged shortage'], approvals:[{by:'Buyer Lead', on:'2024-08-11', action:'Reviewed'}], attachments:[{name:'GRN_2024-08-10.pdf', size: 184522}] },
+      { id:'CN-2024-002', invoice:'INV-2024-145', po:'PO-2024-077', supplier:'Beta Solutions', date:'2024-09-05', reason:'Price discrepancy', type:'Price', amount: 180000, applied: 50000, status:'Partially Applied', taxAdj: 9000, comments:['Partial adjustment applied to INV-2024-145'], approvals:[{by:'Finance', on:'2024-09-06', action:'Approved'}], attachments:[{name:'Invoice_INV-2024-145.pdf', size: 245002}] },
+      { id:'CN-2024-003', invoice:'INV-2024-200', po:'PO-2024-100', supplier:'Global Tech', date:'2024-10-21', reason:'Damaged goods return', type:'Quantity', amount: 600000, applied: 0, status:'Approved', taxAdj: 0, comments:[], approvals:[{by:'Buyer Lead', on:'2024-10-22', action:'Approved'}] },
+      { id:'CN-2024-004', invoice:'INV-2024-222', po:'PO-2024-111', supplier:'Zenith Supplies', date:'2024-11-02', reason:'Overbilling - freight', type:'Freight', amount: 90000, applied: 90000, status:'Applied', taxAdj: 0, comments:['Applied to INV-2024-230'], approvals:[{by:'Finance', on:'2024-11-03', action:'Approved'}] },
+      { id:'CN-2024-005', invoice:'INV-2024-240', po:'PO-2024-115', supplier:'Nova Labs', date:'2024-12-14', reason:'Tax reversal', type:'Tax', amount: 120000, applied: 0, status:'Rejected', taxAdj: -120000, comments:['Incorrect document'], approvals:[{by:'Finance', on:'2024-12-15', action:'Rejected'}] },
+      { id:'CN-2025-001', invoice:'INV-2025-003', po:'PO-2025-004', supplier:'Global Tech', date:'2025-01-07', reason:'Return - warranty', type:'Service', amount: 350000, applied: 0, status:'Draft', taxAdj: 0, comments:['Pending supplier confirmation'], approvals:[], attachments:[{name:'Warranty_report.jpg', size: 85012}] },
+      { id:'CN-2025-002', invoice:'INV-2025-014', po:'PO-2025-015', supplier:'Zenith Supplies', date:'2025-02-09', reason:'Service not delivered', type:'Service', amount: 800000, applied: 0, status:'Submitted', taxAdj: 0, comments:[], approvals:[{by:'Requester', on:'2025-02-09', action:'Submitted'}] },
+      { id:'CN-2025-003', invoice:'INV-2025-020', po:'PO-2025-021', supplier:'Nova Labs', date:'2025-02-22', reason:'Quantity mismatch', type:'Quantity', amount: 220000, applied: 100000, status:'Partially Applied', taxAdj: 0, comments:['Applied to INV-2025-020'], approvals:[{by:'Buyer', on:'2025-02-23', action:'Approved'}] },
+      { id:'CN-2025-004', invoice:'INV-2025-030', po:'PO-2025-040', supplier:'Beta Solutions', date:'2025-03-08', reason:'Price revision credit', type:'Price', amount: 500000, applied: 0, status:'Pending Approval', taxAdj: 0, comments:[], approvals:[{by:'Buyer Lead', on:'2025-03-09', action:'Reviewed'}] },
+      { id:'CN-2025-005', invoice:'INV-2025-045', po:'PO-2025-050', supplier:'Alpha Industries', date:'2025-03-27', reason:'Promotional rebate', type:'Price', amount: 300000, applied: 0, status:'Approved', taxAdj: 0, comments:[], approvals:[{by:'Finance', on:'2025-03-28', action:'Approved'}] },
+      { id:'CN-2025-006', invoice:'INV-2025-060', po:'PO-2025-061', supplier:'Global Tech', date:'2025-04-11', reason:'Return - defective lot', type:'Quantity', amount: 950000, applied: 0, status:'Approved', taxAdj: 0, comments:[], approvals:[{by:'Quality', on:'2025-04-12', action:'Verified'}] },
+      { id:'CN-2025-007', invoice:'INV-2025-071', po:'PO-2025-072', supplier:'Zenith Supplies', date:'2025-05-03', reason:'Tax correction IGST->CGST/SGST', type:'Tax', amount: 110000, applied: 0, status:'Submitted', taxAdj: -110000, comments:['Reverse wrong tax'], approvals:[{by:'Buyer', on:'2025-05-03', action:'Submitted'}] },
+      { id:'CN-2025-008', invoice:'INV-2025-082', po:'PO-2025-083', supplier:'Nova Labs', date:'2025-05-20', reason:'Freight overcharge', type:'Freight', amount: 70000, applied: 70000, status:'Applied', taxAdj: 0, comments:['Net-off against INV-2025-082'], approvals:[{by:'Finance', on:'2025-05-21', action:'Approved'}] },
+      { id:'CN-2025-009', invoice:'INV-2025-090', po:'PO-2025-091', supplier:'Alpha Industries', date:'2025-06-10', reason:'Price discrepancy - line 3', type:'Price', amount: 260000, applied: 0, status:'Pending Approval', taxAdj: 0, comments:[], approvals:[] },
+      { id:'CN-2025-010', invoice:'INV-2025-102', po:'PO-2025-103', supplier:'Beta Solutions', date:'2025-06-25', reason:'Quality rejection', type:'Service', amount: 420000, applied: 120000, status:'Partially Applied', taxAdj: 0, comments:['Applied partly to INV-2025-102'], approvals:[{by:'QA', on:'2025-06-26', action:'Accepted'}] },
+      { id:'CN-2025-011', invoice:'INV-2025-111', po:'PO-2025-112', supplier:'Global Tech', date:'2025-07-02', reason:'Service SLA breach credit', type:'Service', amount: 300000, applied: 0, status:'Approved', taxAdj: 0, comments:[], approvals:[{by:'Service Manager', on:'2025-07-03', action:'Confirmed'}] },
+      { id:'CN-2025-012', invoice:'INV-2025-120', po:'PO-2025-121', supplier:'Zenith Supplies', date:'2025-07-16', reason:'Round-off correction', type:'Other', amount: 10000, applied: 0, status:'Draft', taxAdj: 0, comments:[], approvals:[] },
+      { id:'CN-2025-013', invoice:'INV-2025-130', po:'PO-2025-131', supplier:'Nova Labs', date:'2025-07-29', reason:'Return - packaging damage', type:'Quantity', amount: 185000, applied: 0, status:'Submitted', taxAdj: 0, comments:[], approvals:[{by:'Stores', on:'2025-07-29', action:'Verified'}] },
+      { id:'CN-2025-014', invoice:'INV-2025-141', po:'PO-2025-142', supplier:'Alpha Industries', date:'2025-08-05', reason:'Discount adjustment', type:'Price', amount: 95000, applied: 0, status:'Approved', taxAdj: 0, comments:['Contractual discount'], approvals:[{by:'Procurement', on:'2025-08-05', action:'Approved'}] },
+      { id:'CN-2025-015', invoice:'INV-2025-150', po:'PO-2025-151', supplier:'Global Tech', date:'2025-08-19', reason:'Overbilling - tax', type:'Tax', amount: 60000, applied: 0, status:'Rejected', taxAdj: -60000, comments:['Tax doc missing'], approvals:[{by:'Finance', on:'2025-08-20', action:'Rejected'}] }
+    ];
+
+    function badge(st){
+      const m = {
+        'Draft':'draft', 'Submitted':'submitted', 'Pending Approval':'pending',
+        'Approved':'approved', 'Rejected':'rejected', 'Applied':'applied', 'Partially Applied':'applied'
+      };
+      return `<span class="badge ${m[st]||'draft'}">${st}</span>`;
+    }
+
+    function populateSuppliers(){
+      const sel = $('fSupplier');
+      const opts = Array.from(new Set(creditNotes.map(c=>c.supplier))).sort();
+      sel.innerHTML = '<option value="">All</option>' + opts.map(s=>`<option>${s}</option>`).join('');
+    }
+
+    function filteredRaw(){
+      const s = ($('fSearch').value||'').toLowerCase();
+      const sup = $('fSupplier').value; const st=$('fStatus').value; const f=$('fFrom').value; const t=$('fTo').value;
+      return creditNotes.filter(c=>{
+        const hay = `${c.id}|${c.invoice}|${c.po}|${c.supplier}|${c.reason}`.toLowerCase();
+        if (s && !hay.includes(s)) return false;
+        if (sup && c.supplier!==sup) return false;
+        if (st && c.status!==st) return false;
+        if (f && new Date(c.date) < new Date(f)) return false;
+        if (t && new Date(c.date) > new Date(t)) return false;
+        return true;
+      });
+    }
+
+    function render(){
+      const list = filteredRaw();
+      const tbody = $('tbody');
+      tbody.innerHTML = list.map(c=>{
+        const bal = Math.max(0, c.amount - c.applied);
+        return `
+          <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+            <td class="px-4 py-3 align-top min-w-[14rem]"><div class="font-semibold">${c.id}</div><div class="text-xs text-gray-500">${c.reason}</div></td>
+            <td class="px-4 py-3 align-top min-w-[12rem]">${c.supplier}</td>
+            <td class="px-4 py-3 align-top min-w-[10rem]">${new Date(c.date).toLocaleDateString('en-IN')}</td>
+            <td class="px-4 py-3 align-top min-w-[14rem]"><div>${c.invoice||'-'}</div><div class="text-xs text-gray-500">${c.po||''}</div></td>
+            <td class="px-4 py-3 align-top min-w-[14rem]">${c.reason}</td>
+            <td class="px-4 py-3 text-right align-top min-w-[10rem]"><div class="num font-semibold">${Rs(c.amount)}</div></td>
+            <td class="px-4 py-3 text-right align-top min-w-[10rem]"><div class="num">${Rs(c.applied)}</div></td>
+            <td class="px-4 py-3 text-right align-top min-w-[10rem]"><div class="num">${Rs(bal)}</div></td>
+            <td class="px-4 py-3 align-top min-w-[10rem]">${badge(c.status)}</td>
+            <td class="px-4 py-3 align-top min-w-[12rem]">
+              <div class="flex flex-wrap items-center gap-2">
+                <button class="px-3 py-1.5 text-sm rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100" onclick="openCN('${c.id}')"><i class="fas fa-eye mr-1"></i>View</button>
+                <button class="px-3 py-1.5 text-sm rounded-lg bg-green-50 text-green-700 hover:bg-green-100" onclick="applyCredit('${c.id}')"><i class="fas fa-link mr-1"></i>Apply</button>
+              </div>
+            </td>
+          </tr>`;
+      }).join('') || `<tr><td colspan="10" class="px-4 py-8 text-center text-gray-500">No credit notes found for the selected filters.</td></tr>`;
+
+      // KPIs
+      const total = list.reduce((s,c)=>s+c.amount,0);
+      const approved = list.filter(c=>c.status==='Approved').reduce((s,c)=>s+c.amount,0);
+      const pending = list.filter(c=>['Draft','Submitted','Pending Approval'].includes(c.status)).length;
+      const applied = list.filter(c=>['Applied','Partially Applied'].includes(c.status)).reduce((s,c)=>s+c.applied,0);
+      const balance = list.reduce((s,c)=>s+Math.max(0,c.amount-c.applied),0);
+      $('kpiTotal').textContent = Rs(total);
+      $('kpiApproved').textContent = Rs(approved);
+      $('kpiPending').textContent = String(pending);
+      $('kpiApplied').textContent = Rs(applied);
+      $('kpiBalance').textContent = Rs(balance);
+    }
+
+    function openCN(id){
+      const c = creditNotes.find(x=>x.id===id) || filteredRaw()[0]; if(!c) return;
+      const bal = Math.max(0, c.amount - c.applied);
+      const approvals = (c.approvals||[]).map(a=>`<li class='flex items-center gap-2 text-sm text-gray-700'><i class='fas fa-check-circle text-green-600'></i><span class='font-medium'>${a.by}</span><span class='text-gray-500'>${a.action}</span><span class='text-gray-400'>${new Date(a.on).toLocaleDateString('en-IN')}</span></li>`).join('')||'<li class="text-sm text-gray-500">No approvals yet</li>';
+      const comments = (c.comments||[]).map(cm=>`<li class='text-sm text-gray-700 border-t py-1'>${cm}</li>`).join('')||'<li class="text-sm text-gray-500">No comments</li>';
+
+      $('modalTitle').textContent = `${c.id} • ${c.supplier}`;
+      $('modalBody').innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div class="lg:col-span-2 space-y-4">
+            <div class="card p-4">
+              <div class="flex items-start justify-between">
+                <div>
+                  <div class="text-sm text-gray-500">Reason</div>
+                  <div class="text-xl font-bold text-gray-900">${c.reason}</div>
+                  <div class="text-sm text-gray-600 mt-1">Invoice: <span class="font-medium">${c.invoice||'-'}</span> • PO: ${c.po||'-'} • Date: ${new Date(c.date).toLocaleDateString('en-IN')} • Type: <span class="font-medium">${c.type||'-'}</span></div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm text-gray-500 mb-1">Status</div>
+                  ${badge(c.status)}
+                </div>
+              </div>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-gray-700 mt-4">
+                <div><span class="text-gray-500">Amount</span><div class="font-semibold num">${Rs(c.amount)}</div></div>
+                <div><span class="text-gray-500">Applied</span><div class="num">${Rs(c.applied)}</div></div>
+                <div><span class="text-gray-500">Balance</span><div class="font-semibold num">${Rs(bal)}</div></div>
+                <div><span class="text-gray-500">Tax Adj</span><div class="num">${Rs(c.taxAdj||0)}</div></div>
+              </div>
+            </div>
+
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-2">Approvals</div>
+              <ul class="space-y-1">${approvals}</ul>
+            </div>
+
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-2">Attachments</div>
+              <div id="attList">${(c.attachments||[]).map(a=>`<div class='att-item text-sm'><div class='flex items-center gap-2'><i class='fas fa-paperclip text-gray-500'></i><span>${a.name}</span></div><button class='px-2 py-1 text-xs rounded border hover:bg-gray-50' onclick=\"downloadAttachment('${c.id}','${a.name}')\"><i class='fas fa-download mr-1'></i>Download</button></div>`).join('') || '<div class="text-sm text-gray-500">No attachments</div>'}</div>
+            </div>
+
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-2">Comments</div>
+              <ul>${comments}</ul>
+              <div class="mt-3 flex gap-2">
+                <input id="newComment" class="flex-1 px-3 py-2 border rounded-lg" placeholder="Add a comment"/>
+                <button class="px-3 py-2 bg-gray-50 border rounded-lg hover:bg-gray-100" onclick="addComment('${c.id}')"><i class="fas fa-plus mr-1"></i>Add</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-2">Quick Actions</div>
+              <div class="flex flex-wrap gap-2">
+                <button class="px-3 py-2 bg-green-50 text-green-700 rounded-lg border hover:bg-green-100" onclick="approveCN('${c.id}')"><i class="fas fa-check mr-1"></i>Approve</button>
+                <button class="px-3 py-2 bg-red-50 text-red-700 rounded-lg border hover:bg-red-100" onclick="rejectCN('${c.id}')"><i class="fas fa-times mr-1"></i>Reject</button>
+                <button class="px-3 py-2 bg-blue-50 text-blue-700 rounded-lg border hover:bg-blue-100" onclick="applyCredit('${c.id}')"><i class="fas fa-link mr-1"></i>Apply Credit</button>
+              </div>
+            </div>
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-2">Notes</div>
+              <div class="text-sm text-gray-600">Approved credit notes can be netted off against matching supplier invoices. Keep tax reversals documented.</div>
+            </div>
+          </div>
+        </div>`;
+
+      const footer = $('modalFooter');
+      footer.innerHTML = `
+        <button class="px-4 py-2 bg-gray-50 border rounded-lg hover:bg-gray-100" onclick="closeModal()">Close</button>
+        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" onclick="applyCredit('${c.id}')"><i class='fas fa-link mr-1'></i>Apply</button>`;
+      openModal();
+      showToast(`Opened ${c.id}`,'info');
+    }
+
+    function addComment(id){
+      const c = creditNotes.find(x=>x.id===id); if(!c) return;
+      const inp = $('newComment'); const v = (inp?.value||'').trim(); if(!v) return showToast('Enter a comment','warning');
+      c.comments = c.comments||[]; c.comments.push(v); inp.value=''; showToast('Comment added','success'); openCN(id);
+    }
+
+    function approveCN(id){
+      const c = creditNotes.find(x=>x.id===id) || filteredRaw()[0]; if(!c) return;
+      c.status = 'Approved'; c.approvals = c.approvals||[]; c.approvals.push({by:'Finance', on:new Date().toISOString().slice(0,10), action:'Approved'});
+      showToast(`${c.id} approved`,'success'); render(); if(document.getElementById('modal') && !document.getElementById('modal').classList.contains('hidden')) openCN(id);
+    }
+
+    function rejectCN(id){
+      const c = creditNotes.find(x=>x.id===id) || filteredRaw()[0]; if(!c) return;
+      c.status = 'Rejected'; c.approvals = c.approvals||[]; c.approvals.push({by:'Finance', on:new Date().toISOString().slice(0,10), action:'Rejected'});
+      showToast(`${c.id} rejected`,'error'); render(); if(document.getElementById('modal') && !document.getElementById('modal').classList.contains('hidden')) openCN(id);
+    }
+
+  function applyCredit(id){
+      const c = creditNotes.find(x=>x.id===id) || filteredRaw()[0]; if(!c) return;
+      if(!['Approved','Partially Applied','Applied'].includes(c.status)) return showToast('Approve CN before applying','warning');
+      const bal = Math.max(0, c.amount - c.applied);
+      if(bal<=0) return showToast('No balance to apply','info');
+
+      // Render simple apply UI in modal footer
+      const options = openInvoices.filter(i=>i.supplier===c.supplier || true).map(i=>`<option value="${i.id}">${i.id} • ${i.supplier} • ${Rs(i.amount)}</option>`).join('');
+      $('modalTitle').textContent = `Apply ${c.id}`;
+      $('modalBody').innerHTML = `
+        <div class="card p-4">
+          <div class="text-sm text-gray-700 mb-3">Available Balance: <span class="font-semibold num">${Rs(bal)}</span></div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <label class="block text-sm">Invoice
+              <select id="ap_invoice" class="mt-1 w-full px-3 py-2 border rounded-lg">${options}</select>
+            </label>
+            <label class="block text-sm">Amount to apply
+              <input id="ap_amount" type="number" min="1" step="100" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., 50000"/>
+            </label>
+            <label class="block text-sm">Note (optional)
+              <input id="ap_note" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="Reference"/>
+            </label>
+          </div>
+          <div class="mt-4 text-xs text-gray-600">Tip: You can apply in parts. CN becomes Applied when balance reaches 0.</div>
+        </div>`;
+      const footer = $('modalFooter');
+      footer.innerHTML = `
+        <button class="px-4 py-2 bg-gray-50 border rounded-lg hover:bg-gray-100" onclick="openCN('${c.id}')">Back</button>
+        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" onclick="confirmApply('${c.id}')"><i class='fas fa-check mr-1'></i>Apply Amount</button>`;
+      openModal();
+    }
+
+    function confirmApply(id){
+      const c = creditNotes.find(x=>x.id===id); if(!c) return;
+      const amt = Number((document.getElementById('ap_amount')?.value||'').trim());
+      if(!isFinite(amt) || amt<=0) return showToast('Enter a valid amount','error');
+      const bal = Math.max(0, c.amount - c.applied);
+      if(amt>bal) return showToast('Amount exceeds balance','error');
+      c.applied += Math.round(amt);
+      const newBal = c.amount - c.applied;
+      c.status = newBal<=0 ? 'Applied' : 'Partially Applied';
+      showToast(`Applied ${Rs(amt)} from ${c.id}`,'success');
+      render();
+      openCN(id);
+    }
+
+    function openCreate(){
+      $('modalTitle').textContent = 'Create Credit Note';
+      $('modalBody').innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="card p-4">
+            <div class="text-sm text-gray-700">Basic Info</div>
+            <div class="mt-3 space-y-3 text-sm">
+              <label class="block">Supplier <span class="text-red-500">*</span>
+                <input id="cb_supplier" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., Alpha Industries"/>
+              </label>
+              <label class="block">Invoice ID <span class="text-red-500">*</span>
+                <input id="cb_invoice" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., INV-2025-123"/>
+              </label>
+              <label class="block">PO ID (optional)
+                <input id="cb_po" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., PO-2025-010"/>
+              </label>
+              <label class="block">Date <span class="text-red-500">*</span>
+                <input id="cb_date" type="date" class="mt-1 w-full px-3 py-2 border rounded-lg"/>
+              </label>
+            </div>
+          </div>
+          <div class="card p-4">
+            <div class="text-sm text-gray-700">Details</div>
+            <div class="mt-3 space-y-3 text-sm">
+              <label class="block">Reason <span class="text-red-500">*</span>
+                <input id="cb_reason" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., Price discrepancy"/>
+              </label>
+              <label class="block">Credit Type <span class="text-red-500">*</span>
+                <select id="cb_type" class="mt-1 w-full px-3 py-2 border rounded-lg">
+                  <option value="">Select type</option>
+                  <option>Price</option>
+                  <option>Quantity</option>
+                  <option>Tax</option>
+                  <option>Freight</option>
+                  <option>Service</option>
+                  <option>Other</option>
+                </select>
+              </label>
+              <label class="block">Amount <span class="text-red-500">*</span>
+                <input id="cb_amount" type="number" min="1" step="100" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., 150000"/>
+              </label>
+              <label class="block">Tax Adjustment (optional)
+                <input id="cb_tax" type="number" step="100" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., -12000"/>
+              </label>
+              <label class="block">Attachments
+                <input id="cb_files" type="file" multiple class="mt-1 w-full px-3 py-1.5 border rounded-lg bg-gray-50"/>
+                <div class="text-xs text-gray-500 mt-1">You can attach GRNs, invoices, photos. Stored locally for demo.</div>
+              </label>
+            </div>
+          </div>
+        </div>`;
+      const footer = $('modalFooter');
+      footer.innerHTML = `
+        <button class="px-4 py-2 bg-gray-50 border rounded-lg hover:bg-gray-100" onclick="closeModal()">Cancel</button>
+        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" onclick="createCN()"><i class='fas fa-save mr-1'></i>Create</button>`;
+      openModal();
+    }
+
+    function createCN(){
+      const supplier = document.getElementById('cb_supplier').value.trim();
+      const invoice = document.getElementById('cb_invoice').value.trim();
+      const po = document.getElementById('cb_po').value.trim();
+      const date = document.getElementById('cb_date').value.trim();
+      const reason = document.getElementById('cb_reason').value.trim();
+      const type = document.getElementById('cb_type').value;
+      const amount = Number((document.getElementById('cb_amount').value||'').trim());
+      const taxAdj = Number((document.getElementById('cb_tax').value||0).toString().trim());
+      if(!supplier||!invoice||!date||!reason||!type||!isFinite(amount)||amount<=0){ return showToast('Fill Supplier, Invoice, Date, Reason, Type, and positive Amount','error'); }
+      const files = Array.from(document.getElementById('cb_files')?.files||[]);
+      const attachments = files.map(f=>({ name: f.name, size: f.size }));
+      const id = `CN-${new Date().getFullYear()}-${String(Math.floor(Math.random()*900)+100).padStart(3,'0')}`;
+      creditNotes.unshift({ id, invoice, po: po||'', supplier, date, reason, type, amount: Math.round(amount), applied:0, status:'Submitted', taxAdj, comments:[], approvals:[{by:'Requester', on:date, action:'Submitted'}], attachments });
+      showToast(`${id} created${attachments.length?` with ${attachments.length} attachment(s)`:''}`,'success');
+      populateSuppliers();
+      render();
+      closeModal();
+    }
+
+    function downloadAttachment(id, name){
+      // Stub for demo environment
+      showToast(`Downloading ${name} from ${id}`,'info');
+    }
+
+    function applyFilters(){ render(); showToast('Filters applied','info'); }
+    function resetFilters(){ $('fSearch').value=''; $('fSupplier').value=''; $('fStatus').value=''; $('fFrom').value=''; $('fTo').value=''; render(); showToast('Filters reset','info'); }
+    function setDatePreset(p){ const from=$('fFrom'), to=$('fTo'); const d=new Date(); if(p==='today'){ const t=d.toISOString().slice(0,10); from.value=t; to.value=t; } else if(p==='last7'){ const d7=new Date(d); d7.setDate(d.getDate()-7); from.value=d7.toISOString().slice(0,10); to.value=d.toISOString().slice(0,10); } else if(p==='month'){ const s=new Date(d.getFullYear(), d.getMonth(), 1); from.value=s.toISOString().slice(0,10); to.value=d.toISOString().slice(0,10); } else { from.value=''; to.value=''; } render(); showToast('Preset applied','info'); }
+    function exportCSV(){ showToast('Exported current view to CSV (stub)','info'); }
+    function refreshData(){ showToast('Data refreshed','info'); render(); }
+
+    function openModal(){ $('modal').classList.remove('hidden'); }
+    function closeModal(){ $('modal').classList.add('hidden'); }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.reveal').forEach((el,i) => setTimeout(()=>el.classList.add('show'), 60*i));
+      populateSuppliers();
+      render();
+    });
+  </script>
+</body>
+</html>

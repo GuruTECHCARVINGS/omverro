@@ -1,0 +1,1441 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <title>OMVERRO Supply Chain Hub - Vendor Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      color: #1e293b;
+    }
+    
+    /* Enhanced card styles */
+    .metric-card {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid #e2e8f0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(10px);
+    }
+    
+    .metric-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      border-color: #8b5cf6;
+    }
+    
+    .glass-card {
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+    
+    .sidebar-gradient {
+      background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%);
+      border-right: 1px solid #e2e8f0;
+    }
+    
+    .active-nav-item {
+      background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+      color: white !important;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .nav-item:hover {
+      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+      transform: translateX(4px);
+    }
+    
+    .status-badge {
+      padding: 0.375rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+    }
+    
+    .status-pending { 
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); 
+      color: #92400e; 
+      border: 1px solid #f59e0b;
+    }
+    
+    .status-shipped { 
+      background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); 
+      color: #1e40af; 
+      border: 1px solid #3b82f6;
+    }
+    
+    .status-delivered { 
+      background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); 
+      color: #166534; 
+      border: 1px solid #16a34a;
+    }
+    
+    .status-cancelled { 
+      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); 
+      color: #991b1b; 
+      border: 1px solid #dc2626;
+    }
+    
+    .quick-action-btn {
+      transition: all 0.3s ease;
+      border: 2px dashed #d1d5db;
+    }
+    
+    .quick-action-btn:hover {
+      transform: translateY(-2px);
+      border-color: #8b5cf6;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .alert {
+      border-left: 4px solid;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 0.5rem;
+      backdrop-filter: blur(10px);
+    }
+    
+    .alert-info { 
+      border-color: #3b82f6; 
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); 
+    }
+    
+    .alert-warning { 
+      border-color: #f59e0b; 
+      background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); 
+    }
+    
+    .alert-success { 
+      border-color: #10b981; 
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); 
+    }
+    
+    .progress-bar {
+      background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      background: linear-gradient(90deg, #8b5cf6, #a855f7);
+      height: 8px;
+      border-radius: 9999px;
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .notification-badge {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .8; }
+    }
+    
+    .floating-decoration {
+      position: absolute;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+      filter: blur(1px);
+    }
+    
+    .header-gradient {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border-bottom: 1px solid #e2e8f0;
+      backdrop-filter: blur(10px);
+    }
+  </style>
+</head>
+     display: inline-flex;
+     align-items: center;
+     justify-content: center;
+   }
+   /* Table column widths for proper fit */
+   table th, table td {
+     white-space: nowrap;
+   }
+   .col-orderid {
+     width: 80px;
+   }
+   .col-product {
+     width: 140px;
+   }
+   .col-status {
+     width: 110px;
+   }
+   .col-date {
+     width: 110px;
+   }
+   .col-amount {
+     width: 100px;
+     text-align: right;
+   }
+   
+   /* Enhanced card styles */
+   .metric-card {
+     background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+     border: 1px solid #e0e0e0;
+     transition: all 0.3s ease;
+   }
+   .metric-card:hover {
+     transform: translateY(-2px);
+     box-shadow: 0 8px 25px rgba(106, 27, 154, 0.1);
+   }
+   
+   /* Status badges */
+   .status-badge {
+     padding: 0.25rem 0.75rem;
+     border-radius: 9999px;
+     font-size: 0.75rem;
+     font-weight: 600;
+     text-transform: uppercase;
+   }
+   .status-pending { background-color: #fef3c7; color: #d97706; }
+   .status-shipped { background-color: #dbeafe; color: #2563eb; }
+   .status-delivered { background-color: #dcfce7; color: #16a34a; }
+   .status-cancelled { background-color: #fee2e2; color: #dc2626; }
+   
+   /* Progress bars */
+   .progress-bar {
+     background-color: #e5e7eb;
+     border-radius: 9999px;
+     overflow: hidden;
+   }
+   .progress-fill {
+     background: linear-gradient(90deg, #6A1B9A, #8E24AA);
+     height: 8px;
+     border-radius: 9999px;
+     transition: width 0.3s ease;
+   }
+   
+   /* Chart container */
+   .chart-container {
+     position: relative;
+     height: 200px;
+     background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+   }
+   
+   /* Alert styles */
+   .alert {
+     border-left: 4px solid;
+     padding: 1rem;
+     margin-bottom: 1rem;
+     border-radius: 0.5rem;
+   }
+   .alert-info { border-color: #3b82f6; background-color: #eff6ff; }
+   .alert-warning { border-color: #f59e0b; background-color: #fffbeb; }
+   .alert-success { border-color: #10b981; background-color: #f0fdf4; }
+  </style>
+ </head>
+ <body class="min-h-screen flex">
+  <!-- Sidebar -->
+  <aside class="sidebar w-62 flex flex-col border-r border-gray-300 select-none">
+   <div class="flex items-center gap-2 px-4 py-4 border-b border-gray-300">
+    <img src="<!-- ...existing code... -->
+<img 
+  src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxAPEhAPDRASERAVEBUXFhAREBcPFxARFxEWFhUXGRcZHSghHR8mHRUVITEhJSktLy4uFx8zODg4QygtOi0BCgoKDg0OGxAQGy0mICUrLS0tLS0tLS0tKy0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLf/AABEIAMgAyAMBEQACEQEDEQH/xAAcAAEAAgMBAQEAAAAAAAAAAAAABgcBAwUEAgj/xABCEAABAwICBAcMCQUBAQAAAAABAAIDBBEFBgcSITETIjVBUWFxFDIzQlJicnN0gbHBF0NUgpGys8LSI1Njk6HR8P/EABoBAQACAwEAAAAAAAAAAAAAAAAFBgECBAP/xAAzEQEAAQMEAAMFBwQDAQAAAAAAAQIDBAURITESM1EiNEFxgRMUMjVhkbEGFRZSJEKhI//aAAwDAQACEQMRAD8AvFAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEGEOBYBNwWRlAQEBAQEBAQEBAQEBAQEBAQEBAQEGiqqWRNdJK9rGNFy9x1Q0dZKxx2IFW56qKtxZgsLXRg2NZUhwjJ8xo2u7VHZep2cfueXRbx6q2qHNmKUh1q+CKqg530bXMfHt36jidb3LxxtasXp2nhtcxaqU0wHHqauj4WklbI3nANnMPQ5u8FS0TvG7mmJh1VswICAgICAgICAgICAgICAgICAg+U6YRfM2dYKN3ARA1NYRxaaLaR0F53NHavG7fotU+Kqdm9NE1dIlJhlTiD2z4xJrNBuyhjJEMXp+W7rKq2frtVfsWf3SVnEin8TfjeYKTD2Dh3tZs4sTRxiOpoUTj4ORlVcR9XRXdptPDgeeaGsOoyXUfzMl4mt2Fe2TpGTYjxbbx+jWjJt18PXX5fa5/dNHI6kqh9fCdXX6pG7njtW+Hq13Gnw1cwXcamvp0cNz3LTEQ43EGC9m1sIJift8cb2fBWzE1GzkR7M8+iMu2KqO08pqhkrWyROa9jhcOadYEdRC74l4NqfEE+IysggICAgICAgICAgICAg8OLYpBSRumqpGxRje5xtt5gOk9SxMxAr/ABDMtdid2UGtRUd7GqeLTTC/1bT3g696h83V7ViPDTzLrs4s19tMcNFhURe5zYwdrpZHa0kruclx2uO1Veu7lZ9e0cpCIt2Y5V/mjSk9948OHBt3cM8XcfRHMp3C0Gij2r3M+jku5kzxSrepqXyuL5Xue8na5xLiVYqKKaI2phwTVNUtQPQtmEty1n+sorMc7h4R9XIblo8128fBReZpNjIjrafWHTayaqOFp4BnKhxBvBkhjyLGGW3Gv0cxVWydLyMSfFT16wkKL9F3t6osKqKBxlwebgwTd1FKdeCTbfig+DPWF3YWu10eze/d5XsOKuaUny/nuGd4pqxho6v+1KeLIf8AG/c74qz2Mi3ep8VuUdctzTKXroaMoCAgICAgICAgICDCDBWD5oZmDPbI3upcNZ3XVjYQ0/0oT/kf8gufIy7dinxVzs9Ldqq5O0I0cLL3d241OJ5m7QHHUgpxfcxm73naqrl6teyavs7McJK3j0W43rRjM+lGKK8WHtEjxs4Vw4g7Bzr2w9Bqrnx3549Gl3LiOKFW4ti09W8yVMrpHdZ2DqA3Adis9nHt2Y2ojaEfXcqr7eC69mghyIQJ2PpriNoNik88M7ymGW9IdZSWZI7uiEeJIbuaPNfv/G6iczR7F/mI2n1h02sqqhZGH5iw3GGcDKG65HgpeK4HpY7p7FXrmHlYFXjo69XbTXbvcVOtRVuI4XYROdX0Q+okIE8LfMf4/YVK4WuU3PZu8S5ruJP/AFTXLeaaXEATTScdvfwvGpJGfOadqn6K4qjeHFVEw7i3Y2ZQEBAQEBAQEBByMwZhpqBnCVUoZfvWb3yHoa0bSVrNVNMbyzEb8IHiGI1+KgiQuw+g/ttNp52+e7xB1BQObrVNE+C1zLss4kzzUjeLZ1w/C2GnoI">
+    <span class="font-semibold text-lg">
+     Vendor Portal
+    </span>
+   </div>
+   <nav class="flex flex-col gap-2 mt-6 px-4 flex-grow text-base font-medium">
+    <a href="vendordashboard.html" class="sidebar-active flex items-center gap-3 px-4 py-3 rounded-full transition">
+     <i class="fas fa-tachometer-alt"></i>
+     Dashboard
+    </a>
+    <a href="./2_homepage.html" class="flex items-center gap-3 px-4 py-3 rounded-full transition">
+     <i class="fas fa-clipboard-list"></i>
+     RFQ Management
+    </a>
+    <a href="Vendor_Order.html" class="flex items-center gap-3 px-4 py-3 rounded-full transition">
+     <i class="fas fa-shopping-cart"></i>
+     Orders
+    </a>
+    <a href="Vendor_ASN.html" class="flex items-center gap-3 px-4 py-3 rounded-full transition">
+      <i class="fas fa-truck-loading text-lg">
+      </i>
+      ASN & Shipping
+     </a>
+    <a href="Vendor_Product_inventory.html" class="flex items-center gap-3 px-4 py-3 rounded-full transition">
+     <i class="fas fa-box-open"></i>
+     Products & Inventory
+    </a>
+    <a href="Vendor_payment.html" class="flex items-center gap-3 px-4 py-3 rounded-full transition">
+     <i class="fas fa-credit-card"></i>
+     Payments
+    </a>
+    <a href="Vendor_portal_invoices.html" class="flex items-center gap-3 px-4 py-3 rounded-full transition">
+     <i class="fas fa-file-invoice-dollar"></i>
+     Invoices
+    </a>
+    <a href="Vendor_analytics.html" class="flex items-center gap-3 px-4 py-3 rounded-full transition">
+     <i class="fas fa-chart-line"></i>
+     Analytics & Reports
+    </a>
+    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-full transition">
+     <i class="fas fa-handshake"></i>
+     Compliance
+    </a>
+    <a href="Vendor_Settings.html" class="flex items-center gap-3 px-4 py-3 rounded-full transition">
+     <i class="fas fa-cog"></i>
+     Settings
+    </a>
+    <a href="Vendor_supporttickets.html" class="flex items-center gap-3 px-4 py-3 rounded-full transition">
+     <i class="fas fa-headset"></i>
+     Support Center
+    </a>
+   </nav>
+   
+  </aside>
+  <!-- Main content -->
+  <main class="flex-1 p-8 overflow-x-auto relative">
+   <header class="flex justify-between items-center mb-10">
+    <div>
+     <h1 class="text-3xl font-bold text-[#212121] select-none">
+      Vendor Dashboard
+     </h1>
+     <p class="text-[#666666] mt-1">Welcome back! Here's what's happening with your business today.</p>
+    </div>
+    <div class="flex items-center gap-8 text-[#212121] relative">
+     <div class="relative" id="notifications-menu-container">
+      <button id="notifications-button" aria-label="Notifications" class="text-2xl hover:text-purple-700 transition relative">
+       <i class="far fa-bell"></i>
+       <span class="notification-badge absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
+      </button>
+      <div id="notifications-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-white border border-gray-300 rounded-lg shadow-lg z-50">
+        <div class="px-4 py-3 border-b border-gray-200 font-semibold text-purple-700">Announcements</div>
+        <div class="px-4 py-2 text-gray-800 border-b border-gray-100">
+          <i class="fas fa-bullhorn text-purple-600 mr-2"></i>
+          New RFQ available: <span class="font-medium">Industrial Equipment Procurement</span>
+          <div class="text-xs text-gray-500 mt-1">1 hour ago</div>
+        </div>
+        <div class="px-4 py-2 text-gray-800 border-b border-gray-100">
+          <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+          System update scheduled for <span class="font-medium">Aug 5, 2025</span>
+          <div class="text-xs text-gray-500 mt-1">Today</div>
+        </div>
+        <div class="px-4 py-2 text-gray-800">
+          <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
+          Payment reminder: <span class="font-medium">Invoice #INV-2024-089</span> due soon
+          <div class="text-xs text-gray-500 mt-1">2 days left</div>
+        </div>
+      </div>
+     </div>
+     <div class="relative" id="messages-menu-container">
+      <button id="messages-button" aria-label="Messages" class="text-2xl hover:text-purple-700 transition relative">
+       <i class="far fa-envelope"></i>
+       <span class="notification-badge absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">5</span>
+      </button>
+      <div id="messages-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-white border border-gray-300 rounded-lg shadow-lg z-50">
+        <div class="px-4 py-3 border-b border-gray-200 font-semibold text-purple-700">Messages</div>
+        <div class="px-4 py-2 text-gray-800 border-b border-gray-100">
+          <i class="fas fa-user-circle text-green-600 mr-2"></i>
+          <span class="font-medium">Buyer Team</span>: Order #ORD-1247 confirmed
+          <div class="text-xs text-gray-500 mt-1">Today, 09:15 AM</div>
+        </div>
+        <div class="px-4 py-2 text-gray-800 border-b border-gray-100">
+          <i class="fas fa-user-circle text-blue-600 mr-2"></i>
+          <span class="font-medium">Support</span>: Ticket #SUP-445 resolved
+          <div class="text-xs text-gray-500 mt-1">Yesterday, 04:30 PM</div>
+        </div>
+        <div class="px-4 py-2 text-gray-800">
+          <i class="fas fa-user-circle text-purple-600 mr-2"></i>
+          <span class="font-medium">Accounts</span>: Invoice #INV-2024-088 payment received
+          <div class="text-xs text-gray-500 mt-1">Yesterday, 11:10 AM</div>
+        </div>
+      </div>
+     </div>
+     <div class="relative" id="profile-menu-container">
+      <button id="profile-button" aria-label="Profile" class="text-2xl hover:text-purple-700 transition focus:outline-none">
+       <i class="far fa-user-circle"></i>
+      </button>
+      <div id="profile-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white border border-gray-300 rounded-lg shadow-lg z-50">
+       <div class="px-4 py-3 border-b border-gray-200">
+        <p class="text-sm font-medium text-gray-800">John Vendor</p>
+        <p class="text-xs text-gray-500">john@vendor.com</p>
+       </div>
+       <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-purple-100 hover:text-purple-700">
+        <i class="fas fa-user mr-2"></i>My Profile
+       </a>
+       <a href="Vendor_Settings.html" class="block px-4 py-2 text-gray-800 hover:bg-purple-100 hover:text-purple-700">
+        <i class="fas fa-cog mr-2"></i>Account Settings
+       </a>
+       <div class="relative">
+        <button id="profile-messages-btn" class="w-full text-left block px-4 py-2 text-gray-800 hover:bg-purple-100 hover:text-purple-700 focus:outline-none">
+         <i class="fas fa-envelope mr-2"></i>Messages
+        </button>
+        <div id="profile-messages-dropdown" class="hidden absolute left-full top-0 ml-2 w-72 bg-white border border-gray-300 rounded-lg shadow-lg z-50">
+         <div class="px-4 py-3 border-b border-gray-200 font-semibold text-purple-700">Messages</div>
+         <div class="px-4 py-2 text-gray-800 border-b border-gray-100">
+          <i class="fas fa-user-circle text-green-600 mr-2"></i>
+          <span class="font-medium">Buyer Team</span>: Order #ORD-1247 confirmed
+          <div class="text-xs text-gray-500 mt-1">Today, 09:15 AM</div>
+         </div>
+         <div class="px-4 py-2 text-gray-800 border-b border-gray-100">
+          <i class="fas fa-user-circle text-blue-600 mr-2"></i>
+          <span class="font-medium">Support</span>: Ticket #SUP-445 resolved
+          <div class="text-xs text-gray-500 mt-1">Yesterday, 04:30 PM</div>
+         </div>
+         <div class="px-4 py-2 text-gray-800">
+          <i class="fas fa-user-circle text-purple-600 mr-2"></i>
+          <span class="font-medium">Accounts</span>: Invoice #INV-2024-088 payment received
+          <div class="text-xs text-gray-500 mt-1">Yesterday, 11:10 AM</div>
+         </div>
+        </div>
+       </div>
+       <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-purple-100 hover:text-purple-700">
+        <i class="fas fa-bell mr-2"></i>Notifications
+       </a>
+       <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-purple-100 hover:text-purple-700">
+        <i class="fas fa-question-circle mr-2"></i>Help & Support
+       </a>
+       <div class="border-t border-gray-200">
+        <a href="login.html" class="block px-4 py-2 text-gray-800 hover:bg-purple-100 hover:text-purple-700 rounded-b-lg">
+         <i class="fas fa-sign-out-alt mr-2"></i>Log Out
+        </a>
+       </div>
+      </div>
+     </div>
+    </div>
+   </header>
+   <!-- Stats cards -->
+   <section class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-6 mb-10">
+    <div class="metric-card box-white p-6 shadow select-none rounded-2xl">
+     <div class="flex items-center gap-4 mb-3">
+      <div class="sidebar-icon-bg">
+       <i class="fas fa-shopping-cart text-lg"></i>
+      </div>
+      <span class="text-sm font-semibold purple-dark">
+       <a href="Vendor_ActiveOrders.html" class="hover:underline">Active Orders</a>
+      </span>
+     </div>
+     <p class="text-2xl font-extrabold text-[#212121] mb-1">
+      48
+     </p>
+     <p class="text-xs text-green-600 font-medium">+12% from last month</p>
+    </div>
+    
+    <div class="metric-card box-white p-6 shadow select-none rounded-2xl">
+     <div class="flex items-center gap-4 mb-3">
+      <div class="sidebar-icon-bg">
+       <i class="fas fa-clock text-lg"></i>
+      </div>
+      <span class="text-sm font-semibold purple-dark">
+       Pending RFQs
+      </span>
+     </div>
+     <p class="text-2xl font-extrabold text-[#212121] mb-1">
+      15
+     </p>
+     <p class="text-xs text-orange-600 font-medium">3 expiring soon</p>
+    </div>
+    
+    <div class="metric-card box-white p-6 shadow select-none rounded-2xl">
+     <div class="flex items-center gap-4 mb-3">
+      <div class="sidebar-icon-bg">
+       <i class="fas fa-box-open text-lg"></i>
+      </div>
+      <span class="text-sm font-semibold purple-dark">
+       Total Products
+      </span>
+     </div>
+     <p class="text-2xl font-extrabold text-[#212121] mb-1">
+      1,247
+     </p>
+     <p class="text-xs text-blue-600 font-medium">45 low stock</p>
+    </div>
+    
+    <div class="metric-card box-white p-6 shadow select-none rounded-2xl">
+     <div class="flex items-center gap-4 mb-3">
+      <div class="sidebar-icon-bg">
+       <i class="fas fa-rupee-sign text-lg"></i>
+      </div>
+      <span class="text-sm font-semibold purple-dark">
+       Monthly Revenue
+      </span>
+     </div>
+     <p class="text-2xl font-extrabold text-[#212121] mb-1">
+      ₹8.45L
+     </p>
+     <p class="text-xs text-green-600 font-medium">+18% vs last month</p>
+    </div>
+    
+    <div class="metric-card box-white p-6 shadow select-none rounded-2xl">
+     <div class="flex items-center gap-4 mb-3">
+      <div class="sidebar-icon-bg">
+       <i class="fas fa-file-invoice text-lg"></i>
+      </div>
+      <span class="text-sm font-semibold purple-dark">
+       Unpaid Invoices
+      </span>
+     </div>
+     <p class="text-2xl font-extrabold text-[#212121] mb-1">
+      ₹2.8L
+     </p>
+     <p class="text-xs text-red-600 font-medium">8 overdue</p>
+    </div>
+    
+    <div class="metric-card box-white p-6 shadow select-none rounded-2xl">
+     <div class="flex items-center gap-4 mb-3">
+      <div class="sidebar-icon-bg">
+       <i class="fas fa-star text-lg"></i>
+      </div>
+      <span class="text-sm font-semibold purple-dark">
+       Vendor Rating
+      </span>
+     </div>
+     <p class="text-2xl font-extrabold text-[#212121] mb-1">
+      4.7
+     </p>
+     <p class="text-xs text-green-600 font-medium">Based on 156 reviews</p>
+    </div>
+   </section>
+   
+   <!-- Quick Actions -->
+   <section class="mb-10">
+    <div class="box-white p-6 shadow rounded-2xl">
+     <h2 class="text-xl font-semibold text-[#212121] mb-4">Quick Actions</h2>
+     <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <button class="quick-action-btn flex flex-col items-center p-4 rounded-lg border-2 border-dashed border-gray-300 hover:border-purple-400 hover:bg-purple-50 transition-all group">
+       <i class="fas fa-plus-circle text-2xl text-purple-600 mb-2 group-hover:scale-110 transition-transform"></i>
+       <span class="text-sm font-medium text-gray-700">Create RFQ Response</span>
+      </button>
+      <button class="quick-action-btn flex flex-col items-center p-4 rounded-lg border-2 border-dashed border-gray-300 hover:border-purple-400 hover:bg-purple-50 transition-all group">
+       <i class="fas fa-upload text-2xl text-purple-600 mb-2 group-hover:scale-110 transition-transform"></i>
+       <span class="text-sm font-medium text-gray-700">Upload Products</span>
+      </button>
+      <button class="quick-action-btn flex flex-col items-center p-4 rounded-lg border-2 border-dashed border-gray-300 hover:border-purple-400 hover:bg-purple-50 transition-all group">
+       <i class="fas fa-truck text-2xl text-purple-600 mb-2 group-hover:scale-110 transition-transform"></i>
+       <span class="text-sm font-medium text-gray-700">Create ASN</span>
+      </button>
+      <button class="quick-action-btn flex flex-col items-center p-4 rounded-lg border-2 border-dashed border-gray-300 hover:border-purple-400 hover:bg-purple-50 transition-all group">
+       <i class="fas fa-file-invoice-dollar text-2xl text-purple-600 mb-2 group-hover:scale-110 transition-transform"></i>
+       <span class="text-sm font-medium text-gray-700">Generate Invoice</span>
+      </button>
+      <button class="quick-action-btn flex flex-col items-center p-4 rounded-lg border-2 border-dashed border-gray-300 hover:border-purple-400 hover:bg-purple-50 transition-all group">
+       <i class="fas fa-chart-line text-2xl text-purple-600 mb-2 group-hover:scale-110 transition-transform"></i>
+       <span class="text-sm font-medium text-gray-700">View Analytics</span>
+      </button>
+      <button class="quick-action-btn flex flex-col items-center p-4 rounded-lg border-2 border-dashed border-gray-300 hover:border-purple-400 hover:bg-purple-50 transition-all group">
+       <i class="fas fa-headset text-2xl text-purple-600 mb-2 group-hover:scale-110 transition-transform"></i>
+       <span class="text-sm font-medium text-gray-700">Contact Support</span>
+      </button>
+     </div>
+    </div>
+   </section>
+   
+   <!-- Alerts Section -->
+   <section class="mb-10">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+     <div class="alert alert-warning">
+      <div class="flex items-center">
+       <i class="fas fa-exclamation-triangle text-yellow-600 mr-3"></i>
+       <div>
+        <h4 class="font-semibold text-yellow-800">Payment Reminder</h4>
+        <p class="text-sm text-yellow-700">Invoice #INV-2024-089 is due in 2 days</p>
+       </div>
+      </div>
+     </div>
+     <div class="alert alert-info">
+      <div class="flex items-center">
+       <i class="fas fa-info-circle text-blue-600 mr-3"></i>
+       <div>
+        <h4 class="font-semibold text-blue-800">New RFQ Available</h4>
+        <p class="text-sm text-blue-700">5 new RFQs match your product categories</p>
+       </div>
+      </div>
+     </div>
+     <div class="alert alert-success">
+      <div class="flex items-center">
+       <i class="fas fa-check-circle text-green-600 mr-3"></i>
+       <div>
+        <h4 class="font-semibold text-green-800">Order Delivered</h4>
+        <p class="text-sm text-green-700">Order #ORD-1247 has been successfully delivered</p>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <!-- Content grid -->
+   <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Recent Orders Table -->
+    <div class="box-white p-8 shadow select-none lg:col-span-2 overflow-x-auto rounded-2xl">
+     <div class="flex justify-between items-center mb-6">
+      <h2 class="text-xl font-semibold text-[#212121]">
+       Recent Orders
+      </h2>
+      <a href="Vendor_Order.html" class="text-purple-600 hover:text-purple-800 font-medium text-sm">View All →</a>
+     </div>
+     <table class="w-full min-w-[700px] text-left border-collapse rounded-2xl overflow-hidden">
+      <thead class="text-[#333333] bg-[#FAFAFA]">
+       <tr>
+        <th class="py-4 px-6 font-semibold rounded-tl-2xl border border-gray-200 col-orderid">
+         Order ID
+        </th>
+        <th class="py-4 px-6 font-semibold border border-gray-200 col-product">
+         Product
+        </th>
+        <th class="py-4 px-6 font-semibold border border-gray-200 col-status">
+         Status
+        </th>
+        <th class="py-4 px-6 font-semibold border border-gray-200 col-date">
+         Date
+        </th>
+        <th class="py-4 px-6 font-semibold rounded-tr-2xl border border-gray-200 col-amount text-right">
+         Amount
+        </th>
+       </tr>
+      </thead>
+      <tbody class="text-[#212121]">
+       <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+        <td class="py-4 px-6 col-orderid font-medium">
+         #ORD-1247
+        </td>
+        <td class="py-4 px-6 col-product">
+         Industrial Bearings
+        </td>
+        <td class="py-4 px-6 col-status">
+         <span class="status-badge status-pending">Pending</span>
+        </td>
+        <td class="py-4 px-6 col-date text-gray-600">
+         30/07/2025
+        </td>
+        <td class="py-4 px-6 col-amount text-right font-semibold">
+         ₹1,25,000
+        </td>
+       </tr>
+       <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+        <td class="py-4 px-6 col-orderid font-medium">
+         #ORD-1246
+        </td>
+        <td class="py-4 px-6 col-product">
+         Steel Pipes
+        </td>
+        <td class="py-4 px-6 col-status">
+         <span class="status-badge status-shipped">Shipped</span>
+        </td>
+        <td class="py-4 px-6 col-date text-gray-600">
+         29/07/2025
+        </td>
+        <td class="py-4 px-6 col-amount text-right font-semibold">
+         ₹85,600
+        </td>
+       </tr>
+       <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+        <td class="py-4 px-6 col-orderid font-medium">
+         #ORD-1245
+        </td>
+        <td class="py-4 px-6 col-product">
+         Electronic Components
+        </td>
+        <td class="py-4 px-6 col-status">
+         <span class="status-badge status-delivered">Delivered</span>
+        </td>
+        <td class="py-4 px-6 col-date text-gray-600">
+         28/07/2025
+        </td>
+        <td class="py-4 px-6 col-amount text-right font-semibold">
+         ₹45,200
+        </td>
+       </tr>
+       <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+        <td class="py-4 px-6 col-orderid font-medium">
+         #ORD-1244
+        </td>
+        <td class="py-4 px-6 col-product">
+         Safety Equipment
+        </td>
+        <td class="py-4 px-6 col-status">
+         <span class="status-badge status-shipped">Shipped</span>
+        </td>
+        <td class="py-4 px-6 col-date text-gray-600">
+         27/07/2025
+        </td>
+        <td class="py-4 px-6 col-amount text-right font-semibold">
+         ₹72,800
+        </td>
+       </tr>
+       <tr class="hover:bg-gray-50 transition-colors">
+        <td class="py-4 px-6 col-orderid font-medium">
+         #ORD-1243
+        </td>
+        <td class="py-4 px-6 col-product">
+         Raw Materials
+        </td>
+        <td class="py-4 px-6 col-status">
+         <span class="status-badge status-cancelled">Cancelled</span>
+        </td>
+        <td class="py-4 px-6 col-date text-gray-600">
+         26/07/2025
+        </td>
+        <td class="py-4 px-6 col-amount text-right font-semibold">
+         ₹98,500
+        </td>
+       </tr>
+      </tbody>
+     </table>
+    </div>
+    
+    <!-- Right side content -->
+    <div class="flex flex-col gap-8">
+     <!-- Performance Metrics -->
+     <div class="box-white p-6 shadow select-none rounded-2xl">
+      <h2 class="text-lg font-semibold text-[#212121] mb-4">
+       Performance Metrics
+      </h2>
+      <div class="space-y-4">
+       <div>
+        <div class="flex justify-between items-center mb-2">
+         <span class="text-sm font-medium text-gray-700">Order Fulfillment</span>
+         <span class="text-sm font-semibold text-purple-600">92%</span>
+        </div>
+        <div class="progress-bar">
+         <div class="progress-fill" style="width: 92%"></div>
+        </div>
+       </div>
+       <div>
+        <div class="flex justify-between items-center mb-2">
+         <span class="text-sm font-medium text-gray-700">On-Time Delivery</span>
+         <span class="text-sm font-semibold text-purple-600">87%</span>
+        </div>
+        <div class="progress-bar">
+         <div class="progress-fill" style="width: 87%"></div>
+        </div>
+       </div>
+       <div>
+        <div class="flex justify-between items-center mb-2">
+         <span class="text-sm font-medium text-gray-700">Quality Score</span>
+         <span class="text-sm font-semibold text-purple-600">95%</span>
+        </div>
+        <div class="progress-bar">
+         <div class="progress-fill" style="width: 95%"></div>
+        </div>
+       </div>
+       <div>
+        <div class="flex justify-between items-center mb-2">
+         <span class="text-sm font-medium text-gray-700">Response Rate</span>
+         <span class="text-sm font-semibold text-purple-600">78%</span>
+        </div>
+        <div class="progress-bar">
+         <div class="progress-fill" style="width: 78%"></div>
+        </div>
+       </div>
+      </div>
+     </div>
+     
+     <!-- Recent Activities -->
+     <div class="box-white p-6 shadow select-none rounded-2xl">
+      <h2 class="text-lg font-semibold text-[#212121] mb-4">
+       Recent Activities
+      </h2>
+      <div class="space-y-4">
+       <div class="flex items-start gap-3">
+        <div class="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+        <div>
+         <p class="text-sm font-medium text-gray-800">Order #ORD-1247 has been placed</p>
+         <p class="text-xs text-gray-500">2 hours ago</p>
+        </div>
+       </div>
+       <div class="flex items-start gap-3">
+        <div class="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+        <div>
+         <p class="text-sm font-medium text-gray-800">Payment received for Invoice #INV-2024-088</p>
+         <p class="text-xs text-gray-500">5 hours ago</p>
+        </div>
+       </div>
+       <div class="flex items-start gap-3">
+        <div class="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
+        <div>
+         <p class="text-sm font-medium text-gray-800">New RFQ: Industrial Equipment Procurement</p>
+         <p class="text-xs text-gray-500">1 day ago</p>
+        </div>
+       </div>
+       <div class="flex items-start gap-3">
+        <div class="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
+        <div>
+         <p class="text-sm font-medium text-gray-800">Product catalog updated successfully</p>
+         <p class="text-xs text-gray-500">2 days ago</p>
+        </div>
+       </div>
+       <div class="flex items-start gap-3">
+        <div class="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
+        <div>
+         <p class="text-sm font-medium text-gray-800">Support ticket #SUP-445 resolved</p>
+         <p class="text-xs text-gray-500">3 days ago</p>
+        </div>
+       </div>
+      </div>
+     </div>
+     
+     <!-- Upcoming Tasks -->
+     <div class="box-white p-6 shadow select-none rounded-2xl">
+      <h2 class="text-lg font-semibold text-[#212121] mb-4">
+       Upcoming Tasks
+      </h2>
+      <div class="space-y-3">
+       <div class="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+        <i class="fas fa-clock text-yellow-600"></i>
+        <div class="flex-1">
+         <p class="text-sm font-medium text-gray-800">Submit RFQ Response</p>
+         <p class="text-xs text-gray-500">Due: Aug 1, 2025</p>
+        </div>
+       </div>
+       <div class="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+        <i class="fas fa-truck text-blue-600"></i>
+        <div class="flex-1">
+         <p class="text-sm font-medium text-gray-800">Create ASN for Order #1247</p>
+         <p class="text-xs text-gray-500">Due: Aug 2, 2025</p>
+        </div>
+       </div>
+       <div class="flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
+        <i class="fas fa-file-invoice text-green-600"></i>
+        <div class="flex-1">
+         <p class="text-sm font-medium text-gray-800">Generate Monthly Invoice</p>
+         <p class="text-xs text-gray-500">Due: Aug 5, 2025</p>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+  </main>
+  <script>
+   // Profile dropdown functionality
+   const profileButton = document.getElementById('profile-button');
+   const profileDropdown = document.getElementById('profile-dropdown');
+   const notificationsButton = document.getElementById('notifications-button');
+   const notificationsDropdown = document.getElementById('notifications-dropdown');
+   const messagesButton = document.getElementById('messages-button');
+   const messagesDropdown = document.getElementById('messages-dropdown');
+
+   profileButton.addEventListener('click', (e) => {
+     e.stopPropagation();
+     profileDropdown.classList.toggle('hidden');
+     notificationsDropdown.classList.add('hidden');
+     messagesDropdown.classList.add('hidden');
+   });
+
+   notificationsButton.addEventListener('click', (e) => {
+     e.stopPropagation();
+     notificationsDropdown.classList.toggle('hidden');
+     profileDropdown.classList.add('hidden');
+     messagesDropdown.classList.add('hidden');
+   });
+
+   messagesButton.addEventListener('click', (e) => {
+     e.stopPropagation();
+     messagesDropdown.classList.toggle('hidden');
+     profileDropdown.classList.add('hidden');
+     notificationsDropdown.classList.add('hidden');
+   });
+
+   // Close all dropdowns when clicking outside
+   window.addEventListener('click', (e) => {
+     if (!profileButton.contains(e.target) && !profileDropdown.contains(e.target) && !notificationsButton.contains(e.target) && !notificationsDropdown.contains(e.target) && !messagesButton.contains(e.target) && !messagesDropdown.contains(e.target)) {
+       profileDropdown.classList.add('hidden');
+       notificationsDropdown.classList.add('hidden');
+       messagesDropdown.classList.add('hidden');
+     }
+   });
+
+   // Real-time updates simulation
+   function updateMetrics() {
+     const metrics = [
+       { id: 'active-orders', min: 45, max: 55 },
+       { id: 'pending-rfqs', min: 12, max: 18 },
+       { id: 'vendor-rating', min: 4.5, max: 4.9, decimal: true }
+     ];
+
+     metrics.forEach(metric => {
+       const element = document.querySelector(`[data-metric="${metric.id}"]`);
+       if (element) {
+         let value;
+         if (metric.decimal) {
+           value = (Math.random() * (metric.max - metric.min) + metric.min).toFixed(1);
+         } else {
+           value = Math.floor(Math.random() * (metric.max - metric.min + 1) + metric.min);
+         }
+         element.textContent = value;
+       }
+     });
+   }
+
+   // Update metrics every 30 seconds
+   setInterval(updateMetrics, 30000);
+
+   // Add loading states for quick actions
+   document.querySelectorAll('.quick-action-btn').forEach(btn => {
+     btn.addEventListener('click', function(e) {
+       e.preventDefault();
+       const icon = this.querySelector('i');
+       const originalIcon = icon.className;
+       
+       // Show loading state
+       icon.className = 'fas fa-spinner fa-spin text-2xl text-purple-600 mb-2';
+       this.style.pointerEvents = 'none';
+       
+       // Simulate action completion
+       setTimeout(() => {
+         icon.className = originalIcon;
+         this.style.pointerEvents = 'auto';
+         
+         // Show success feedback
+         const span = this.querySelector('span');
+         const originalText = span.textContent;
+         span.textContent = 'Completed ✓';
+         span.style.color = '#059669';
+         
+         setTimeout(() => {
+           span.textContent = originalText;
+           span.style.color = '';
+         }, 2000);
+       }, 1500);
+     });
+   });
+
+   // Add hover effects for metric cards
+   document.querySelectorAll('.metric-card').forEach(card => {
+     card.addEventListener('mouseenter', function() {
+       this.style.transform = 'translateY(-4px)';
+       this.style.boxShadow = '0 12px 35px rgba(106, 27, 154, 0.15)';
+     });
+     
+     card.addEventListener('mouseleave', function() {
+       this.style.transform = 'translateY(-2px)';
+       this.style.boxShadow = '0 8px 25px rgba(106, 27, 154, 0.1)';
+     });
+   });
+
+   // Notification badge animation
+   function animateNotificationBadges() {
+     const badges = document.querySelectorAll('.notification-badge');
+     badges.forEach(badge => {
+       badge.style.animation = 'pulse 2s infinite';
+     });
+   }
+
+   // Initialize notification animations
+   animateNotificationBadges();
+
+   // Add CSS animation for pulse effect
+   const style = document.createElement('style');
+   style.textContent = `
+     @keyframes pulse {
+       0% { transform: scale(1); }
+       50% { transform: scale(1.1); }
+       100% { transform: scale(1); }
+     }
+     
+     .quick-action-btn {
+       transition: all 0.3s ease;
+     }
+     
+     .quick-action-btn:hover {
+       transform: translateY(-2px);
+       box-shadow: 0 4px 12px rgba(106, 27, 154, 0.2);
+     }
+   `;
+   document.head.appendChild(style);
+  </script>
+  <script>
+// API base and token bootstrap
+const API_BASE = 'http://localhost:5000/api';
+let AUTH_TOKEN = sessionStorage.getItem('authToken') || null;
+
+// Auto-login for demo (replace with real login page later)
+async function demoLogin() {
+  if (AUTH_TOKEN) return AUTH_TOKEN;
+  const res = await fetch(`${API_BASE}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json' },
+    body: JSON.stringify({ email: 'john@vendor.com', password: 'vendor@123' })
+  });
+  const data = await res.json();
+  if (data.token) {
+    AUTH_TOKEN = data.token;
+    sessionStorage.setItem('authToken', AUTH_TOKEN);
+    return AUTH_TOKEN;
+  }
+  console.warn('Auto login failed', data);
+}
+
+// Fetch helpers
+async function apiGet(path) {
+  const token = await demoLogin();
+  const res = await fetch(`${API_BASE}${path}`, { headers: { Authorization: `Bearer ${token}` }});
+  if (!res.ok) throw new Error(`GET ${path} failed`);
+  return res.json();
+}
+
+// Hydrate metrics
+async function hydrateMetrics() {
+  try {
+    const m = await apiGet('/dashboard/metrics');
+    // If you add data-metric attributes, they will update here (kept as example)
+    // document.querySelector('[data-metric="active-orders"]').textContent = m.activeOrders;
+    // Inline replacements (optional): update the cards if you add ids.
+  } catch(e){ console.error(e); }
+}
+
+// Hydrate notifications/messages dropdowns
+async function hydrateDropdowns() {
+  try {
+    const [notes, msgs] = await Promise.all([apiGet('/notifications'), apiGet('/messages')]);
+    // Notifications
+    const notesEl = document.getElementById('notifications-dropdown');
+    if (notesEl) {
+      const inner = ['<div class="px-4 py-3 border-b border-gray-200 font-semibold text-purple-700">Announcements</div>']
+        .concat(notes.map(n => `
+          <div class="px-4 py-2 text-gray-800 border-b border-gray-100">
+            <i class="fas ${n.level==='warning'?'fa-exclamation-triangle text-yellow-600': 'fa-info-circle text-blue-600'} mr-2"></i>
+            ${n.title}: <span class="font-medium">${n.body}</span>
+            <div class="text-xs text-gray-500 mt-1">${new Date(n.created_at).toLocaleString()}</div>
+          </div>
+        `)).join('');
+      notesEl.innerHTML = inner;
+      const badge = document.querySelector('#notifications-button .notification-badge');
+      if (badge) badge.textContent = notes.length;
+    }
+    // Messages
+    const msgsEl = document.getElementById('messages-dropdown');
+    if (msgsEl) {
+      const inner = ['<div class="px-4 py-3 border-b border-gray-200 font-semibold text-purple-700">Messages</div>']
+        .concat(msgs.map(m => `
+          <div class="px-4 py-2 text-gray-800 border-b border-gray-100">
+            <i class="fas fa-user-circle text-purple-600 mr-2"></i>
+            <span class="font-medium">${m.from_name}</span>: ${m.subject}
+            <div class="text-xs text-gray-500 mt-1">${new Date(m.created_at).toLocaleString()}</div>
+          </div>
+        `)).join('');
+      msgsEl.innerHTML = inner;
+      const badge = document.querySelector('#messages-button .notification-badge');
+      if (badge) badge.textContent = msgs.length;
+    }
+  } catch(e){ console.error(e); }
+}
+
+// Init on load
+(async function initDashboard(){
+  await demoLogin();
+  await Promise.all([hydrateMetrics(), hydrateDropdowns()]);
+})();
+  </script>
+ </body>
+</html>
+{
+  "name": "vendor-portal-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node ./src/index.js",
+    "dev": "nodemon ./src/index.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}
+import sqlite3 from 'sqlite3';
+import { open } from 'sqlite';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const dbPath = path.join(__dirname, '..', 'data.sqlite');
+
+export async function getDb() {
+  const db = await open({ filename: dbPath, driver: sqlite3.Database });
+  await db.exec('PRAGMA foreign_keys = ON;');
+  return db;
+}
+
+export async function ensureSchema() {
+  const db = await getDb();
+  const row = await db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='users';");
+  if (!row) {
+    const schemaSql = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
+    await db.exec(schemaSql);
+    const seedSql = fs.readFileSync(path.join(__dirname, 'seed.sql'), 'utf8');
+    await db.exec(seedSql);
+  }
+  await db.close();
+}
+-- Core master tables
+CREATE TABLE vendors (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  code TEXT UNIQUE NOT NULL,
+  name TEXT NOT NULL,
+  email TEXT UNIQUE NOT NULL,
+  phone TEXT,
+  address TEXT,
+  city TEXT,
+  country TEXT,
+  gst_number TEXT,
+  status TEXT DEFAULT 'Active'
+);
+
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  vendor_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  email TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'vendor',
+  FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
+);
+
+-- Catalog
+CREATE TABLE products (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  vendor_id INTEGER NOT NULL,
+  code TEXT UNIQUE NOT NULL,
+  name TEXT NOT NULL,
+  category TEXT,
+  uom TEXT DEFAULT 'EA',
+  stock_qty INTEGER DEFAULT 0,
+  price NUMERIC DEFAULT 0,
+  status TEXT DEFAULT 'In Stock',
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
+);
+
+CREATE TABLE product_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  product_id INTEGER NOT NULL,
+  line_code TEXT NOT NULL,
+  description TEXT,
+  qty INTEGER NOT NULL,
+  unit_price NUMERIC NOT NULL,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+
+CREATE TABLE product_sub_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  product_item_id INTEGER NOT NULL,
+  sub_code TEXT NOT NULL,
+  description TEXT,
+  qty INTEGER NOT NULL,
+  FOREIGN KEY (product_item_id) REFERENCES product_items(id) ON DELETE CASCADE
+);
+
+-- RFQs
+CREATE TABLE rfqs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  vendor_id INTEGER NOT NULL,
+  rfq_no TEXT UNIQUE NOT NULL,
+  title TEXT,
+  buyer TEXT,
+  due_date TEXT,
+  status TEXT DEFAULT 'Open',
+  FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
+);
+
+CREATE TABLE rfq_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  rfq_id INTEGER NOT NULL,
+  item_code TEXT NOT NULL,
+  description TEXT,
+  qty INTEGER NOT NULL,
+  uom TEXT DEFAULT 'EA',
+  target_price NUMERIC,
+  FOREIGN KEY (rfq_id) REFERENCES rfqs(id) ON DELETE CASCADE
+);
+
+CREATE TABLE rfq_sub_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  rfq_item_id INTEGER NOT NULL,
+  sub_code TEXT NOT NULL,
+  description TEXT,
+  qty INTEGER NOT NULL,
+  FOREIGN KEY (rfq_item_id) REFERENCES rfq_items(id) ON DELETE CASCADE
+);
+
+-- Orders, invoices (simplified)
+CREATE TABLE orders (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  vendor_id INTEGER NOT NULL,
+  order_no TEXT UNIQUE NOT NULL,
+  status TEXT NOT NULL,
+  order_date TEXT,
+  amount NUMERIC,
+  FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
+);
+
+CREATE TABLE invoices (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  vendor_id INTEGER NOT NULL,
+  invoice_no TEXT UNIQUE NOT NULL,
+  status TEXT NOT NULL,
+  amount NUMERIC,
+  due_date TEXT,
+  FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
+);
+
+-- Messaging/notifications/support
+CREATE TABLE messages (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  vendor_id INTEGER NOT NULL,
+  from_name TEXT,
+  subject TEXT,
+  body TEXT,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
+);
+
+CREATE TABLE notifications (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  vendor_id INTEGER NOT NULL,
+  title TEXT,
+  body TEXT,
+  level TEXT DEFAULT 'info',
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
+);
+
+CREATE TABLE tickets (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  vendor_id INTEGER NOT NULL,
+  ticket_no TEXT UNIQUE NOT NULL,
+  subject TEXT,
+  status TEXT DEFAULT 'Open',
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
+);
+
+INSERT INTO vendors (code, name, email, phone, address, city, country, gst_number, status)
+VALUES ('VND-1001','John Vendor Pvt Ltd','john@vendor.com','+91 99999 88888','Plot 12, Industrial Area','Pune','India','27ABCDE1234F1Z5','Active');
+
+INSERT INTO users (vendor_id, name, email, password_hash, role)
+VALUES (1, 'John Vendor', 'john@vendor.com', '$2a$10$3m6gWqR9T5v1cspW6YqS9eB1zJc2oQvZz9wB0s7b3pYy2qk0zM0F6', 'vendor'); -- password: vendor@123
+
+-- Products
+INSERT INTO products (vendor_id, code, name, category, uom, stock_qty, price, status)
+VALUES
+(1,'PRD-1001','Industrial Bearings','Mechanical','EA',120,550,'In Stock'),
+(1,'PRD-1002','Steel Pipes','Mechanical','M',60,820,'In Stock'),
+(1,'PRD-1003','Electronic Components','Electronics','EA',300,120,'In Stock'),
+(1,'PRD-1004','Safety Equipment','Safety','EA',20,2200,'Low Stock'),
+(1,'PRD-1005','Raw Materials','Raw','KG',80,650,'In Stock');
+
+-- Product lines/sub-items (sample)
+INSERT INTO product_items (product_id, line_code, description, qty, unit_price) VALUES
+(1,'LN-001','Bearing Type A',200,550),
+(1,'LN-002','Bearing Type B',100,575);
+
+INSERT INTO product_sub_items (product_item_id, sub_code, description, qty) VALUES
+(1,'SUB-001','Size 20mm',120),
+(1,'SUB-002','Size 30mm',80),
+(2,'SUB-003','Size 25mm',60),
+(2,'SUB-004','Size 35mm',40);
+
+-- RFQs
+INSERT INTO rfqs (vendor_id, rfq_no, title, buyer, due_date, status) VALUES
+(1,'RFQ-2025-001','Industrial Bearings Procurement','ABC Industries','2025-08-01','Open'),
+(1,'RFQ-2025-002','Steel Pipes Procurement','XYZ Corp','2025-08-02','Expiring Soon'),
+(1,'RFQ-2025-003','Electronic Components Procurement','LMN Ltd','2025-08-05','New');
+
+INSERT INTO rfq_items (rfq_id, item_code, description, qty, uom, target_price) VALUES
+(1,'ITM-001','Bearing Type A',200,'EA',540),
+(1,'ITM-002','Bearing Type B',300,'EA',560),
+(2,'ITM-003','Pipe Type X',700,'M',810),
+(2,'ITM-004','Pipe Type Y',500,'M',830),
+(3,'ITM-005','Resistors 100 Ohm',400,'EA',5),
+(3,'ITM-006','Resistors 220 Ohm',400,'EA',6);
+
+INSERT INTO rfq_sub_items (rfq_item_id, sub_code, description, qty) VALUES
+(1,'SUB-001','Size 20mm',200),
+(2,'SUB-002','Size 25mm',300),
+(3,'SUB-003','Length 6m',700),
+(4,'SUB-004','Length 12m',500),
+(5,'SUB-005','Pack of 100',200),
+(6,'SUB-006','Pack of 100',200);
+
+-- Orders (recent)
+INSERT INTO orders (vendor_id, order_no, status, order_date, amount) VALUES
+(1,'ORD-1247','Pending','2025-07-30',125000),
+(1,'ORD-1246','Shipped','2025-07-29',85600),
+(1,'ORD-1245','Delivered','2025-07-28',45200),
+(1,'ORD-1244','Shipped','2025-07-27',72800),
+(1,'ORD-1243','Cancelled','2025-07-26',98500);
+
+-- Invoices
+INSERT INTO invoices (vendor_id, invoice_no, status, amount, due_date) VALUES
+(1,'INV-2024-088','Paid',845000,'2025-08-05'),
+(1,'INV-2024-089','Unpaid',280000,'2025-08-02');
+
+-- Messages and notifications
+INSERT INTO messages (vendor_id, from_name, subject, body) VALUES
+(1,'Buyer Team','Order #ORD-1247 confirmed','Your order ORD-1247 has been confirmed.'),
+(1,'Support','Ticket #SUP-445 resolved','Your support ticket has been resolved.'),
+(1,'Accounts','Invoice #INV-2024-088 payment received','Payment received for invoice INV-2024-088.');
+
+INSERT INTO notifications (vendor_id, title, body, level) VALUES
+(1,'New RFQ available','Industrial Equipment Procurement','info'),
+(1,'System update','System update on Aug 5, 2025','info'),
+(1,'Payment reminder','Invoice #INV-2024-089 due soon','warning');
+
+INSERT INTO tickets (vendor_id, ticket_no, subject, status) VALUES
+(1,'SUP-445','Portal access issue','Closed');
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import { getDb, ensureSchema } from './db.js';
+
+dotenv.config();
+await ensureSchema();
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+const PORT = process.env.PORT || 5000;
+const JWT_SECRET = process.env.JWT_SECRET || 'change_me';
+
+function signToken(payload) {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: '8h' });
+}
+
+function auth(req, res, next) {
+  const hdr = req.headers.authorization || '';
+  const token = hdr.startsWith('Bearer ') ? hdr.slice(7) : null;
+  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    req.user = jwt.verify(token, JWT_SECRET);
+    next();
+  } catch {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+}
+
+/* Auth */
+app.post('/api/auth/login', async (req, res) => {
+  const { email, password } = req.body || {};
+  const db = await getDb();
+  const user = await db.get('SELECT * FROM users WHERE email = ?', email);
+  await db.close();
+  if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+  const ok = await bcrypt.compare(password, user.password_hash);
+  if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
+  const token = signToken({ uid: user.id, vid: user.vendor_id, role: user.role, name: user.name, email: user.email });
+  res.json({ token });
+});
+
+/* Dashboard metrics */
+app.get('/api/dashboard/metrics', auth, async (req, res) => {
+  const db = await getDb();
+  const [orders, rfqs, products, rating] = await Promise.all([
+    db.get('SELECT COUNT(*) as c FROM orders WHERE vendor_id = ?', req.user.vid),
+    db.get('SELECT COUNT(*) as c FROM rfqs WHERE vendor_id = ? AND status IN ("Open","Expiring Soon","New")', req.user.vid),
+    db.get('SELECT COUNT(*) as c FROM products WHERE vendor_id = ?', req.user.vid),
+    Promise.resolve({ c: 4.7 })
+  ]);
+  const lowStock = await db.get('SELECT COUNT(*) as c FROM products WHERE vendor_id = ? AND status = "Low Stock"', req.user.vid);
+  await db.close();
+  res.json({
+    activeOrders: orders.c,
+    pendingRFQs: rfqs.c,
+    totalProducts: products.c,
+    lowStock: lowStock.c,
+    vendorRating: rating.c
+  });
+});
+
+/* Notifications and messages */
+app.get('/api/notifications', auth, async (req, res) => {
+  const db = await getDb();
+  const rows = await db.all('SELECT * FROM notifications WHERE vendor_id = ? ORDER BY created_at DESC LIMIT 10', req.user.vid);
+  await db.close();
+  res.json(rows);
+});
+
+app.get('/api/messages', auth, async (req, res) => {
+  const db = await getDb();
+  const rows = await db.all('SELECT * FROM messages WHERE vendor_id = ? ORDER BY created_at DESC LIMIT 10', req.user.vid);
+  await db.close();
+  res.json(rows);
+});
+
+/* Products */
+app.get('/api/products', auth, async (req, res) => {
+  const db = await getDb();
+  const rows = await db.all('SELECT * FROM products WHERE vendor_id = ? ORDER BY name', req.user.vid);
+  await db.close();
+  res.json(rows);
+});
+
+app.get('/api/products/:code', auth, async (req, res) => {
+  const db = await getDb();
+  const product = await db.get('SELECT * FROM products WHERE vendor_id = ? AND code = ?', req.user.vid, req.params.code);
+  if (!product) { await db.close(); return res.status(404).json({ error: 'Not found' }); }
+  const items = await db.all('SELECT * FROM product_items WHERE product_id = ?', product.id);
+  for (const it of items) {
+    it.subItems = await db.all('SELECT * FROM product_sub_items WHERE product_item_id = ?', it.id);
+  }
+  await db.close();
+  res.json({ ...product, lineItems: items });
+});
+
+/* RFQs */
+app.get('/api/rfqs', auth, async (req, res) => {
+  const db = await getDb();
+  const rows = await db.all('SELECT * FROM rfqs WHERE vendor_id = ? ORDER BY due_date ASC', req.user.vid);
+  await db.close();
+  res.json(rows);
+});
+
+app.get('/api/rfqs/:rfqNo', auth, async (req, res) => {
+  const db = await getDb();
+  const rfq = await db.get('SELECT * FROM rfqs WHERE vendor_id = ? AND rfq_no = ?', req.user.vid, req.params.rfqNo);
+  if (!rfq) { await db.close(); return res.status(404).json({ error: 'Not found' }); }
+  const items = await db.all('SELECT * FROM rfq_items WHERE rfq_id = ?', rfq.id);
+  for (const it of items) {
+    it.subItems = await db.all('SELECT * FROM rfq_sub_items WHERE rfq_item_id = ?', it.id);
+  }
+  await db.close();
+  res.json({ ...rfq, lineItems: items });
+});
+
+/* Orders, invoices (for future UI pages) */
+app.get('/api/orders', auth, async (req, res) => {
+  const db = await getDb();
+  const rows = await db.all('SELECT * FROM orders WHERE vendor_id = ? ORDER BY order_date DESC', req.user.vid);
+  await db.close();
+  res.json(rows);
+});
+
+app.get('/api/invoices', auth, async (req, res) => {
+  const db = await getDb();
+  const rows = await db.all('SELECT * FROM invoices WHERE vendor_id = ? ORDER BY due_date DESC', req.user.vid);
+  await db.close();
+  res.json(rows);
+});
+
+/* Support tickets */
+app.get('/api/tickets', auth, async (req, res) => {
+  const db = await getDb();
+  const rows = await db.all('SELECT * FROM tickets WHERE vendor_id = ? ORDER BY created_at DESC', req.user.vid);
+  await db.close();
+  res.json(rows);
+});
+
+app.listen(PORT, () => console.log(`API running on http://localhost:${PORT}`));

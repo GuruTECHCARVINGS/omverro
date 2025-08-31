@@ -1,0 +1,251 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Inquiries - Vendor Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap"
+    rel="stylesheet"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+  />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #F5F5F5;
+      color: #212121;
+    }
+    /* Sidebar background */
+    aside {
+      background-color: #6A1B9A;
+    }
+    /* Sidebar text */
+    aside nav a {
+      color: #D1C4E9;
+    }
+    aside nav a:hover {
+      color: #FFFFFF;
+    }
+    /* Sidebar icons */
+    aside nav a i {
+      color: inherit;
+    }
+    /* Scrollbar for sidebar nav */
+    aside nav::-webkit-scrollbar {
+      width: 6px;
+    }
+    aside nav::-webkit-scrollbar-thumb {
+      background-color: rgba(255 255 255 / 0.3);
+      border-radius: 3px;
+    }
+    /* Scrollbar for lists */
+    ul::-webkit-scrollbar {
+      width: 8px;
+    }
+    ul::-webkit-scrollbar-thumb {
+      background-color: rgba(138, 43, 226, 0.5);
+      border-radius: 4px;
+    }
+    /* Scrollbar for Firefox */
+    ul {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(138, 43, 226, 0.5) transparent;
+    }
+    /* Section titles */
+    h1, h2 {
+      color: #6A1B9A;
+    }
+    /* Buttons */
+    button {
+      background-color: #8E24AA;
+      color: white;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #6A1B9A;
+    }
+    /* Input fields and boxes */
+    input, textarea, select {
+      background-color: #FFFFFF;
+      border: 1px solid #E0E0E0;
+      color: #212121;
+    }
+    /* Table header */
+    th {
+      background-color: #8E24AA;
+      color: white;
+    }
+    /* Table row hover */
+    tbody tr:hover {
+      background-color: #E6D9F7;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex">
+   <!-- Sidebar -->
+   <!-- <aside class="bg-primary w-20 flex flex-col items-center py-6 space-y-6">
+    <nav class="flex flex-col space-y-6 text-white text-xs font-normal w-full">
+     <a class="flex flex-col items-center space-y-1 opacity-100" href="">
+    <img src="https://www.mitsubishielectric-railway.eu/wp-content/uploads/2020/06/ME-Logo_mit-Claim_rgb.jpg" alt="Mitsubishi Electric logo" class="mx-auto mb-6 max-w-[180px] w-full"/>
+     </a>
+     <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="BuyerVendorApproval.html">
+      <i class="fas fa-file-invoice text-xs">
+      </i>
+      <span>
+       Purchase
+       <br/>
+       Orders
+      </span>
+     </a>
+     <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="Buyer_Vendorlist.html">
+      <i class="fas fa-check-circle text-xs">
+      </i>
+      <span>
+       Approvals
+      </span>
+     </a>
+     <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="Buyer_.manageasn.html">
+      <i class="fas fa-truck text-xs">
+      </i>
+      <span>
+       Suppliers
+      </span>
+     </a>
+     <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="Buyer_Inquires.html">
+      <i class="fas fa-question-circle text-xs">
+      </i>
+      <span>
+       Inquiries
+      </span>
+     </a>
+     <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="Buyer_report.html">
+      <i class="fas fa-chart-bar text-xs">
+      </i>
+      <span>
+       Reports
+      </span>
+     </a>
+     <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="Buyer_settings.html">
+      <i class="fas fa-cog text-xs">
+      </i>
+      <span>
+       Settings
+      </span>
+     </a>
+    </nav>
+   </aside> -->
+
+  <!-- Main content -->
+  <main class="flex-1 p-6 md:p-10 flex flex-col" id="mainContent">
+    <header class="mb-8 flex items-center justify-between">
+      <h1 class="text-2xl font-extrabold">Inquiries</h1>
+      <div class="flex space-x-4 text-gray-600 text-xl">
+        <button aria-label="Notifications" class="hover:text-gray-900">
+          <i class="fas fa-bell"></i>
+        </button>
+        <button aria-label="User profile" class="hover:text-gray-900">
+          <i class="fas fa-user"></i>
+        </button>
+      </div>
+    </header>
+
+    <section class="bg-white rounded-lg shadow p-6 flex-1 overflow-auto">
+      <table class="w-full table-auto border-collapse text-sm">
+        <thead>
+          <tr>
+            <th class="p-3 text-left">Inquiry ID</th>
+            <th class="p-3 text-left">Vendor</th>
+            <th class="p-3 text-left">Subject</th>
+            <th class="p-3 text-left">Date</th>
+            <th class="p-3 text-left">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-b border-gray-200">
+            <td class="p-3">INQ-1001</td>
+            <td class="p-3">Vendor A</td>
+            <td class="p-3">Product availability</td>
+            <td class="p-3">2024-06-01</td>
+            <td class="p-3 text-purple-700 font-semibold">Open</td>
+          </tr>
+          <tr class="border-b border-gray-200">
+            <td class="p-3">INQ-1002</td>
+            <td class="p-3">Vendor B</td>
+            <td class="p-3">Delivery schedule</td>
+            <td class="p-3">2024-06-03</td>
+            <td class="p-3 text-green-600 font-semibold">Closed</td>
+          </tr>
+          <tr class="border-b border-gray-200">
+            <td class="p-3">INQ-1003</td>
+            <td class="p-3">Vendor C</td>
+            <td class="p-3">Pricing details</td>
+            <td class="p-3">2024-06-05</td>
+            <td class="p-3 text-purple-700 font-semibold">Open</td>
+          </tr>
+          <tr class="border-b border-gray-200">
+            <td class="p-3">INQ-1004</td>
+            <td class="p-3">Vendor D</td>
+            <td class="p-3">Warranty information</td>
+            <td class="p-3">2024-06-07</td>
+            <td class="p-3 text-yellow-600 font-semibold">Pending</td>
+          </tr>
+          <tr class="border-b border-gray-200">
+            <td class="p-3">INQ-1005</td>
+            <td class="p-3">Vendor E</td>
+            <td class="p-3">Technical support</td>
+            <td class="p-3">2024-06-09</td>
+            <td class="p-3 text-purple-700 font-semibold">Open</td>
+          </tr>
+          <tr class="border-b border-gray-200">
+            <td class="p-3">INQ-1006</td>
+            <td class="p-3">Vendor F</td>
+            <td class="p-3">Order modification</td>
+            <td class="p-3">2024-06-10</td>
+            <td class="p-3 text-green-600 font-semibold">Closed</td>
+          </tr>
+          <tr class="border-b border-gray-200">
+            <td class="p-3">INQ-1007</td>
+            <td class="p-3">Vendor G</td>
+            <td class="p-3">Shipping delay</td>
+            <td class="p-3">2024-06-12</td>
+            <td class="p-3 text-yellow-600 font-semibold">Pending</td>
+          </tr>
+          <tr class="border-b border-gray-200">
+            <td class="p-3">INQ-1008</td>
+            <td class="p-3">Vendor H</td>
+            <td class="p-3">Invoice query</td>
+            <td class="p-3">2024-06-14</td>
+            <td class="p-3 text-purple-700 font-semibold">Open</td>
+          </tr>
+          <tr class="border-b border-gray-200">
+            <td class="p-3">INQ-1009</td>
+            <td class="p-3">Vendor I</td>
+            <td class="p-3">Product specifications</td>
+            <td class="p-3">2024-06-15</td>
+            <td class="p-3 text-green-600 font-semibold">Closed</td>
+          </tr>
+          <tr>
+            <td class="p-3">INQ-1010</td>
+            <td class="p-3">Vendor J</td>
+            <td class="p-3">Contract renewal</td>
+            <td class="p-3">2024-06-17</td>
+            <td class="p-3 text-purple-700 font-semibold">Open</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    // Add click event to Inquiries button in sidebar
+    document.getElementById('inquiriesBtn').addEventListener('click', () => {
+      // For demonstration, just alert or you can implement navigation or content load
+      alert('Inquiries button clicked! This would navigate or load the inquiries screen.');
+      // Or you can implement SPA style content loading here
+    });
+  </script>
+</body>
+</html>

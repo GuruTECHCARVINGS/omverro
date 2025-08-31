@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>TechCarvings - RFQ Response</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    body { font-family: "Inter", sans-serif; background: linear-gradient(120deg, #f3f6fd 0%, #e9eafc 100%); color: #212121; }
+    .box-white { background: rgba(255,255,255,0.9); border: 1px solid #E5E7EB; border-radius: 1.25rem; box-shadow: 0 12px 32px rgba(59,130,246,0.08), 0 1.5px 6px #d1e0ef; backdrop-filter: blur(8px); }
+    .reveal { opacity: 0; transform: translateY(16px) scale(.98); transition: all .6s cubic-bezier(.4,2,.3,1); }
+    .reveal.show { opacity: 1; transform: translateY(0) scale(1); }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <img alt="TechCarvings Consultancy Pvt Ltd Logo"
+             class="h-12 w-12 rounded-xl"
+             src="https://www.techcarvings.com/wp-content/uploads/2024/10/cropped-logo.png"/>
+        <div>
+          <h1 class="text-xl font-bold text-[#212121]">RFQ Response</h1>
+          <p class="text-xs text-gray-500 -mt-1" id="rfqSubtitle">Create your response</p>
+        </div>
+      </div>
+      <button onclick="window.location.href='Buyer_Open_RFQs.html'" 
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+        <i class="fas fa-arrow-left mr-1"></i> Back to RFQs
+      </button>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- RFQ Details -->
+    <section class="box-white p-6 mb-8 reveal">
+      <h2 class="text-lg font-bold text-blue-700 mb-4" id="rfqDetailsTitle"></h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <p class="text-sm text-gray-600"><strong>Supplier:</strong> <span id="rfqSupplier"></span></p>
+          <p class="text-sm text-gray-600 mt-2"><strong>Category:</strong> <span id="rfqCategory"></span></p>
+          <p class="text-sm text-gray-600 mt-2"><strong>Due Date:</strong> <span id="rfqDue"></span></p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-600"><strong>Items Required:</strong></p>
+          <ul class="list-disc list-inside text-sm text-gray-600 mt-2" id="rfqItems"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Response Form -->
+    <section class="box-white p-6 reveal">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">Your Response</h3>
+      <form id="rfqResponseForm" class="space-y-6">
+        <!-- Price Details -->
+        <div class="space-y-4">
+          <h4 class="font-medium text-gray-700">Price Details</h4>
+          <div id="priceInputs" class="space-y-4">
+            <!-- Price inputs will be generated here based on items -->
+          </div>
+        </div>
+
+        <!-- Delivery Details -->
+        <div class="space-y-4">
+          <h4 class="font-medium text-gray-700">Delivery Details</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Estimated Delivery Date</label>
+              <input type="date" required
+                     class="mt-1 block w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600"/>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Delivery Terms</label>
+              <select required
+                      class="mt-1 block w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600">
+                <option value="">Select Terms</option>
+                <option value="ex_works">Ex Works</option>
+                <option value="fob">FOB</option>
+                <option value="cif">CIF</option>
+                <option value="dap">DAP</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Terms -->
+        <div class="space-y-4">
+          <h4 class="font-medium text-gray-700">Payment Terms</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Payment Method</label>
+              <select required
+                      class="mt-1 block w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600">
+                <option value="">Select Method</option>
+                <option value="bank_transfer">Bank Transfer</option>
+                <option value="letter_of_credit">Letter of Credit</option>
+                <option value="cheque">Cheque</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Payment Terms</label>
+              <select required
+                      class="mt-1 block w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600">
+                <option value="">Select Terms</option>
+                <option value="advance">100% Advance</option>
+                <option value="net30">Net 30</option>
+                <option value="net60">Net 60</option>
+                <option value="custom">Custom</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Information -->
+        <div class="space-y-4">
+          <h4 class="font-medium text-gray-700">Additional Information</h4>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Notes</label>
+            <textarea rows="4" placeholder="Any additional information or terms..."
+                      class="mt-1 block w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600"></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Attachments</label>
+            <input type="file" multiple
+                   class="mt-1 block w-full px-3 py-2 text-sm text-gray-700"/>
+            <p class="mt-1 text-xs text-gray-500">Upload any relevant documents (specifications, certifications, etc.)</p>
+          </div>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div class="flex justify-end gap-3 pt-4">
+          <button type="button" onclick="window.location.href='Buyer_Open_RFQs.html'"
+                  class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100">
+            Cancel
+          </button>
+          <button type="button" onclick="saveAsDraft()"
+                  class="px-4 py-2 rounded-lg border border-blue-600 text-blue-600 hover:bg-blue-50">
+            Save as Draft
+          </button>
+          <button type="submit"
+                  class="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">
+            Submit Response
+          </button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <!-- Success Modal -->
+  <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 transform transition-all">
+      <div class="text-center">
+        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-check text-3xl text-green-600"></i>
+        </div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">Response Submitted Successfully!</h3>
+        <p class="text-gray-600 mb-6">Your response to RFQ <span id="submittedRfqId" class="font-semibold"></span> has been submitted successfully. You will be notified of any updates.</p>
+        <div class="flex flex-col gap-3">
+          <button onclick="window.location.href='Buyer_Open_RFQs.html'" 
+                  class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            Return to RFQ List
+          </button>
+          <button onclick="window.location.href='vendordashboard.html'"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+            Go to Dashboard
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Get RFQ ID from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const rfqId = urlParams.get('rfqId');
+
+    // RFQ Data (this would typically come from your backend)
+    const rfqData = {
+      "RFQ-2025-001": { supplier: "ABC Elevators", category: "Capex", due: "Aug 28, 2025", items: ["Hydraulic Lift - 2 Nos", "Control Panel - 1 Nos", "Safety Kit - 5 Sets"] },
+      "RFQ-2025-002": { supplier: "XYZ Components", category: "Opex", due: "Aug 30, 2025", items: ["Bearings - 200 Nos", "Lubricant Oil - 50 Liters", "Seals - 100 Nos"] },
+      "RFQ-2025-003": { supplier: "LMN Tech", category: "Capex", due: "Sep 5, 2025", items: ["Industrial Robot Arm - 1 Nos", "Control Software License - 1 Nos"] },
+      "RFQ-2025-004": { supplier: "Delta Motors", category: "Capex", due: "Sep 10, 2025", items: ["Electric Motor - 10 Nos", "Inverter - 5 Nos"] },
+      "RFQ-2025-005": { supplier: "Green Energy Ltd", category: "Opex", due: "Sep 15, 2025", items: ["Solar Panels - 50 Nos", "Inverters - 10 Nos", "Mounting Kits - 50 Sets"] }
+    };
+
+    // Populate RFQ details
+    function populateRFQDetails() {
+      const rfq = rfqData[rfqId];
+      if (!rfq) {
+        alert('RFQ not found!');
+        window.location.href = 'Buyer_Open_RFQs.html';
+        return;
+      }
+
+      document.getElementById('rfqDetailsTitle').textContent = `${rfqId} - RFQ Details`;
+      document.getElementById('rfqSubtitle').textContent = `Response to ${rfqId}`;
+      document.getElementById('rfqSupplier').textContent = rfq.supplier;
+      document.getElementById('rfqCategory').textContent = rfq.category;
+      document.getElementById('rfqDue').textContent = rfq.due;
+      document.getElementById('rfqItems').innerHTML = rfq.items.map(item => `<li>${item}</li>`).join('');
+
+      // Generate price input fields for each item
+      const priceInputsHtml = rfq.items.map((item, index) => `
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700">${item}</label>
+          </div>
+          <div>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">$</span>
+              <input type="number" required step="0.01" min="0"
+                     placeholder="Unit Price"
+                     class="block w-full pl-8 pr-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600"/>
+            </div>
+          </div>
+        </div>
+      `).join('');
+      
+      document.getElementById('priceInputs').innerHTML = priceInputsHtml;
+    }
+
+    // Handle form submission
+    document.getElementById('rfqResponseForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Disable submit button to prevent double submission
+      const submitButton = this.querySelector('button[type="submit"]');
+      submitButton.disabled = true;
+      submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Submitting...';
+      
+      // Simulate form submission delay (remove this in production)
+      setTimeout(() => {
+        // Here you would typically collect all form data and send it to your backend
+        
+        // Update success modal with RFQ ID
+        document.getElementById('submittedRfqId').textContent = rfqId;
+        
+        // Show success modal
+        document.getElementById('successModal').classList.remove('hidden');
+        document.getElementById('successModal').classList.add('flex');
+        
+        // Add animation class
+        document.querySelector('#successModal > div').classList.add('scale-100');
+      }, 1500); // Simulated delay of 1.5 seconds
+    });
+
+    // Save as draft function
+    function saveAsDraft() {
+      // Here you would typically save the current form state
+      alert('Response saved as draft!');
+    }
+
+    // Initialize page
+    populateRFQDetails();
+
+    // Reveal animation
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('show'); });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  </script>
+</body>
+</html>

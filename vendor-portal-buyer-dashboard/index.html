@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Portal - Buyer Dashboard</title>
+    <link rel="stylesheet" href="src/styles/tailwind.css">
+    <link rel="stylesheet" href="src/styles/globals.css">
+</head>
+<body class="bg-bgLight text-textDark">
+    <div id="app" class="flex">
+        <Sidebar />
+        <div class="flex-1 p-6">
+            <Header />
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                <StatCard />
+                <StatCard />
+                <StatCard />
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+                <KpiDonut />
+                <SpendByCategory />
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+                <PerformanceTrends />
+                <VendorScorecard />
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <DataTable />
+                <ActivityFeed />
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Announcements />
+                <AlertsPanel />
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <TasksPanel />
+                <QuickActions />
+            </div>
+        </div>
+    </div>
+    <script type="module" src="src/app.ts"></script>
+</body>
+</html>

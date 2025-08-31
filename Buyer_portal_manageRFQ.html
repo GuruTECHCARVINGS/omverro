@@ -1,0 +1,1463 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TechCarvings - Manage RFQs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    
+    /* Custom styling for consistent design */
+    .status-badge {
+      @apply px-3 py-1 rounded-full text-xs font-medium;
+    }
+    
+    .status-draft { @apply bg-gray-100 text-gray-800; }
+    .status-published { @apply bg-blue-100 text-blue-800; }
+    .status-responses-received { @apply bg-yellow-100 text-yellow-800; }
+    .status-under-evaluation { @apply bg-purple-100 text-purple-800; }
+    .status-awarded { @apply bg-green-100 text-green-800; }
+    .status-closed { @apply bg-gray-100 text-gray-600; }
+    .status-expired { @apply bg-red-100 text-red-800; }
+    
+    .priority-low { @apply bg-green-50 text-green-700 border-green-200; }
+    .priority-medium { @apply bg-yellow-50 text-yellow-700 border-yellow-200; }
+    .priority-high { @apply bg-orange-50 text-orange-700 border-orange-200; }
+    .priority-urgent { @apply bg-red-50 text-red-700 border-red-200; }
+    
+    .priority-low { background-color: #dcfce7 !important; color: #15803d !important; border-color: #bbf7d0 !important; }
+    .priority-medium { background-color: #fef3c7 !important; color: #d97706 !important; border-color: #fde68a !important; }
+    .priority-high { background-color: #fed7aa !important; color: #ea580c !important; border-color: #fdba74 !important; }
+    .priority-urgent { background-color: #fecaca !important; color: #dc2626 !important; border-color: #fca5a5 !important; }
+    
+    .card { @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6; }
+    .btn-primary { @apply bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors; }
+    .btn-secondary { @apply bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-medium transition-colors; }
+    
+    /* Animation for cards */
+    .animate-fadeIn { animation: fadeIn 0.5s ease-in; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Mobile responsive table */
+    @media (max-width: 768px) {
+      .table-responsive {
+        font-size: 0.875rem;
+      }
+      
+      .table-responsive th,
+      .table-responsive td {
+        padding: 0.5rem 0.25rem;
+      }
+    }
+    
+    /* Progress bar styles */
+    .progress-bar {
+      background: linear-gradient(90deg, #10B981 0%, #3B82F6 50%, #8B5CF6 100%);
+      height: 4px;
+      border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+  
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <!-- Logo and Title -->
+        <div class="flex items-center space-x-4">
+          <button onclick="goBack()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <i class="fas fa-arrow-left text-gray-600"></i>
+          </button>
+          <div>
+            <h1 class="text-xl font-bold text-gray-900">Manage RFQs</h1>
+            <p class="text-xs text-gray-500">Request for Quotation Management</p>
+          </div>
+        </div>
+        
+        <!-- Header Actions -->
+        <div class="flex items-center space-x-4">
+          <button onclick="exportData()" class="btn-secondary">
+            <i class="fas fa-download mr-2"></i>Export
+          </button>
+          <button onclick="openCreateRFQModal()" class="btn-primary">
+            <i class="fas fa-plus mr-2"></i>New RFQ
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+      <div class="card animate-fadeIn">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Total RFQs</p>
+            <p class="text-2xl font-bold text-blue-600">142</p>
+            <p class="text-xs text-gray-500 mt-1">All time</p>
+          </div>
+          <div class="p-3 bg-blue-100 rounded-full">
+            <i class="fas fa-file-alt text-blue-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card animate-fadeIn">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Active RFQs</p>
+            <p class="text-2xl font-bold text-green-600">28</p>
+            <p class="text-xs text-gray-500 mt-1">Currently open</p>
+          </div>
+          <div class="p-3 bg-green-100 rounded-full">
+            <i class="fas fa-clock text-green-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card animate-fadeIn">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Pending Evaluation</p>
+            <p class="text-2xl font-bold text-yellow-600">12</p>
+            <p class="text-xs text-gray-500 mt-1">Awaiting review</p>
+          </div>
+          <div class="p-3 bg-yellow-100 rounded-full">
+            <i class="fas fa-hourglass-half text-yellow-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card animate-fadeIn">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Expired RFQs</p>
+            <p class="text-2xl font-bold text-red-600">5</p>
+            <p class="text-xs text-gray-500 mt-1">Need attention</p>
+          </div>
+          <div class="p-3 bg-red-100 rounded-full">
+            <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card animate-fadeIn">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Avg Response Time</p>
+            <p class="text-2xl font-bold text-purple-600">3.2</p>
+            <p class="text-xs text-gray-500 mt-1">Days</p>
+          </div>
+          <div class="p-3 bg-purple-100 rounded-full">
+            <i class="fas fa-chart-line text-purple-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Filters and Search -->
+    <div class="card mb-6">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div class="flex flex-col sm:flex-row gap-4 flex-1">
+          <div class="relative">
+            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            <input type="text" id="searchInput" placeholder="Search RFQs..." 
+                   class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          
+          <select id="statusFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="">All Status</option>
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+            <option value="responses-received">Responses Received</option>
+            <option value="under-evaluation">Under Evaluation</option>
+            <option value="awarded">Awarded</option>
+            <option value="closed">Closed</option>
+            <option value="expired">Expired</option>
+          </select>
+          
+          <select id="categoryFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="">All Categories</option>
+            <option value="electrical">Electrical</option>
+            <option value="mechanical">Mechanical</option>
+            <option value="civil">Civil</option>
+            <option value="software">Software</option>
+            <option value="services">Services</option>
+            <option value="materials">Raw Materials</option>
+          </select>
+          
+          <select id="priorityFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="">All Priority</option>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+            <option value="urgent">Urgent</option>
+          </select>
+          
+          <input type="date" id="dateFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        
+        <button onclick="clearFilters()" class="btn-secondary">
+          <i class="fas fa-times mr-2"></i>Clear Filters
+        </button>
+      </div>
+    </div>
+    
+    <!-- RFQ Table -->
+    <div class="card">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-lg font-semibold text-gray-900">RFQ Management</h2>
+        <div class="flex items-center space-x-2">
+          <span class="text-sm text-gray-500">Show:</span>
+          <select id="itemsPerPage" class="text-sm border border-gray-300 rounded px-2 py-1">
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="min-w-full table-responsive">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortTable('rfqNumber')">
+                RFQ Number <i class="fas fa-sort ml-1"></i>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortTable('title')">
+                Title <i class="fas fa-sort ml-1"></i>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortTable('category')">
+                Category <i class="fas fa-sort ml-1"></i>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortTable('publishDate')">
+                Published Date <i class="fas fa-sort ml-1"></i>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortTable('dueDate')">
+                Due Date <i class="fas fa-sort ml-1"></i>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortTable('responses')">
+                Responses <i class="fas fa-sort ml-1"></i>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortTable('estimatedValue')">
+                Est. Value <i class="fas fa-sort ml-1"></i>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortTable('priority')">
+                Priority <i class="fas fa-sort ml-1"></i>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortTable('status')">
+                Status <i class="fas fa-sort ml-1"></i>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody id="rfqTableBody" class="bg-white divide-y divide-gray-200">
+            <!-- Table content will be populated by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Pagination -->
+      <div class="flex items-center justify-between mt-6">
+        <div class="text-sm text-gray-700">
+          Showing <span id="showing-from">1</span> to <span id="showing-to">10</span> of <span id="total-items">45</span> results
+        </div>
+        <div class="flex items-center space-x-2">
+          <button onclick="previousPage()" id="prevBtn" class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 disabled:opacity-50">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <div id="pageNumbers" class="flex space-x-1">
+            <!-- Page numbers will be populated by JavaScript -->
+          </div>
+          <button onclick="nextPage()" id="nextBtn" class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 disabled:opacity-50">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- RFQ Detail Modal -->
+  <div id="rfqModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-white rounded-xl shadow-xl max-w-5xl w-full max-h-screen overflow-y-auto">
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-semibold text-gray-900">RFQ Details</h2>
+            <button onclick="closeRFQModal()" class="text-gray-400 hover:text-gray-600">
+              <i class="fas fa-times text-xl"></i>
+            </button>
+          </div>
+          
+          <div id="rfqDetailContent">
+            <!-- Detail content will be populated by JavaScript -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create/Edit RFQ Modal -->
+  <div id="createRFQModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto">
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-semibold text-gray-900">Create New RFQ</h2>
+            <button onclick="closeCreateRFQModal()" class="text-gray-400 hover:text-gray-600">
+              <i class="fas fa-times text-xl"></i>
+            </button>
+          </div>
+          
+          <form id="createRFQForm" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">RFQ Title <span class="text-red-500">*</span></label>
+                <input type="text" id="rfqTitle" placeholder="Enter RFQ title" 
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">RFQ Number</label>
+                <input type="text" id="rfqNumber" placeholder="Auto-generated" 
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50" readonly>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Category <span class="text-red-500">*</span></label>
+                <select id="rfqCategory" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                  <option value="">Select Category</option>
+                  <option value="electrical">Electrical & Electronics</option>
+                  <option value="mechanical">Mechanical & Engineering</option>
+                  <option value="civil">Civil & Construction</option>
+                  <option value="software">Software & IT Services</option>
+                  <option value="services">Professional Services</option>
+                  <option value="materials">Raw Materials & Supplies</option>
+                  <option value="maintenance">Maintenance & Repair</option>
+                  <option value="logistics">Logistics & Transportation</option>
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Priority <span class="text-red-500">*</span></label>
+                <select id="rfqPriority" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                  <option value="">Select Priority</option>
+                  <option value="low">Low - Standard processing</option>
+                  <option value="medium">Medium - Moderate urgency</option>
+                  <option value="high">High - Important requirement</option>
+                  <option value="urgent">Urgent - Immediate attention</option>
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Estimated Budget (₹) <span class="text-red-500">*</span></label>
+                <input type="number" id="rfqEstimatedValue" placeholder="Enter estimated budget" min="1"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Currency</label>
+                <select id="rfqCurrency" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  <option value="INR">INR - Indian Rupee</option>
+                  <option value="USD">USD - US Dollar</option>
+                  <option value="EUR">EUR - Euro</option>
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">RFQ Publish Date <span class="text-red-500">*</span></label>
+                <input type="date" id="rfqPublishDate" 
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Response Due Date <span class="text-red-500">*</span></label>
+                <input type="date" id="rfqDueDate" 
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Detailed Requirements <span class="text-red-500">*</span></label>
+              <textarea id="rfqDescription" rows="4" placeholder="Provide detailed description of your requirements, specifications, quality standards, etc..." 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required></textarea>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Delivery Location <span class="text-red-500">*</span></label>
+                <input type="text" id="rfqDeliveryLocation" placeholder="Enter delivery address/location" 
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Delivery Timeline <span class="text-red-500">*</span></label>
+                <select id="rfqDeliveryTimeline" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                  <option value="">Select Timeline</option>
+                  <option value="immediate">Immediate (1-7 days)</option>
+                  <option value="short">Short Term (1-4 weeks)</option>
+                  <option value="medium">Medium Term (1-3 months)</option>
+                  <option value="long">Long Term (3+ months)</option>
+                  <option value="custom">Custom Timeline</option>
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Payment Terms <span class="text-red-500">*</span></label>
+                <select id="rfqPaymentTerms" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                  <option value="">Select Payment Terms</option>
+                  <option value="net-15">Net 15 days</option>
+                  <option value="net-30">Net 30 days</option>
+                  <option value="net-45">Net 45 days</option>
+                  <option value="net-60">Net 60 days</option>
+                  <option value="advance-50">50% Advance + 50% on delivery</option>
+                  <option value="advance-100">100% Advance Payment</option>
+                  <option value="milestone">Milestone-based Payment</option>
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Warranty Requirements</label>
+                <select id="rfqWarranty" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  <option value="">No specific warranty</option>
+                  <option value="3-months">3 months</option>
+                  <option value="6-months">6 months</option>
+                  <option value="1-year">1 year</option>
+                  <option value="2-years">2 years</option>
+                  <option value="3-years">3 years</option>
+                  <option value="custom">Custom warranty terms</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Vendor Selection Section -->
+            <div class="border-t border-gray-200 pt-6">
+              <h3 class="text-lg font-medium text-gray-900 mb-4">Vendor Selection</h3>
+              
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Select Vendors to Send RFQ <span class="text-red-500">*</span></label>
+                <div class="border border-gray-300 rounded-lg p-4 max-h-48 overflow-y-auto">
+                  <div class="space-y-2" id="vendorCheckboxes">
+                    <!-- Vendor checkboxes will be populated by JavaScript -->
+                  </div>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">Select at least 3 vendors for competitive pricing</p>
+              </div>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Vendor Selection Criteria</label>
+                  <select id="vendorCriteria" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="all-qualified">All Pre-qualified Vendors</option>
+                    <option value="category-specific">Category Specific Vendors</option>
+                    <option value="location-based">Location Based Vendors</option>
+                    <option value="rating-based">High Rated Vendors Only</option>
+                    <option value="manual">Manual Selection</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Minimum Vendor Rating</label>
+                  <select id="minVendorRating" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="0">No minimum rating</option>
+                    <option value="3">3 stars and above</option>
+                    <option value="4">4 stars and above</option>
+                    <option value="4.5">4.5 stars and above</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Additional Requirements -->
+            <div class="border-t border-gray-200 pt-6">
+              <h3 class="text-lg font-medium text-gray-900 mb-4">Additional Requirements</h3>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Quality Certifications Required</label>
+                  <div class="space-y-2">
+                    <label class="flex items-center">
+                      <input type="checkbox" id="isoRequired" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                      <span class="ml-2 text-sm text-gray-700">ISO 9001 Quality Management</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" id="iso14001Required" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                      <span class="ml-2 text-sm text-gray-700">ISO 14001 Environmental</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" id="iso45001Required" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                      <span class="ml-2 text-sm text-gray-700">ISO 45001 Occupational Health</span>
+                    </label>
+                  </div>
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Special Instructions</label>
+                  <textarea id="specialInstructions" rows="3" placeholder="Any special instructions for vendors..." 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Technical Specifications & Documents</label>
+              <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors">
+                <i class="fas fa-upload text-gray-400 text-2xl mb-2"></i>
+                <p class="text-sm text-gray-600">Upload technical specifications, drawings, or reference documents</p>
+                <p class="text-xs text-gray-500 mt-1">Supported formats: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB each)</p>
+                <input type="file" id="rfqSpecifications" multiple class="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg">
+              </div>
+              <div id="uploadedFiles" class="mt-3 space-y-2">
+                <!-- Uploaded files will be shown here -->
+              </div>
+            </div>
+            
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div class="flex items-start">
+                <i class="fas fa-info-circle text-blue-600 mt-0.5 mr-3"></i>
+                <div>
+                  <h4 class="text-sm font-medium text-blue-900 mb-1">RFQ Process Information</h4>
+                  <ul class="text-xs text-blue-800 space-y-1">
+                    <li>• RFQ will be automatically sent to selected vendors via email</li>
+                    <li>• Vendors will receive notification in their portal dashboard</li>
+                    <li>• You can track responses and vendor interactions in real-time</li>
+                    <li>• Comparative analysis tools will be available once responses are received</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+              <button type="button" onclick="closeCreateRFQModal()" class="btn-secondary">Cancel</button>
+              <button type="button" onclick="saveRFQAsDraft()" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-medium">
+                <i class="fas fa-save mr-2"></i>Save as Draft
+              </button>
+              <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium">
+                <i class="fas fa-paper-plane mr-2"></i>Create & Send to Vendors
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Sample Vendor Data
+    const vendorDatabase = [
+      { id: 'V001', name: 'TechMotor Corp', category: 'electrical', rating: 4.8, location: 'Mumbai', email: 'rfq@techmotor.com', phone: '+91-9876543210', certifications: ['ISO9001', 'ISO14001'] },
+      { id: 'V002', name: 'Industrial Solutions Ltd', category: 'mechanical', rating: 4.5, location: 'Chennai', email: 'quotes@industrialsolutions.com', phone: '+91-9876543211', certifications: ['ISO9001', 'ISO45001'] },
+      { id: 'V003', name: 'AutoTech Systems', category: 'electrical', rating: 4.2, location: 'Bangalore', email: 'rfp@autotech.com', phone: '+91-9876543212', certifications: ['ISO9001'] },
+      { id: 'V004', name: 'PowerDrive India', category: 'electrical', rating: 4.6, location: 'Pune', email: 'business@powerdrive.in', phone: '+91-9876543213', certifications: ['ISO9001', 'ISO14001', 'ISO45001'] },
+      { id: 'V005', name: 'Precision Works', category: 'mechanical', rating: 4.7, location: 'Coimbatore', email: 'precision@works.com', phone: '+91-9876543214', certifications: ['ISO9001'] },
+      { id: 'V006', name: 'MachTech Solutions', category: 'mechanical', rating: 4.3, location: 'Hyderabad', email: 'sales@machtech.com', phone: '+91-9876543215', certifications: ['ISO9001', 'ISO14001'] },
+      { id: 'V007', name: 'CNC Masters', category: 'mechanical', rating: 4.9, location: 'Delhi', email: 'orders@cncmasters.com', phone: '+91-9876543216', certifications: ['ISO9001', 'ISO45001'] },
+      { id: 'V008', name: 'BuildMart Supplies', category: 'materials', rating: 4.1, location: 'Kolkata', email: 'procurement@buildmart.in', phone: '+91-9876543217', certifications: ['ISO9001'] },
+      { id: 'V009', name: 'Construction Materials Ltd', category: 'materials', rating: 4.4, location: 'Ahmedabad', email: 'rfq@constructionmaterials.com', phone: '+91-9876543218', certifications: ['ISO9001', 'ISO14001'] },
+      { id: 'V010', name: 'TechSoft Solutions', category: 'software', rating: 4.8, location: 'Bangalore', email: 'projects@techsoft.com', phone: '+91-9876543219', certifications: ['ISO9001', 'ISO27001'] },
+      { id: 'V011', name: 'Digital Transform', category: 'software', rating: 4.5, location: 'Pune', email: 'business@digitaltransform.in', phone: '+91-9876543220', certifications: ['ISO9001'] },
+      { id: 'V012', name: 'Professional Services Co', category: 'services', rating: 4.2, location: 'Mumbai', email: 'contracts@proservices.com', phone: '+91-9876543221', certifications: ['ISO9001', 'ISO45001'] },
+      { id: 'V013', name: 'Civil Engineering Works', category: 'civil', rating: 4.6, location: 'Chennai', email: 'projects@civilworks.in', phone: '+91-9876543222', certifications: ['ISO9001', 'ISO14001'] },
+      { id: 'V014', name: 'Infrastructure Builders', category: 'civil', rating: 4.3, location: 'Delhi', email: 'tenders@infrabuilders.com', phone: '+91-9876543223', certifications: ['ISO9001'] },
+      { id: 'V015', name: 'Maintenance Plus', category: 'maintenance', rating: 4.7, location: 'Bangalore', email: 'service@maintenanceplus.com', phone: '+91-9876543224', certifications: ['ISO9001', 'ISO45001'] }
+    ];
+
+    // Sample RFQ Data
+    const rfqData = [
+      {
+        rfqNumber: 'RFQ-2025-0085',
+        title: 'Industrial Motor Controllers',
+        category: 'electrical',
+        publishDate: '2025-08-15',
+        dueDate: '2025-09-15',
+        responses: 8,
+        estimatedValue: 250000,
+        priority: 'high',
+        status: 'responses-received',
+        description: 'High-efficiency motor controllers for industrial automation systems',
+        deliveryLocation: 'Chennai Plant, Tamil Nadu',
+        paymentTerms: 'net-30',
+        vendorsInvited: ['TechMotor Corp', 'AutoTech Systems', 'PowerDrive India', 'Industrial Solutions Ltd'],
+        specifications: ['motor_controller_specs.pdf', 'technical_requirements.docx'],
+        currency: 'INR',
+        deliveryTimeline: 'short',
+        warranty: '2-years',
+        selectedVendors: ['V001', 'V003', 'V004', 'V002']
+      },
+      {
+        rfqNumber: 'RFQ-2025-0084',
+        title: 'Precision Machining Services',
+        category: 'mechanical',
+        publishDate: '2025-08-20',
+        dueDate: '2025-09-20',
+        responses: 12,
+        estimatedValue: 180000,
+        priority: 'medium',
+        status: 'under-evaluation',
+        description: 'CNC machining services for custom parts manufacturing',
+        deliveryLocation: 'Pune Manufacturing Unit',
+        paymentTerms: 'net-45',
+        vendorsInvited: ['Precision Works', 'MachTech Solutions', 'CNC Masters'],
+        specifications: ['machining_drawings.pdf', 'material_specifications.pdf'],
+        currency: 'INR',
+        deliveryTimeline: 'medium',
+        warranty: '1-year',
+        selectedVendors: ['V005', 'V006', 'V007']
+      },
+      {
+        rfqNumber: 'RFQ-2025-0083',
+        title: 'ERP Software Implementation',
+        category: 'software',
+        publishDate: '2025-08-10',
+        dueDate: '2025-09-10',
+        responses: 5,
+        estimatedValue: 500000,
+        priority: 'urgent',
+        status: 'awarded',
+        description: 'Complete ERP system implementation with customization',
+        deliveryLocation: 'Corporate Head Office, Mumbai',
+        paymentTerms: 'milestone',
+        vendorsInvited: ['TechSoft Solutions', 'Digital Transform'],
+        specifications: ['erp_requirements.pdf', 'business_processes.docx'],
+        currency: 'INR',
+        deliveryTimeline: 'long',
+        warranty: '3-years',
+        selectedVendors: ['V010', 'V011']
+      },
+      // ... (rest of the existing rfqData)
+      {
+        rfqNumber: 'RFQ-2025-0082',
+        title: 'Construction Materials Supply',
+        category: 'materials',
+        publishDate: '2025-08-25',
+        dueDate: '2025-09-25',
+        responses: 15,
+        estimatedValue: 350000,
+        priority: 'medium',
+        status: 'published',
+        description: 'Bulk supply of construction materials for new facility',
+        deliveryLocation: 'New Construction Site, Bangalore',
+        paymentTerms: 'net-30',
+        vendorsInvited: ['BuildMart Supplies', 'Construction Materials Ltd'],
+        specifications: ['material_list.xlsx', 'quality_standards.pdf'],
+        currency: 'INR',
+        deliveryTimeline: 'short',
+        warranty: '6-months',
+        selectedVendors: ['V008', 'V009']
+      }
+    ];
+
+    let currentData = [...rfqData];
+    let currentPage = 1;
+    let itemsPerPage = 10;
+    let sortColumn = '';
+    let sortDirection = 'asc';
+    let selectedVendors = [];
+
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', function() {
+      renderTable();
+      setupEventListeners();
+      setMinDates();
+      generateRFQNumber();
+      populateVendors();
+    });
+
+    function setupEventListeners() {
+      // Search functionality
+      document.getElementById('searchInput').addEventListener('input', filterData);
+      document.getElementById('statusFilter').addEventListener('change', filterData);
+      document.getElementById('categoryFilter').addEventListener('change', filterData);
+      document.getElementById('priorityFilter').addEventListener('change', filterData);
+      document.getElementById('dateFilter').addEventListener('change', filterData);
+      document.getElementById('itemsPerPage').addEventListener('change', function() {
+        itemsPerPage = parseInt(this.value);
+        currentPage = 1;
+        renderTable();
+      });
+
+      // Form submission
+      document.getElementById('createRFQForm').addEventListener('submit', handleCreateRFQ);
+      
+      // File upload
+      document.getElementById('rfqSpecifications').addEventListener('change', handleFileUpload);
+      
+      // Category change handler for vendor filtering
+      document.getElementById('rfqCategory').addEventListener('change', filterVendorsByCategory);
+      document.getElementById('vendorCriteria').addEventListener('change', filterVendorsByCriteria);
+      document.getElementById('minVendorRating').addEventListener('change', filterVendorsByCriteria);
+      
+      // Make upload area clickable
+      document.querySelector('.border-dashed').addEventListener('click', function() {
+        document.getElementById('rfqSpecifications').click();
+      });
+    }
+
+    function generateRFQNumber() {
+      const year = new Date().getFullYear();
+      const randomNum = String(Math.floor(Math.random() * 9000) + 1000);
+      document.getElementById('rfqNumber').value = `RFQ-${year}-${randomNum}`;
+    }
+
+    function populateVendors() {
+      const container = document.getElementById('vendorCheckboxes');
+      container.innerHTML = vendorDatabase.map(vendor => `
+        <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+          <input type="checkbox" value="${vendor.id}" class="vendor-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
+          <div class="flex-1">
+            <div class="flex items-center justify-between">
+              <span class="font-medium text-gray-900">${vendor.name}</span>
+              <span class="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">${vendor.rating}★</span>
+            </div>
+            <div class="text-sm text-gray-500">${vendor.category.charAt(0).toUpperCase() + vendor.category.slice(1)} • ${vendor.location}</div>
+            <div class="text-xs text-gray-400">${vendor.certifications.join(', ')}</div>
+          </div>
+        </label>
+      `).join('');
+
+      // Add event listeners to checkboxes
+      document.querySelectorAll('.vendor-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedVendors);
+      });
+    }
+
+    function updateSelectedVendors() {
+      selectedVendors = Array.from(document.querySelectorAll('.vendor-checkbox:checked')).map(cb => cb.value);
+      
+      // Update UI feedback
+      const selectedCount = selectedVendors.length;
+      const feedback = document.querySelector('#vendorCheckboxes').nextElementSibling;
+      if (selectedCount === 0) {
+        feedback.textContent = 'Select at least 3 vendors for competitive pricing';
+        feedback.className = 'text-xs text-red-500 mt-2';
+      } else if (selectedCount < 3) {
+        feedback.textContent = `${selectedCount} selected - Please select at least 3 vendors for competitive pricing`;
+        feedback.className = 'text-xs text-orange-500 mt-2';
+      } else {
+        feedback.textContent = `${selectedCount} vendors selected - Good for competitive pricing`;
+        feedback.className = 'text-xs text-green-500 mt-2';
+      }
+    }
+
+    function filterVendorsByCategory() {
+      const category = document.getElementById('rfqCategory').value;
+      filterVendorsByCriteria();
+    }
+
+    function filterVendorsByCriteria() {
+      const category = document.getElementById('rfqCategory').value;
+      const criteria = document.getElementById('vendorCriteria').value;
+      const minRating = parseFloat(document.getElementById('minVendorRating').value) || 0;
+
+      let filteredVendors = [...vendorDatabase];
+
+      // Filter by category if selected
+      if (category && criteria !== 'all-qualified') {
+        filteredVendors = filteredVendors.filter(vendor => vendor.category === category);
+      }
+
+      // Filter by minimum rating
+      if (minRating > 0) {
+        filteredVendors = filteredVendors.filter(vendor => vendor.rating >= minRating);
+      }
+
+      // Apply other criteria
+      switch (criteria) {
+        case 'rating-based':
+          filteredVendors = filteredVendors.filter(vendor => vendor.rating >= 4.5);
+          break;
+        case 'location-based':
+          // Could filter by location proximity - simplified for demo
+          break;
+      }
+
+      // Re-populate vendor list
+      const container = document.getElementById('vendorCheckboxes');
+      container.innerHTML = filteredVendors.map(vendor => `
+        <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+          <input type="checkbox" value="${vendor.id}" class="vendor-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
+          <div class="flex-1">
+            <div class="flex items-center justify-between">
+              <span class="font-medium text-gray-900">${vendor.name}</span>
+              <span class="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">${vendor.rating}★</span>
+            </div>
+            <div class="text-sm text-gray-500">${vendor.category.charAt(0).toUpperCase() + vendor.category.slice(1)} • ${vendor.location}</div>
+            <div class="text-xs text-gray-400">${vendor.certifications.join(', ')}</div>
+          </div>
+        </label>
+      `).join('');
+
+      // Re-attach event listeners
+      document.querySelectorAll('.vendor-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedVendors);
+      });
+
+      selectedVendors = [];
+      updateSelectedVendors();
+    }
+
+    function setMinDates() {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('rfqPublishDate').setAttribute('min', today);
+      document.getElementById('rfqDueDate').setAttribute('min', today);
+    }
+
+    function filterData() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const statusFilter = document.getElementById('statusFilter').value;
+      const categoryFilter = document.getElementById('categoryFilter').value;
+      const priorityFilter = document.getElementById('priorityFilter').value;
+      const dateFilter = document.getElementById('dateFilter').value;
+
+      currentData = rfqData.filter(rfq => {
+        const matchesSearch = rfq.rfqNumber.toLowerCase().includes(search) ||
+                            rfq.title.toLowerCase().includes(search) ||
+                            rfq.description.toLowerCase().includes(search);
+        
+        const matchesStatus = !statusFilter || rfq.status === statusFilter;
+        const matchesCategory = !categoryFilter || rfq.category === categoryFilter;
+        const matchesPriority = !priorityFilter || rfq.priority === priorityFilter;
+        const matchesDate = !dateFilter || rfq.publishDate === dateFilter;
+
+        return matchesSearch && matchesStatus && matchesCategory && matchesPriority && matchesDate;
+      });
+
+      currentPage = 1;
+      renderTable();
+    }
+
+    function clearFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('statusFilter').value = '';
+      document.getElementById('categoryFilter').value = '';
+      document.getElementById('priorityFilter').value = '';
+      document.getElementById('dateFilter').value = '';
+      
+      currentData = [...rfqData];
+      currentPage = 1;
+      renderTable();
+    }
+
+    function sortTable(column) {
+      if (sortColumn === column) {
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortColumn = column;
+        sortDirection = 'asc';
+      }
+
+      currentData.sort((a, b) => {
+        let valueA = a[column];
+        let valueB = b[column];
+
+        if (column === 'estimatedValue' || column === 'responses') {
+          valueA = parseFloat(valueA);
+          valueB = parseFloat(valueB);
+        }
+
+        if (valueA < valueB) return sortDirection === 'asc' ? -1 : 1;
+        if (valueA > valueB) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+
+      renderTable();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('rfqTableBody');
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const pageData = currentData.slice(startIndex, endIndex);
+
+      tbody.innerHTML = pageData.map(rfq => `
+        <tr class="hover:bg-gray-50">
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${rfq.rfqNumber}</td>
+          <td class="px-6 py-4 text-sm text-gray-900 max-w-xs">
+            <div class="truncate font-medium">${rfq.title}</div>
+            <div class="text-xs text-gray-500 truncate">${rfq.description}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              ${rfq.category.charAt(0).toUpperCase() + rfq.category.slice(1)}
+            </span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(rfq.publishDate)}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            <div class="font-medium">${formatDate(rfq.dueDate)}</div>
+            <div class="text-xs ${isExpiringSoon(rfq.dueDate) ? 'text-red-500' : 'text-gray-400'}">${getDaysUntilDue(rfq.dueDate)}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">${rfq.responses}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">₹${rfq.estimatedValue.toLocaleString('en-IN')}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm">
+            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border priority-${rfq.priority}">
+              ${rfq.priority.charAt(0).toUpperCase() + rfq.priority.slice(1)}
+            </span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="status-badge status-${rfq.status.replace(/\s+/g, '-')}">${getStatusDisplay(rfq.status)}</span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+            <button onclick="viewRFQDetails('${rfq.rfqNumber}')" class="text-blue-600 hover:text-blue-900">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button onclick="editRFQ('${rfq.rfqNumber}')" class="text-green-600 hover:text-green-900">
+              <i class="fas fa-edit"></i>
+            </button>
+            ${rfq.status === 'draft' ? `
+              <button onclick="publishRFQ('${rfq.rfqNumber}')" class="text-purple-600 hover:text-purple-900">
+                <i class="fas fa-share"></i>
+              </button>
+            ` : ''}
+            <button onclick="downloadRFQPDF('${rfq.rfqNumber}')" class="text-gray-600 hover:text-gray-900">
+              <i class="fas fa-download"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+
+      updatePagination();
+    }
+
+    function updatePagination() {
+      const totalPages = Math.ceil(currentData.length / itemsPerPage);
+      const startItem = (currentPage - 1) * itemsPerPage + 1;
+      const endItem = Math.min(currentPage * itemsPerPage, currentData.length);
+
+      document.getElementById('showing-from').textContent = startItem;
+      document.getElementById('showing-to').textContent = endItem;
+      document.getElementById('total-items').textContent = currentData.length;
+
+      // Update page numbers
+      const pageNumbers = document.getElementById('pageNumbers');
+      pageNumbers.innerHTML = '';
+
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+          const button = document.createElement('button');
+          button.textContent = i;
+          button.className = i === currentPage 
+            ? 'px-3 py-2 text-sm bg-blue-600 text-white rounded-md'
+            : 'px-3 py-2 text-sm text-gray-500 hover:text-gray-700 rounded-md hover:bg-gray-100';
+          button.onclick = () => {
+            currentPage = i;
+            renderTable();
+          };
+          pageNumbers.appendChild(button);
+        } else if (i === currentPage - 3 || i === currentPage + 3) {
+          const span = document.createElement('span');
+          span.textContent = '...';
+          span.className = 'px-2 text-gray-500';
+          pageNumbers.appendChild(span);
+        }
+      }
+
+      // Update prev/next buttons
+      document.getElementById('prevBtn').disabled = currentPage === 1;
+      document.getElementById('nextBtn').disabled = currentPage === totalPages;
+    }
+
+    function previousPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        renderTable();
+      }
+    }
+
+    function nextPage() {
+      const totalPages = Math.ceil(currentData.length / itemsPerPage);
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderTable();
+      }
+    }
+
+    function formatDate(dateString) {
+      const options = { year: 'numeric', month: 'short', day: 'numeric' };
+      return new Date(dateString).toLocaleDateString('en-US', options);
+    }
+
+    function getDaysUntilDue(dueDate) {
+      const today = new Date();
+      const due = new Date(dueDate);
+      const diffTime = due - today;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays < 0) return `${Math.abs(diffDays)} days overdue`;
+      if (diffDays === 0) return 'Due today';
+      return `${diffDays} days left`;
+    }
+
+    function isExpiringSoon(dueDate) {
+      const today = new Date();
+      const due = new Date(dueDate);
+      const diffTime = due - today;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays <= 7 && diffDays >= 0;
+    }
+
+    function getStatusDisplay(status) {
+      const statusMap = {
+        'draft': 'Draft',
+        'published': 'Published',
+        'responses-received': 'Responses Received',
+        'under-evaluation': 'Under Evaluation',
+        'awarded': 'Awarded',
+        'closed': 'Closed',
+        'expired': 'Expired'
+      };
+      return statusMap[status] || status;
+    }
+
+    // Modal Functions
+    function openCreateRFQModal() {
+      document.getElementById('createRFQModal').classList.remove('hidden');
+    }
+
+    function closeCreateRFQModal() {
+      document.getElementById('createRFQModal').classList.add('hidden');
+      document.getElementById('createRFQForm').reset();
+    }
+
+    function closeRFQModal() {
+      document.getElementById('rfqModal').classList.add('hidden');
+    }
+
+    function handleCreateRFQ(e) {
+      e.preventDefault();
+      
+      // Validation
+      if (selectedVendors.length < 3) {
+        alert('Please select at least 3 vendors for competitive pricing');
+        return;
+      }
+      
+      // Collect form data
+      const formData = {
+        rfqNumber: document.getElementById('rfqNumber').value,
+        title: document.getElementById('rfqTitle').value,
+        category: document.getElementById('rfqCategory').value,
+        priority: document.getElementById('rfqPriority').value,
+        estimatedValue: parseFloat(document.getElementById('rfqEstimatedValue').value),
+        currency: document.getElementById('rfqCurrency').value,
+        publishDate: document.getElementById('rfqPublishDate').value,
+        dueDate: document.getElementById('rfqDueDate').value,
+        description: document.getElementById('rfqDescription').value,
+        deliveryLocation: document.getElementById('rfqDeliveryLocation').value,
+        deliveryTimeline: document.getElementById('rfqDeliveryTimeline').value,
+        paymentTerms: document.getElementById('rfqPaymentTerms').value,
+        warranty: document.getElementById('rfqWarranty').value,
+        selectedVendors: selectedVendors,
+        specialInstructions: document.getElementById('specialInstructions').value,
+        certificationRequirements: {
+          iso9001: document.getElementById('isoRequired').checked,
+          iso14001: document.getElementById('iso14001Required').checked,
+          iso45001: document.getElementById('iso45001Required').checked
+        }
+      };
+      
+      // Get selected vendor names for display
+      const vendorNames = selectedVendors.map(vendorId => {
+        const vendor = vendorDatabase.find(v => v.id === vendorId);
+        return vendor ? vendor.name : vendorId;
+      });
+      
+      // Create new RFQ object
+      const newRFQ = {
+        rfqNumber: formData.rfqNumber,
+        title: formData.title,
+        category: formData.category,
+        publishDate: formData.publishDate,
+        dueDate: formData.dueDate,
+        responses: 0,
+        estimatedValue: formData.estimatedValue,
+        priority: formData.priority,
+        status: 'published',
+        description: formData.description,
+        deliveryLocation: formData.deliveryLocation,
+        paymentTerms: formData.paymentTerms,
+        vendorsInvited: vendorNames,
+        specifications: [], // Files would be handled separately
+        currency: formData.currency,
+        deliveryTimeline: formData.deliveryTimeline,
+        warranty: formData.warranty,
+        selectedVendors: formData.selectedVendors,
+        specialInstructions: formData.specialInstructions,
+        certificationRequirements: formData.certificationRequirements
+      };
+
+      // Add to RFQ database
+      rfqData.unshift(newRFQ);
+      currentData = [...rfqData];
+      
+      // Send RFQ to vendors (simulation)
+      sendRFQToVendors(newRFQ, selectedVendors);
+      
+      renderTable();
+      closeCreateRFQModal();
+      
+      // Show success message with details
+      showRFQCreatedModal(newRFQ, vendorNames);
+    }
+
+    function sendRFQToVendors(rfq, vendorIds) {
+      // Simulate sending RFQ to vendors
+      const selectedVendorDetails = vendorIds.map(vendorId => {
+        return vendorDatabase.find(v => v.id === vendorId);
+      }).filter(Boolean);
+      
+      // In a real application, this would:
+      // 1. Send email notifications to vendors
+      // 2. Create RFQ entries in vendor portals
+      // 3. Log the activity in audit trail
+      // 4. Set up automated reminders
+      
+      console.log('RFQ sent to vendors:', {
+        rfqNumber: rfq.rfqNumber,
+        vendors: selectedVendorDetails.map(v => ({ name: v.name, email: v.email })),
+        dueDate: rfq.dueDate
+      });
+      
+      // Simulate vendor portal notifications
+      selectedVendorDetails.forEach(vendor => {
+        console.log(`Email sent to ${vendor.email}: New RFQ ${rfq.rfqNumber} - ${rfq.title}`);
+        console.log(`Portal notification created for ${vendor.name}`);
+      });
+    }
+
+    function showRFQCreatedModal(rfq, vendorNames) {
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+      modal.innerHTML = `
+        <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full p-6">
+          <div class="text-center mb-6">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+              <i class="fas fa-check text-green-600 text-xl"></i>
+            </div>
+            <h2 class="text-xl font-semibold text-gray-900">RFQ Created Successfully!</h2>
+          </div>
+          
+          <div class="space-y-4 mb-6">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h3 class="font-medium text-blue-900 mb-2">RFQ Details</h3>
+              <div class="text-sm text-blue-800 space-y-1">
+                <p><strong>RFQ Number:</strong> ${rfq.rfqNumber}</p>
+                <p><strong>Title:</strong> ${rfq.title}</p>
+                <p><strong>Category:</strong> ${rfq.category.charAt(0).toUpperCase() + rfq.category.slice(1)}</p>
+                <p><strong>Due Date:</strong> ${formatDate(rfq.dueDate)}</p>
+                <p><strong>Estimated Value:</strong> ₹${rfq.estimatedValue.toLocaleString('en-IN')}</p>
+              </div>
+            </div>
+            
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+              <h3 class="font-medium text-green-900 mb-2">Vendors Notified (${vendorNames.length})</h3>
+              <div class="text-sm text-green-800">
+                ${vendorNames.map(name => `<span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs mr-2 mb-1">${name}</span>`).join('')}
+              </div>
+            </div>
+            
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <h3 class="font-medium text-yellow-900 mb-2">Next Steps</h3>
+              <ul class="text-sm text-yellow-800 space-y-1">
+                <li>✓ Email notifications sent to all selected vendors</li>
+                <li>✓ RFQ posted to vendor portals</li>
+                <li>✓ Automated reminders scheduled</li>
+                <li>→ Track responses in the RFQ management dashboard</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="flex justify-center space-x-4">
+            <button onclick="this.closest('.fixed').remove()" class="btn-secondary">
+              Close
+            </button>
+            <button onclick="viewRFQDetails('${rfq.rfqNumber}'); this.closest('.fixed').remove();" class="btn-primary">
+              <i class="fas fa-eye mr-2"></i>View RFQ Details
+            </button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      // Auto-close after 10 seconds
+      setTimeout(() => {
+        if (document.body.contains(modal)) {
+          modal.remove();
+        }
+      }, 10000);
+    }
+
+    function saveRFQAsDraft() {
+      const formData = {
+        rfqNumber: document.getElementById('rfqNumber').value,
+        title: document.getElementById('rfqTitle').value || 'Draft RFQ',
+        category: document.getElementById('rfqCategory').value || 'services',
+        priority: document.getElementById('rfqPriority').value || 'medium',
+        estimatedValue: parseFloat(document.getElementById('rfqEstimatedValue').value) || 0,
+        currency: document.getElementById('rfqCurrency').value || 'INR',
+        publishDate: document.getElementById('rfqPublishDate').value || new Date().toISOString().split('T')[0],
+        dueDate: document.getElementById('rfqDueDate').value || new Date().toISOString().split('T')[0],
+        description: document.getElementById('rfqDescription').value || '',
+        deliveryLocation: document.getElementById('rfqDeliveryLocation').value || '',
+        paymentTerms: document.getElementById('rfqPaymentTerms').value || 'net-30'
+      };
+
+      const newRFQ = {
+        rfqNumber: formData.rfqNumber,
+        title: formData.title,
+        category: formData.category,
+        publishDate: formData.publishDate,
+        dueDate: formData.dueDate,
+        responses: 0,
+        estimatedValue: formData.estimatedValue,
+        priority: formData.priority,
+        status: 'draft',
+        description: formData.description,
+        deliveryLocation: formData.deliveryLocation,
+        paymentTerms: formData.paymentTerms,
+        vendorsInvited: [],
+        specifications: [],
+        currency: formData.currency,
+        selectedVendors: selectedVendors
+      };
+
+      rfqData.unshift(newRFQ);
+      currentData = [...rfqData];
+      renderTable();
+      closeCreateRFQModal();
+      
+      alert(`RFQ ${newRFQ.rfqNumber} saved as draft successfully!`);
+    }
+
+    function handleFileUpload(e) {
+      const files = Array.from(e.target.files);
+      const uploadedFilesContainer = document.getElementById('uploadedFiles');
+      
+      if (files.length > 0) {
+        const uploadArea = e.target.parentElement;
+        uploadArea.innerHTML = `
+          <i class="fas fa-check-circle text-green-500 text-2xl mb-2"></i>
+          <p class="text-sm text-green-600">${files.length} file(s) selected</p>
+          <p class="text-xs text-gray-500 mt-1">Files ready for upload</p>
+        `;
+        
+        // Show file list
+        uploadedFilesContainer.innerHTML = files.map(file => `
+          <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div class="flex items-center space-x-3">
+              <i class="fas fa-file-alt text-gray-500"></i>
+              <div>
+                <div class="text-sm font-medium text-gray-900">${file.name}</div>
+                <div class="text-xs text-gray-500">${(file.size / 1024 / 1024).toFixed(2)} MB</div>
+              </div>
+            </div>
+            <button type="button" onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-700">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        `).join('');
+      }
+    }
+
+    function viewRFQDetails(rfqNumber) {
+      const rfq = rfqData.find(r => r.rfqNumber === rfqNumber);
+      if (!rfq) return;
+
+      const detailContent = document.getElementById('rfqDetailContent');
+      detailContent.innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 space-y-6">
+            <div class="card">
+              <div class="flex items-start justify-between mb-4">
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900">${rfq.title}</h3>
+                  <p class="text-sm text-gray-600 mt-1">${rfq.rfqNumber}</p>
+                  <p class="text-sm text-gray-500 mt-2">${rfq.description}</p>
+                </div>
+                <span class="status-badge status-${rfq.status.replace(/\s+/g, '-')}">${getStatusDisplay(rfq.status)}</span>
+              </div>
+              
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <p class="text-xs text-gray-500">Category</p>
+                  <p class="text-sm font-medium">${rfq.category.charAt(0).toUpperCase() + rfq.category.slice(1)}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-gray-500">Priority</p>
+                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border priority-${rfq.priority}">
+                    ${rfq.priority.charAt(0).toUpperCase() + rfq.priority.slice(1)}
+                  </span>
+                </div>
+                <div>
+                  <p class="text-xs text-gray-500">Published</p>
+                  <p class="text-sm font-medium">${formatDate(rfq.publishDate)}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-gray-500">Due Date</p>
+                  <p class="text-sm font-medium">${formatDate(rfq.dueDate)}</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <h4 class="text-md font-semibold text-gray-900 mb-3">Additional Details</h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p class="text-gray-500">Estimated Value</p>
+                  <p class="font-medium">₹${rfq.estimatedValue.toLocaleString('en-IN')}</p>
+                </div>
+                <div>
+                  <p class="text-gray-500">Delivery Location</p>
+                  <p class="font-medium">${rfq.deliveryLocation}</p>
+                </div>
+                <div>
+                  <p class="text-gray-500">Payment Terms</p>
+                  <p class="font-medium">${rfq.paymentTerms.replace('-', ' ').toUpperCase()}</p>
+                </div>
+                <div>
+                  <p class="text-gray-500">Responses Received</p>
+                  <p class="font-medium">${rfq.responses}</p>
+                </div>
+              </div>
+            </div>
+
+            ${rfq.vendorsInvited.length > 0 ? `
+              <div class="card">
+                <h4 class="text-md font-semibold text-gray-900 mb-3">Invited Vendors</h4>
+                <div class="flex flex-wrap gap-2">
+                  ${rfq.vendorsInvited.map(vendor => `
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                      ${vendor}
+                    </span>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
+
+            ${rfq.specifications.length > 0 ? `
+              <div class="card">
+                <h4 class="text-md font-semibold text-gray-900 mb-3">Technical Specifications</h4>
+                <div class="space-y-2">
+                  ${rfq.specifications.map(spec => `
+                    <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                      <div class="flex items-center space-x-3">
+                        <i class="fas fa-file-alt text-blue-600"></i>
+                        <span class="text-sm font-medium">${spec}</span>
+                      </div>
+                      <button onclick="downloadSpec('${spec}')" class="text-blue-600 hover:text-blue-800">
+                        <i class="fas fa-download"></i>
+                      </button>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
+          </div>
+
+          <div class="space-y-4">
+            <div class="card">
+              <h4 class="text-md font-semibold text-gray-900 mb-3">Quick Actions</h4>
+              <div class="space-y-2">
+                ${rfq.status === 'draft' ? `
+                  <button onclick="publishRFQ('${rfq.rfqNumber}'); closeRFQModal();" class="w-full btn-primary">
+                    <i class="fas fa-share mr-2"></i>Publish RFQ
+                  </button>
+                ` : ''}
+                <button onclick="editRFQ('${rfq.rfqNumber}'); closeRFQModal();" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium">
+                  <i class="fas fa-edit mr-2"></i>Edit RFQ
+                </button>
+                ${rfq.responses > 0 ? `
+                  <button onclick="viewResponses('${rfq.rfqNumber}');" class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium">
+                    <i class="fas fa-eye mr-2"></i>View Responses (${rfq.responses})
+                  </button>
+                ` : ''}
+                <button onclick="downloadRFQPDF('${rfq.rfqNumber}')" class="w-full btn-secondary">
+                  <i class="fas fa-download mr-2"></i>Download PDF
+                </button>
+              </div>
+            </div>
+
+            <div class="card">
+              <h4 class="text-md font-semibold text-gray-900 mb-3">Timeline</h4>
+              <div class="space-y-3 text-sm">
+                <div class="flex items-center space-x-3">
+                  <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <div>
+                    <p class="font-medium">RFQ Created</p>
+                    <p class="text-gray-500">${formatDate(rfq.publishDate)}</p>
+                  </div>
+                </div>
+                ${rfq.status !== 'draft' ? `
+                  <div class="flex items-center space-x-3">
+                    <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <div>
+                      <p class="font-medium">RFQ Published</p>
+                      <p class="text-gray-500">${formatDate(rfq.publishDate)}</p>
+                    </div>
+                  </div>
+                ` : ''}
+                <div class="flex items-center space-x-3">
+                  <div class="w-2 h-2 bg-gray-300 rounded-full"></div>
+                  <div>
+                    <p class="font-medium">Response Deadline</p>
+                    <p class="text-gray-500">${formatDate(rfq.dueDate)}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('rfqModal').classList.remove('hidden');
+    }
+
+    function editRFQ(rfqNumber) {
+      alert(`Edit functionality for ${rfqNumber} - would open edit form`);
+    }
+
+    function publishRFQ(rfqNumber) {
+      const rfq = rfqData.find(r => r.rfqNumber === rfqNumber);
+      if (rfq) {
+        rfq.status = 'published';
+        renderTable();
+        alert(`RFQ ${rfqNumber} published successfully!`);
+      }
+    }
+
+    function viewResponses(rfqNumber) {
+      alert(`View responses for ${rfqNumber} - would show vendor responses`);
+    }
+
+    function downloadRFQPDF(rfqNumber) {
+      alert(`Downloading PDF for RFQ ${rfqNumber}...`);
+    }
+
+    function downloadSpec(specName) {
+      alert(`Downloading specification: ${specName}`);
+    }
+
+    function exportData() {
+      alert('Exporting RFQ data to Excel...');
+    }
+
+    function goBack() {
+      window.history.back();
+    }
+  </script>
+</body>
+</html>

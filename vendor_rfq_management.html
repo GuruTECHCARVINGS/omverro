@@ -1,0 +1,2023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RFQ Management - Vendor Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  
+  <style>
+    .glass-card {
+      background: linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.2);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }
+
+    .status-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .status-new {
+      background-color: #dbeafe;
+      color: #1e40af;
+    }
+
+    .status-in-review {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-quoted {
+      background-color: #d1fae5;
+      color: #166534;
+    }
+
+    .status-rejected {
+      background-color: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .status-awarded {
+      background-color: #e9d5ff;
+      color: #7c2d12;
+    }
+
+    .priority-high {
+      color: #dc2626;
+      background-color: #fef2f2;
+    }
+
+    .priority-medium {
+      color: #d97706;
+      background-color: #fffbeb;
+    }
+
+    .priority-low {
+      color: #16a34a;
+      background-color: #f0fdf4;
+    }
+
+    .floating-decoration {
+      position: absolute;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+      filter: blur(1px);
+    }
+
+    .modal {
+      backdrop-filter: blur(8px);
+    }
+
+    .transition-all {
+      transition: all 0.3s ease;
+    }
+
+    .hover-lift:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+  <!-- Floating decorations -->
+  <div class="floating-decoration w-20 h-20 top-10 left-20 opacity-30"></div>
+  <div class="floating-decoration w-16 h-16 top-32 right-32 opacity-20"></div>
+  <div class="floating-decoration w-12 h-12 bottom-20 left-40 opacity-25"></div>
+
+  <!-- Header -->
+  <header class="glass-card mx-8 mt-8 p-6 rounded-2xl shadow-lg">
+    <div class="flex justify-between items-center">
+      <div class="flex items-center gap-4">
+        <button onclick="goBack()" class="p-2 rounded-xl hover:bg-purple-50 transition-colors">
+          <i class="fas fa-arrow-left text-purple-600"></i>
+        </button>
+        <div>
+          <h1 class="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            RFQ Management
+          </h1>
+          <p class="text-gray-600 mt-1">Manage your Request for Quotations</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="bg-white px-4 py-2 rounded-xl shadow-sm">
+          <span class="text-sm text-gray-600">Total RFQs: </span>
+          <span class="font-bold text-purple-600">35</span>
+        </div>
+        <div class="bg-white px-4 py-2 rounded-xl shadow-sm">
+          <span class="text-sm text-gray-600">Pending Response: </span>
+          <span class="font-bold text-orange-600">12</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="mx-8 my-8">
+    <!-- Filter and Search Section -->
+    <div class="glass-card p-6 rounded-2xl mb-8">
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
+        <div class="lg:col-span-2">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Search RFQs</label>
+          <div class="relative">
+            <input type="text" id="searchInput" placeholder="Search by RFQ number, buyer, or product..."
+                   class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Status Filter</label>
+          <select id="statusFilter" class="w-full py-3 px-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500">
+            <option value="">All Status</option>
+            <option value="new">New</option>
+            <option value="in-review">In Review</option>
+            <option value="quoted">Quoted</option>
+            <option value="awarded">Awarded</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+          <select id="priorityFilter" class="w-full py-3 px-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500">
+            <option value="">All Priorities</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+          <select id="dateFilter" class="w-full py-3 px-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500">
+            <option value="">All Time</option>
+            <option value="today">Today</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+            <option value="quarter">This Quarter</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- RFQ Cards Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6" id="rfqGrid">
+      
+      <!-- RFQ Card 1 -->
+      <div class="glass-card p-6 rounded-2xl hover-lift transition-all cursor-pointer" data-rfq="RFQ-2024-001" onclick="openRFQDetails('RFQ-2024-001')">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <h3 class="text-xl font-bold text-gray-800">RFQ-2024-001</h3>
+            <p class="text-sm text-gray-600">Industrial Equipment Procurement</p>
+          </div>
+          <div class="flex flex-col items-end gap-2">
+            <span class="status-badge status-new">New</span>
+            <span class="px-2 py-1 rounded-full text-xs font-medium priority-high">High Priority</span>
+          </div>
+        </div>
+        
+        <div class="space-y-3 mb-4">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-building text-purple-600"></i>
+            <span class="text-sm"><strong>Buyer:</strong> TechCorp Manufacturing</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-calendar text-blue-600"></i>
+            <span class="text-sm"><strong>Deadline:</strong> Dec 15, 2024</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-clock text-orange-600"></i>
+            <span class="text-sm"><strong>Time Left:</strong> 5 days</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-box text-green-600"></i>
+            <span class="text-sm"><strong>Items:</strong> 15 line items</span>
+          </div>
+        </div>
+
+        <div class="bg-gray-50 rounded-xl p-3 mb-4">
+          <h4 class="font-medium text-gray-800 mb-2">Key Requirements:</h4>
+          <ul class="text-xs text-gray-600 space-y-1">
+            <li>• Hydraulic Pumps (5 units)</li>
+            <li>• Industrial Bearings (25 units)</li>
+            <li>• Safety Equipment Bundle</li>
+            <li>• Installation & Training Services</li>
+          </ul>
+        </div>
+
+        <div class="flex justify-between items-center">
+          <div class="text-xs text-gray-500">
+            <i class="fas fa-eye mr-1"></i>Viewed 2 hours ago
+          </div>
+          <div class="flex gap-2">
+            <button onclick="event.stopPropagation(); openRFQDetails('RFQ-2024-001')" class="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-700 transition-colors">
+              Submit Quote
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RFQ Card 2 -->
+      <div class="glass-card p-6 rounded-2xl hover-lift transition-all cursor-pointer" data-rfq="RFQ-2024-002" onclick="openRFQDetails('RFQ-2024-002')">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <h3 class="text-xl font-bold text-gray-800">RFQ-2024-002</h3>
+            <p class="text-sm text-gray-600">Office Supplies & Equipment</p>
+          </div>
+          <div class="flex flex-col items-end gap-2">
+            <span class="status-badge status-in-review">In Review</span>
+            <span class="px-2 py-1 rounded-full text-xs font-medium priority-medium">Medium Priority</span>
+          </div>
+        </div>
+        
+        <div class="space-y-3 mb-4">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-building text-purple-600"></i>
+            <span class="text-sm"><strong>Buyer:</strong> Global Solutions Inc.</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-calendar text-blue-600"></i>
+            <span class="text-sm"><strong>Deadline:</strong> Dec 20, 2024</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-clock text-orange-600"></i>
+            <span class="text-sm"><strong>Time Left:</strong> 10 days</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-box text-green-600"></i>
+            <span class="text-sm"><strong>Items:</strong> 8 line items</span>
+          </div>
+        </div>
+
+        <div class="bg-gray-50 rounded-xl p-3 mb-4">
+          <h4 class="font-medium text-gray-800 mb-2">Key Requirements:</h4>
+          <ul class="text-xs text-gray-600 space-y-1">
+            <li>• Ergonomic Office Chairs (50 units)</li>
+            <li>• Standing Desks (25 units)</li>
+            <li>• Monitor Arms & Accessories</li>
+            <li>• Cable Management Solutions</li>
+          </ul>
+        </div>
+
+        <div class="flex justify-between items-center">
+          <div class="text-xs text-gray-500">
+            <i class="fas fa-edit mr-1"></i>Draft saved 1 hour ago
+          </div>
+          <div class="flex gap-2">
+            <button class="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-600 transition-colors">
+              Continue Quote
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RFQ Card 3 -->
+      <div class="glass-card p-6 rounded-2xl hover-lift transition-all cursor-pointer" data-rfq="RFQ-2024-003" onclick="openRFQDetails('RFQ-2024-003')">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <h3 class="text-xl font-bold text-gray-800">RFQ-2024-003</h3>
+            <p class="text-sm text-gray-600">Electronic Components</p>
+          </div>
+          <div class="flex flex-col items-end gap-2">
+            <span class="status-badge status-quoted">Quoted</span>
+            <span class="px-2 py-1 rounded-full text-xs font-medium priority-high">High Priority</span>
+          </div>
+        </div>
+        
+        <div class="space-y-3 mb-4">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-building text-purple-600"></i>
+            <span class="text-sm"><strong>Buyer:</strong> ElectroTech Solutions</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-calendar text-blue-600"></i>
+            <span class="text-sm"><strong>Submitted:</strong> Dec 8, 2024</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-dollar-sign text-green-600"></i>
+            <span class="text-sm"><strong>Quote Value:</strong> ₹45,200</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-box text-green-600"></i>
+            <span class="text-sm"><strong>Items:</strong> 12 line items</span>
+          </div>
+        </div>
+
+        <div class="bg-green-50 rounded-xl p-3 mb-4">
+          <h4 class="font-medium text-gray-800 mb-2">Quoted Items:</h4>
+          <ul class="text-xs text-gray-600 space-y-1">
+            <li>• Microcontrollers (50 units) - ₹25,000</li>
+            <li>• Sensors Kit (25 sets) - ₹12,500</li>
+            <li>• Display Modules (15 units) - ₹4,500</li>
+            <li>• Accessories & Components - ₹3,200</li>
+          </ul>
+        </div>
+
+        <div class="flex justify-between items-center">
+          <div class="text-xs text-gray-500">
+            <i class="fas fa-check mr-1"></i>Awaiting buyer response
+          </div>
+          <div class="flex gap-2">
+            <button onclick="event.stopPropagation(); viewSubmittedQuote('RFQ-2024-003')" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors">
+              View Quote
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RFQ Card 4 -->
+      <div class="glass-card p-6 rounded-2xl hover-lift transition-all cursor-pointer" data-rfq="RFQ-2024-004" onclick="openRFQDetails('RFQ-2024-004')">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <h3 class="text-xl font-bold text-gray-800">RFQ-2024-004</h3>
+            <p class="text-sm text-gray-600">Safety Equipment & PPE</p>
+          </div>
+          <div class="flex flex-col items-end gap-2">
+            <span class="status-badge status-awarded">Awarded</span>
+            <span class="px-2 py-1 rounded-full text-xs font-medium priority-medium">Medium Priority</span>
+          </div>
+        </div>
+        
+        <div class="space-y-3 mb-4">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-building text-purple-600"></i>
+            <span class="text-sm"><strong>Buyer:</strong> SafeWork Industries</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-trophy text-gold-600"></i>
+            <span class="text-sm"><strong>Awarded:</strong> Dec 5, 2024</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-dollar-sign text-green-600"></i>
+            <span class="text-sm"><strong>Contract Value:</strong> ₹72,800</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-box text-green-600"></i>
+            <span class="text-sm"><strong>Items:</strong> 18 line items</span>
+          </div>
+        </div>
+
+        <div class="bg-purple-50 rounded-xl p-3 mb-4">
+          <h4 class="font-medium text-gray-800 mb-2">Awarded Items:</h4>
+          <ul class="text-xs text-gray-600 space-y-1">
+            <li>• Hard Hats (100 units) - ₹25,000</li>
+            <li>• Safety Harnesses (50 units) - ₹30,000</li>
+            <li>• First Aid Kits (25 units) - ₹12,500</li>
+            <li>• Fire Safety Equipment - ₹5,300</li>
+          </ul>
+        </div>
+
+        <div class="flex justify-between items-center">
+          <div class="text-xs text-gray-500">
+            <i class="fas fa-handshake mr-1"></i>Contract signed
+          </div>
+          <div class="flex gap-2">
+            <button class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition-colors">
+              Confirm Award
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RFQ Card 5 -->
+      <div class="glass-card p-6 rounded-2xl hover-lift transition-all cursor-pointer" data-rfq="RFQ-2024-005" onclick="openRFQDetails('RFQ-2024-005')">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <h3 class="text-xl font-bold text-gray-800">RFQ-2024-005</h3>
+            <p class="text-sm text-gray-600">Raw Materials Package</p>
+          </div>
+          <div class="flex flex-col items-end gap-2">
+            <span class="status-badge status-rejected">Rejected</span>
+            <span class="px-2 py-1 rounded-full text-xs font-medium priority-low">Low Priority</span>
+          </div>
+        </div>
+        
+        <div class="space-y-3 mb-4">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-building text-purple-600"></i>
+            <span class="text-sm"><strong>Buyer:</strong> Chemical Industries Ltd.</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-times-circle text-red-600"></i>
+            <span class="text-sm"><strong>Rejected:</strong> Dec 1, 2024</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-comment text-orange-600"></i>
+            <span class="text-sm"><strong>Reason:</strong> Pricing not competitive</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-box text-green-600"></i>
+            <span class="text-sm"><strong>Items:</strong> 22 line items</span>
+          </div>
+        </div>
+
+        <div class="bg-red-50 rounded-xl p-3 mb-4">
+          <h4 class="font-medium text-gray-800 mb-2">Rejected Items:</h4>
+          <ul class="text-xs text-gray-600 space-y-1">
+            <li>• Chemical Compounds (500 kg)</li>
+            <li>• Storage Containers (20 units)</li>
+            <li>• Safety Documentation</li>
+            <li>• Transportation & Handling</li>
+          </ul>
+        </div>
+
+        <div class="flex justify-between items-center">
+          <div class="text-xs text-gray-500">
+            <i class="fas fa-info-circle mr-1"></i>Feedback available
+          </div>
+          <div class="flex gap-2">
+            <button class="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-600 transition-colors">
+              View Details
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RFQ Card 6 -->
+      <div class="glass-card p-6 rounded-2xl hover-lift transition-all cursor-pointer" data-rfq="RFQ-2024-006" onclick="openRFQDetails('RFQ-2024-006')">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <h3 class="text-xl font-bold text-gray-800">RFQ-2024-006</h3>
+            <p class="text-sm text-gray-600">IT Hardware & Software</p>
+          </div>
+          <div class="flex flex-col items-end gap-2">
+            <span class="status-badge status-new">New</span>
+            <span class="px-2 py-1 rounded-full text-xs font-medium priority-medium">Medium Priority</span>
+          </div>
+        </div>
+        
+        <div class="space-y-3 mb-4">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-building text-purple-600"></i>
+            <span class="text-sm"><strong>Buyer:</strong> Digital Solutions Ltd.</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-calendar text-blue-600"></i>
+            <span class="text-sm"><strong>Deadline:</strong> Jan 5, 2025</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-clock text-orange-600"></i>
+            <span class="text-sm"><strong>Time Left:</strong> 25 days</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-box text-green-600"></i>
+            <span class="text-sm"><strong>Items:</strong> 28 line items</span>
+          </div>
+        </div>
+
+        <div class="bg-gray-50 rounded-xl p-3 mb-4">
+          <h4 class="font-medium text-gray-800 mb-2">Key Requirements:</h4>
+          <ul class="text-xs text-gray-600 space-y-1">
+            <li>• Laptops (20 units)</li>
+            <li>• Monitors (25 units)</li>
+            <li>• Software Licenses (20 units)</li>
+            <li>• Setup & Configuration</li>
+          </ul>
+        </div>
+
+        <div class="flex justify-between items-center">
+          <div class="text-xs text-gray-500">
+            <i class="fas fa-clock mr-1"></i>Received 3 hours ago
+          </div>
+          <div class="flex gap-2">
+            <button onclick="event.stopPropagation(); openRFQDetails('RFQ-2024-006')" class="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-700 transition-colors">
+              Submit Quote
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RFQ Card 7 -->
+      <div class="glass-card p-6 rounded-2xl hover-lift transition-all cursor-pointer" data-rfq="RFQ-2024-007" onclick="openRFQDetails('RFQ-2024-007')">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <h3 class="text-xl font-bold text-gray-800">RFQ-2024-007</h3>
+            <p class="text-sm text-gray-600">Medical Equipment & Supplies</p>
+          </div>
+          <div class="flex flex-col items-end gap-2">
+            <span class="status-badge status-new">New</span>
+            <span class="px-2 py-1 rounded-full text-xs font-medium priority-high">High Priority</span>
+          </div>
+        </div>
+        
+        <div class="space-y-3 mb-4">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-building text-purple-600"></i>
+            <span class="text-sm"><strong>Buyer:</strong> MedCare Hospital Group</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-calendar text-blue-600"></i>
+            <span class="text-sm"><strong>Deadline:</strong> Dec 12, 2024</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-clock text-orange-600"></i>
+            <span class="text-sm"><strong>Time Left:</strong> 2 days</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-box text-green-600"></i>
+            <span class="text-sm"><strong>Items:</strong> 32 line items</span>
+          </div>
+        </div>
+
+        <div class="bg-gray-50 rounded-xl p-3 mb-4">
+          <h4 class="font-medium text-gray-800 mb-2">Key Requirements:</h4>
+          <ul class="text-xs text-gray-600 space-y-1">
+            <li>• Surgical Instruments (100 pieces)</li>
+            <li>• Patient Monitors (15 units)</li>
+            <li>• Medical Supplies Bundle</li>
+            <li>• Maintenance & Calibration</li>
+          </ul>
+        </div>
+
+        <div class="flex justify-between items-center">
+          <div class="text-xs text-gray-500">
+            <i class="fas fa-eye mr-1"></i>Viewed 30 minutes ago
+          </div>
+          <div class="flex gap-2">
+            <button onclick="event.stopPropagation(); openRFQDetails('RFQ-2024-007')" class="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-700 transition-colors">
+              Submit Quote
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RFQ Card 8 -->
+      <div class="glass-card p-6 rounded-2xl hover-lift transition-all cursor-pointer" data-rfq="RFQ-2024-008" onclick="openRFQDetails('RFQ-2024-008')">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <h3 class="text-xl font-bold text-gray-800">RFQ-2024-008</h3>
+            <p class="text-sm text-gray-600">Automotive Parts & Components</p>
+          </div>
+          <div class="flex flex-col items-end gap-2">
+            <span class="status-badge status-quoted">Quoted</span>
+            <span class="px-2 py-1 rounded-full text-xs font-medium priority-medium">Medium Priority</span>
+          </div>
+        </div>
+        
+        <div class="space-y-3 mb-4">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-building text-purple-600"></i>
+            <span class="text-sm"><strong>Buyer:</strong> AutoTech Manufacturing</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-calendar text-blue-600"></i>
+            <span class="text-sm"><strong>Submitted:</strong> Dec 3, 2024</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-dollar-sign text-green-600"></i>
+            <span class="text-sm"><strong>Quote Value:</strong> ₹1,85,400</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-box text-green-600"></i>
+            <span class="text-sm"><strong>Items:</strong> 45 line items</span>
+          </div>
+        </div>
+
+        <div class="bg-green-50 rounded-xl p-3 mb-4">
+          <h4 class="font-medium text-gray-800 mb-2">Quoted Items:</h4>
+          <ul class="text-xs text-gray-600 space-y-1">
+            <li>• Engine Components (200 units) - ₹95,000</li>
+            <li>• Brake Systems (50 sets) - ₹65,000</li>
+            <li>• Electrical Harnesses (75 units) - ₹18,400</li>
+            <li>• Quality Testing & Certification - ₹7,000</li>
+          </ul>
+        </div>
+
+        <div class="flex justify-between items-center">
+          <div class="text-xs text-gray-500">
+            <i class="fas fa-check mr-1"></i>Under buyer evaluation
+          </div>
+          <div class="flex gap-2">
+            <button onclick="event.stopPropagation(); viewSubmittedQuote('RFQ-2024-008')" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors">
+              View Quote
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RFQ Card 9 -->
+      <div class="glass-card p-6 rounded-2xl hover-lift transition-all cursor-pointer" data-rfq="RFQ-2024-009" onclick="openRFQDetails('RFQ-2024-009')">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <h3 class="text-xl font-bold text-gray-800">RFQ-2024-009</h3>
+            <p class="text-sm text-gray-600">Construction Materials</p>
+          </div>
+          <div class="flex flex-col items-end gap-2">
+            <span class="status-badge status-in-review">In Review</span>
+            <span class="px-2 py-1 rounded-full text-xs font-medium priority-low">Low Priority</span>
+          </div>
+        </div>
+        
+        <div class="space-y-3 mb-4">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-building text-purple-600"></i>
+            <span class="text-sm"><strong>Buyer:</strong> BuildRight Construction</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-calendar text-blue-600"></i>
+            <span class="text-sm"><strong>Deadline:</strong> Jan 15, 2025</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-clock text-orange-600"></i>
+            <span class="text-sm"><strong>Time Left:</strong> 35 days</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-box text-green-600"></i>
+            <span class="text-sm"><strong>Items:</strong> 8 line items</span>
+          </div>
+        </div>
+
+        <div class="bg-gray-50 rounded-xl p-3 mb-4">
+          <h4 class="font-medium text-gray-800 mb-2">Key Requirements:</h4>
+          <ul class="text-xs text-gray-600 space-y-1">
+            <li>• Steel Reinforcement Bars (500 tons)</li>
+            <li>• Cement & Concrete Mix (200 bags)</li>
+            <li>• Construction Tools & Equipment</li>
+            <li>• Site Delivery & Installation</li>
+          </ul>
+        </div>
+
+        <div class="flex justify-between items-center">
+          <div class="text-xs text-gray-500">
+            <i class="fas fa-edit mr-1"></i>Draft in progress
+          </div>
+          <div class="flex gap-2">
+            <button class="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-600 transition-colors">
+              Continue Quote
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RFQ Card 10 -->
+      <div class="glass-card p-6 rounded-2xl hover-lift transition-all cursor-pointer" data-rfq="RFQ-2024-010" onclick="openRFQDetails('RFQ-2024-010')">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <h3 class="text-xl font-bold text-gray-800">RFQ-2024-010</h3>
+            <p class="text-sm text-gray-600">Food & Beverage Equipment</p>
+          </div>
+          <div class="flex flex-col items-end gap-2">
+            <span class="status-badge status-awarded">Awarded</span>
+            <span class="px-2 py-1 rounded-full text-xs font-medium priority-high">High Priority</span>
+          </div>
+        </div>
+        
+        <div class="space-y-3 mb-4">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-building text-purple-600"></i>
+            <span class="text-sm"><strong>Buyer:</strong> FreshMart Retail Chain</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-trophy text-gold-600"></i>
+            <span class="text-sm"><strong>Awarded:</strong> Dec 1, 2024</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-dollar-sign text-green-600"></i>
+            <span class="text-sm"><strong>Contract Value:</strong> ₹2,45,600</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-box text-green-600"></i>
+            <span class="text-sm"><strong>Items:</strong> 25 line items</span>
+          </div>
+        </div>
+
+        <div class="bg-purple-50 rounded-xl p-3 mb-4">
+          <h4 class="font-medium text-gray-800 mb-2">Awarded Items:</h4>
+          <ul class="text-xs text-gray-600 space-y-1">
+            <li>• Commercial Refrigeration (12 units) - ₹1,80,000</li>
+            <li>• POS Systems (25 units) - ₹37,500</li>
+            <li>• Display Shelving (50 units) - ₹20,000</li>
+            <li>• Installation & Training - ₹8,100</li>
+          </ul>
+        </div>
+
+        <div class="flex justify-between items-center">
+          <div class="text-xs text-gray-500">
+            <i class="fas fa-handshake mr-1"></i>Contract ready
+          </div>
+          <div class="flex gap-2">
+            <button class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition-colors">
+              Confirm Award
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RFQ Card 11 -->
+      <div class="glass-card p-6 rounded-2xl hover-lift transition-all cursor-pointer" data-rfq="RFQ-2024-011" onclick="openRFQDetails('RFQ-2024-011')">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <h3 class="text-xl font-bold text-gray-800">RFQ-2024-011</h3>
+            <p class="text-sm text-gray-600">Educational Technology</p>
+          </div>
+          <div class="flex flex-col items-end gap-2">
+            <span class="status-badge status-new">New</span>
+            <span class="px-2 py-1 rounded-full text-xs font-medium priority-medium">Medium Priority</span>
+          </div>
+        </div>
+        
+        <div class="space-y-3 mb-4">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-building text-purple-600"></i>
+            <span class="text-sm"><strong>Buyer:</strong> EduTech University</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-calendar text-blue-600"></i>
+            <span class="text-sm"><strong>Deadline:</strong> Jan 10, 2025</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-clock text-orange-600"></i>
+            <span class="text-sm"><strong>Time Left:</strong> 30 days</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-box text-green-600"></i>
+            <span class="text-sm"><strong>Items:</strong> 18 line items</span>
+          </div>
+        </div>
+
+        <div class="bg-gray-50 rounded-xl p-3 mb-4">
+          <h4 class="font-medium text-gray-800 mb-2">Key Requirements:</h4>
+          <ul class="text-xs text-gray-600 space-y-1">
+            <li>• Interactive Whiteboards (40 units)</li>
+            <li>• Student Tablets (500 units)</li>
+            <li>• Learning Management System</li>
+            <li>• Teacher Training & Support</li>
+          </ul>
+        </div>
+
+        <div class="flex justify-between items-center">
+          <div class="text-xs text-gray-500">
+            <i class="fas fa-clock mr-1"></i>Received 6 hours ago
+          </div>
+          <div class="flex gap-2">
+            <button onclick="event.stopPropagation(); openRFQDetails('RFQ-2024-011')" class="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-700 transition-colors">
+              Submit Quote
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RFQ Card 12 -->
+      <div class="glass-card p-6 rounded-2xl hover-lift transition-all cursor-pointer" data-rfq="RFQ-2024-012" onclick="openRFQDetails('RFQ-2024-012')">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <h3 class="text-xl font-bold text-gray-800">RFQ-2024-012</h3>
+            <p class="text-sm text-gray-600">Textile & Apparel Manufacturing</p>
+          </div>
+          <div class="flex flex-col items-end gap-2">
+            <span class="status-badge status-rejected">Rejected</span>
+            <span class="px-2 py-1 rounded-full text-xs font-medium priority-medium">Medium Priority</span>
+          </div>
+        </div>
+        
+        <div class="space-y-3 mb-4">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-building text-purple-600"></i>
+            <span class="text-sm"><strong>Buyer:</strong> Fashion Forward Ltd.</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-times-circle text-red-600"></i>
+            <span class="text-sm"><strong>Rejected:</strong> Nov 28, 2024</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-comment text-orange-600"></i>
+            <span class="text-sm"><strong>Reason:</strong> Delivery timeline too long</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-box text-green-600"></i>
+            <span class="text-sm"><strong>Items:</strong> 35 line items</span>
+          </div>
+        </div>
+
+        <div class="bg-red-50 rounded-xl p-3 mb-4">
+          <h4 class="font-medium text-gray-800 mb-2">Rejected Items:</h4>
+          <ul class="text-xs text-gray-600 space-y-1">
+            <li>• Fabric Materials (10,000 meters)</li>
+            <li>• Sewing Equipment (25 machines)</li>
+            <li>• Pattern Design Software</li>
+            <li>• Quality Control Systems</li>
+          </ul>
+        </div>
+
+        <div class="flex justify-between items-center">
+          <div class="text-xs text-gray-500">
+            <i class="fas fa-info-circle mr-1"></i>Feedback provided
+          </div>
+          <div class="flex gap-2">
+            <button class="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-600 transition-colors">
+              View Feedback
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RFQ Card 13 -->
+      <div class="glass-card p-6 rounded-2xl hover-lift transition-all cursor-pointer" data-rfq="RFQ-2024-013" onclick="openRFQDetails('RFQ-2024-013')">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <h3 class="text-xl font-bold text-gray-800">RFQ-2024-013</h3>
+            <p class="text-sm text-gray-600">Logistics & Transportation</p>
+          </div>
+          <div class="flex flex-col items-end gap-2">
+            <span class="status-badge status-quoted">Quoted</span>
+            <span class="px-2 py-1 rounded-full text-xs font-medium priority-high">High Priority</span>
+          </div>
+        </div>
+        
+        <div class="space-y-3 mb-4">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-building text-purple-600"></i>
+            <span class="text-sm"><strong>Buyer:</strong> LogiTrans Solutions</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-calendar text-blue-600"></i>
+            <span class="text-sm"><strong>Submitted:</strong> Dec 7, 2024</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-dollar-sign text-green-600"></i>
+            <span class="text-sm"><strong>Quote Value:</strong> ₹3,25,800</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-box text-green-600"></i>
+            <span class="text-sm"><strong>Items:</strong> 12 line items</span>
+          </div>
+        </div>
+
+        <div class="bg-green-50 rounded-xl p-3 mb-4">
+          <h4 class="font-medium text-gray-800 mb-2">Quoted Items:</h4>
+          <ul class="text-xs text-gray-600 space-y-1">
+            <li>• Fleet Vehicles (8 trucks) - ₹2,40,000</li>
+            <li>• GPS Tracking Systems (8 units) - ₹32,000</li>
+            <li>• Warehouse Equipment - ₹45,800</li>
+            <li>• Driver Training & Certification - ₹8,000</li>
+          </ul>
+        </div>
+
+        <div class="flex justify-between items-center">
+          <div class="text-xs text-gray-500">
+            <i class="fas fa-check mr-1"></i>Shortlisted for final review
+          </div>
+          <div class="flex gap-2">
+            <button onclick="event.stopPropagation(); viewSubmittedQuote('RFQ-2024-013')" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors">
+              View Quote
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RFQ Card 14 -->
+      <div class="glass-card p-6 rounded-2xl hover-lift transition-all cursor-pointer" data-rfq="RFQ-2024-014" onclick="openRFQDetails('RFQ-2024-014')">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <h3 class="text-xl font-bold text-gray-800">RFQ-2024-014</h3>
+            <p class="text-sm text-gray-600">Renewable Energy Systems</p>
+          </div>
+          <div class="flex flex-col items-end gap-2">
+            <span class="status-badge status-in-review">In Review</span>
+            <span class="px-2 py-1 rounded-full text-xs font-medium priority-high">High Priority</span>
+          </div>
+        </div>
+        
+        <div class="space-y-3 mb-4">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-building text-purple-600"></i>
+            <span class="text-sm"><strong>Buyer:</strong> GreenTech Energy Corp</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-calendar text-blue-600"></i>
+            <span class="text-sm"><strong>Deadline:</strong> Jan 20, 2025</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-clock text-orange-600"></i>
+            <span class="text-sm"><strong>Time Left:</strong> 40 days</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-box text-green-600"></i>
+            <span class="text-sm"><strong>Items:</strong> 22 line items</span>
+          </div>
+        </div>
+
+        <div class="bg-gray-50 rounded-xl p-3 mb-4">
+          <h4 class="font-medium text-gray-800 mb-2">Key Requirements:</h4>
+          <ul class="text-xs text-gray-600 space-y-1">
+            <li>• Solar Panels (200 units, 500W each)</li>
+            <li>• Wind Turbines (5 units, 50kW each)</li>
+            <li>• Battery Storage Systems</li>
+            <li>• Installation & Grid Connection</li>
+          </ul>
+        </div>
+
+        <div class="flex justify-between items-center">
+          <div class="text-xs text-gray-500">
+            <i class="fas fa-edit mr-1"></i>Technical review in progress
+          </div>
+          <div class="flex gap-2">
+            <button class="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-600 transition-colors">
+              Continue Quote
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RFQ Card 15 -->
+      <div class="glass-card p-6 rounded-2xl hover-lift transition-all cursor-pointer" data-rfq="RFQ-2024-015" onclick="openRFQDetails('RFQ-2024-015')">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <h3 class="text-xl font-bold text-gray-800">RFQ-2024-015</h3>
+            <p class="text-sm text-gray-600">Laboratory Equipment & Supplies</p>
+          </div>
+          <div class="flex flex-col items-end gap-2">
+            <span class="status-badge status-new">New</span>
+            <span class="px-2 py-1 rounded-full text-xs font-medium priority-low">Low Priority</span>
+          </div>
+        </div>
+        
+        <div class="space-y-3 mb-4">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-building text-purple-600"></i>
+            <span class="text-sm"><strong>Buyer:</strong> Research Institute of Science</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-calendar text-blue-600"></i>
+            <span class="text-sm"><strong>Deadline:</strong> Feb 15, 2025</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-clock text-orange-600"></i>
+            <span class="text-sm"><strong>Time Left:</strong> 65 days</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-box text-green-600"></i>
+            <span class="text-sm"><strong>Items:</strong> 42 line items</span>
+          </div>
+        </div>
+
+        <div class="bg-gray-50 rounded-xl p-3 mb-4">
+          <h4 class="font-medium text-gray-800 mb-2">Key Requirements:</h4>
+          <ul class="text-xs text-gray-600 space-y-1">
+            <li>• Microscopes (15 units, various types)</li>
+            <li>• Centrifuges (8 units)</li>
+            <li>• Chemical Reagents (500+ items)</li>
+            <li>• Lab Furniture & Storage</li>
+          </ul>
+        </div>
+
+        <div class="flex justify-between items-center">
+          <div class="text-xs text-gray-500">
+            <i class="fas fa-clock mr-1"></i>Received 1 day ago
+          </div>
+          <div class="flex gap-2">
+            <button class="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-700 transition-colors">
+              Submit Quote
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex justify-center mt-8">
+      <nav class="flex items-center gap-2" id="pagination">
+        <button id="prevPage" class="px-3 py-2 rounded-lg bg-white shadow-sm hover:bg-gray-50 transition-colors" onclick="changePage('prev')">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="px-4 py-2 rounded-lg bg-purple-600 text-white font-medium page-btn" data-page="1" onclick="goToPage(1)">1</button>
+        <button class="px-4 py-2 rounded-lg bg-white shadow-sm hover:bg-gray-50 transition-colors page-btn" data-page="2" onclick="goToPage(2)">2</button>
+        <button class="px-4 py-2 rounded-lg bg-white shadow-sm hover:bg-gray-50 transition-colors page-btn" data-page="3" onclick="goToPage(3)">3</button>
+        <button class="px-4 py-2 rounded-lg bg-white shadow-sm hover:bg-gray-50 transition-colors page-btn" data-page="4" onclick="goToPage(4)">4</button>
+        <button class="px-4 py-2 rounded-lg bg-white shadow-sm hover:bg-gray-50 transition-colors page-btn" data-page="5" onclick="goToPage(5)">5</button>
+        <span class="px-2 text-gray-500" id="ellipsis">...</span>
+        <button class="px-4 py-2 rounded-lg bg-white shadow-sm hover:bg-gray-50 transition-colors page-btn" data-page="8" onclick="goToPage(8)">8</button>
+        <button id="nextPage" class="px-3 py-2 rounded-lg bg-white shadow-sm hover:bg-gray-50 transition-colors" onclick="changePage('next')">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </nav>
+    </div>
+  </main>
+
+  <!-- RFQ Details Modal -->
+  <div id="rfqModal" class="fixed inset-0 bg-black bg-opacity-50 modal hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-screen overflow-y-auto">
+        <div class="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+          <div class="flex justify-between items-center">
+            <div>
+              <h2 class="text-2xl font-bold text-gray-800" id="modalTitle">RFQ Details & Pricing</h2>
+              <p class="text-gray-600" id="modalSubtitle">Request for Quotation Information</p>
+            </div>
+            <button onclick="closeModal()" class="p-2 rounded-xl hover:bg-gray-100 transition-colors">
+              <i class="fas fa-times text-gray-600"></i>
+            </button>
+          </div>
+        </div>
+        
+        <div class="p-6" id="modalContent">
+          <!-- Dynamic content will be loaded here -->
+        </div>
+
+        <!-- Pricing Section -->
+        <div class="border-t bg-gray-50 p-6" id="pricingSection">
+          <h3 class="text-xl font-bold text-gray-800 mb-4">
+            <i class="fas fa-calculator text-green-600 mr-2"></i>
+            Add Your Pricing
+          </h3>
+          
+          <!-- Items Pricing Table -->
+          <div class="bg-white rounded-lg border overflow-hidden mb-6">
+            <div class="overflow-x-auto">
+              <table class="w-full" id="pricingTable">
+                <thead class="bg-gray-100">
+                  <tr>
+                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Item</th>
+                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Specification</th>
+                    <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700">Quantity</th>
+                    <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700">Net Price (₹)</th>
+                    <th class="px-4 py-3 text-right text-sm font-semibold text-gray-700">Total (₹)</th>
+                  </tr>
+                </thead>
+                <tbody id="pricingTableBody">
+                  <!-- Populated by JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Total Summary -->
+          <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-4 mb-6">
+            <div class="flex justify-between items-center">
+              <div>
+                <span class="text-lg font-semibold text-gray-700">Grand Total:</span>
+              </div>
+              <div>
+                <span class="text-2xl font-bold text-green-600" id="grandTotal">₹0.00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Additional Pricing Details -->
+          <div class="grid md:grid-cols-2 gap-4 mb-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                <i class="fas fa-truck text-blue-500 mr-1"></i>
+                Delivery Timeline
+              </label>
+              <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" id="deliveryTimeline">
+                <option value="">Select delivery time</option>
+                <option value="7-days">7 Days</option>
+                <option value="14-days">14 Days</option>
+                <option value="30-days">30 Days</option>
+                <option value="45-days">45 Days</option>
+                <option value="custom">Custom (specify in notes)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                <i class="fas fa-credit-card text-green-500 mr-1"></i>
+                Payment Terms
+              </label>
+              <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" id="paymentTerms">
+                <option value="">Select payment terms</option>
+                <option value="advance">100% Advance</option>
+                <option value="50-50">50% Advance, 50% on Delivery</option>
+                <option value="30-70">30% Advance, 70% on Delivery</option>
+                <option value="net-30">Net 30 Days</option>
+                <option value="net-45">Net 45 Days</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Additional Notes -->
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              <i class="fas fa-sticky-note text-yellow-500 mr-1"></i>
+              Additional Notes / Terms & Conditions
+            </label>
+            <textarea 
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
+              rows="3" 
+              id="additionalNotes"
+              placeholder="Add any special terms, conditions, or notes about your quote..."
+            ></textarea>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex justify-between items-center">
+            <button 
+              onclick="saveAsDraft()" 
+              class="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200"
+            >
+              <i class="fas fa-save mr-2"></i>
+              Save as Draft
+            </button>
+            <button 
+              onclick="submitQuotation()" 
+              class="px-8 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg hover:from-green-700 hover:to-blue-700 transition-colors duration-200 font-semibold"
+            >
+              <i class="fas fa-paper-plane mr-2"></i>
+              Submit Quotation
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Helper function to get status CSS classes
+    function getStatusClass(status) {
+      const statusClasses = {
+        'New': 'bg-blue-100 text-blue-800',
+        'In Review': 'bg-yellow-100 text-yellow-800',
+        'Quoted': 'bg-green-100 text-green-800',
+        'Awarded': 'bg-purple-100 text-purple-800',
+        'Rejected': 'bg-red-100 text-red-800',
+        'Closed': 'bg-gray-100 text-gray-800'
+      };
+      return statusClasses[status] || 'bg-gray-100 text-gray-800';
+    }
+
+    // Helper function to get priority CSS classes
+    function getPriorityClass(priority) {
+      const priorityClasses = {
+        'High': 'priority-high bg-red-100 text-red-800',
+        'Medium': 'priority-medium bg-yellow-100 text-yellow-800',
+        'Low': 'priority-low bg-green-100 text-green-800',
+        'Urgent': 'priority-urgent bg-red-200 text-red-900'
+      };
+      return priorityClasses[priority] || 'bg-gray-100 text-gray-800';
+    }
+
+    // Sample RFQ data
+    const rfqData = {
+      'RFQ-2024-001': {
+        title: 'Industrial Equipment Procurement',
+        buyer: 'TechCorp Manufacturing',
+        status: 'New',
+        priority: 'High',
+        deadline: 'Dec 15, 2024',
+        timeLeft: '5 days',
+        description: 'Comprehensive industrial equipment procurement for new manufacturing line setup.',
+        requirements: [
+          { item: 'Hydraulic Pumps', quantity: '5 units', specs: 'High pressure rated, 3000 PSI minimum' },
+          { item: 'Industrial Bearings', quantity: '25 units', specs: 'Sealed, heavy duty, various sizes' },
+          { item: 'Safety Equipment Bundle', quantity: '1 set', specs: 'Complete safety package for 50 workers' },
+          { item: 'Installation Services', quantity: '1 service', specs: 'Professional installation and training' }
+        ],
+        additionalInfo: {
+          deliveryLocation: 'TechCorp Manufacturing Plant, Bangalore',
+          paymentTerms: '30 days net',
+          warrantyRequirement: '2 years minimum',
+          certifications: 'ISO 9001, CE marking required'
+        }
+      },
+      'RFQ-2024-002': {
+        title: 'Office Supplies & Equipment',
+        buyer: 'Global Solutions Inc.',
+        status: 'In Review',
+        priority: 'Medium',
+        deadline: 'Dec 20, 2024',
+        timeLeft: '10 days',
+        description: 'Office modernization project requiring ergonomic furniture and equipment.',
+        requirements: [
+          { item: 'Ergonomic Office Chairs', quantity: '50 units', specs: 'Adjustable height, lumbar support, wheels' },
+          { item: 'Standing Desks', quantity: '25 units', specs: 'Electric height adjustment, 48" width minimum' },
+          { item: 'Monitor Arms', quantity: '75 units', specs: 'Dual monitor support, VESA compatible' },
+          { item: 'Cable Management', quantity: '1 lot', specs: 'Complete cable management solution for office' }
+        ],
+        additionalInfo: {
+          deliveryLocation: 'Global Solutions Office, Mumbai',
+          paymentTerms: '45 days net',
+          warrantyRequirement: '3 years minimum',
+          certifications: 'Ergonomic certification preferred'
+        }
+      },
+      'RFQ-2024-003': {
+        title: 'Electronic Components',
+        buyer: 'ElectroTech Solutions',
+        status: 'Quoted',
+        priority: 'High',
+        deadline: 'Dec 8, 2024',
+        timeLeft: 'Completed',
+        description: 'Electronic components for IoT device manufacturing project.',
+        requirements: [
+          { item: 'Microcontrollers', quantity: '50 units', specs: 'Arduino Uno compatible, USB programmable' },
+          { item: 'Sensors Kit', quantity: '25 sets', specs: 'Temperature, humidity, motion sensors included' },
+          { item: 'Display Modules', quantity: '15 units', specs: 'LCD 16x2, backlit, I2C interface' },
+          { item: 'Breadboards & Wires', quantity: '1 lot', specs: 'Prototyping kit with jumper wires' }
+        ],
+        quotedPrice: '₹45,200',
+        additionalInfo: {
+          deliveryLocation: 'ElectroTech Lab, Chennai',
+          paymentTerms: '15 days net',
+          warrantyRequirement: '1 year minimum',
+          certifications: 'RoHS compliant'
+        }
+      },
+      'RFQ-2024-007': {
+        title: 'Medical Equipment & Supplies',
+        buyer: 'MedCare Hospital Group',
+        status: 'New',
+        priority: 'High',
+        deadline: 'Dec 12, 2024',
+        timeLeft: '2 days',
+        description: 'Critical medical equipment procurement for new hospital wing.',
+        requirements: [
+          { item: 'Surgical Instruments', quantity: '100 pieces', specs: 'Stainless steel, autoclave compatible, various types' },
+          { item: 'Patient Monitors', quantity: '15 units', specs: 'Multi-parameter, touchscreen, wireless connectivity' },
+          { item: 'Medical Supplies Bundle', quantity: '1 lot', specs: 'Disposables, consumables for 6 months' },
+          { item: 'Maintenance & Calibration', quantity: '1 service', specs: 'Annual maintenance contract included' }
+        ],
+        additionalInfo: {
+          deliveryLocation: 'MedCare Hospital, Delhi',
+          paymentTerms: '30 days net',
+          warrantyRequirement: '5 years minimum',
+          certifications: 'FDA approved, ISO 13485'
+        }
+      },
+      'RFQ-2024-008': {
+        title: 'Automotive Parts & Components',
+        buyer: 'AutoTech Manufacturing',
+        status: 'Quoted',
+        priority: 'Medium',
+        deadline: 'Dec 3, 2024',
+        timeLeft: 'Completed',
+        description: 'Automotive parts for new vehicle model production line.',
+        requirements: [
+          { item: 'Engine Components', quantity: '200 units', specs: 'High performance, OEM quality standards' },
+          { item: 'Brake Systems', quantity: '50 sets', specs: 'ABS compatible, ceramic pads included' },
+          { item: 'Electrical Harnesses', quantity: '75 units', specs: 'Waterproof, flame retardant materials' },
+          { item: 'Quality Testing', quantity: '1 service', specs: 'Comprehensive testing and certification' }
+        ],
+        quotedPrice: '₹1,85,400',
+        additionalInfo: {
+          deliveryLocation: 'AutoTech Plant, Chennai',
+          paymentTerms: '45 days net',
+          warrantyRequirement: '2 years minimum',
+          certifications: 'ISO/TS 16949'
+        }
+      },
+      'RFQ-2024-009': {
+        title: 'Construction Materials',
+        buyer: 'BuildRight Construction',
+        status: 'In Review',
+        priority: 'Low',
+        deadline: 'Jan 15, 2025',
+        timeLeft: '35 days',
+        description: 'Construction materials for commercial building project.',
+        requirements: [
+          { item: 'Steel Reinforcement Bars', quantity: '500 tons', specs: 'Grade 500, various diameters' },
+          { item: 'Cement & Concrete Mix', quantity: '200 bags', specs: 'High strength, quick setting' },
+          { item: 'Construction Tools', quantity: '1 lot', specs: 'Professional grade, safety certified' },
+          { item: 'Site Delivery', quantity: '1 service', specs: 'Scheduled delivery to construction site' }
+        ],
+        additionalInfo: {
+          deliveryLocation: 'Construction Site, Gurgaon',
+          paymentTerms: '60 days net',
+          warrantyRequirement: '1 year minimum',
+          certifications: 'IS standards compliance'
+        }
+      },
+      'RFQ-2024-010': {
+        title: 'Food & Beverage Equipment',
+        buyer: 'FreshMart Retail Chain',
+        status: 'Awarded',
+        priority: 'High',
+        deadline: 'Dec 1, 2024',
+        timeLeft: 'Completed',
+        description: 'Commercial food service equipment for retail chain expansion.',
+        requirements: [
+          { item: 'Commercial Refrigeration', quantity: '12 units', specs: 'Energy efficient, temperature monitoring' },
+          { item: 'POS Systems', quantity: '25 units', specs: 'Touch screen, integrated payment processing' },
+          { item: 'Display Shelving', quantity: '50 units', specs: 'Adjustable, food grade materials' },
+          { item: 'Installation & Training', quantity: '1 service', specs: 'Complete setup and staff training' }
+        ],
+        quotedPrice: '₹2,45,600',
+        additionalInfo: {
+          deliveryLocation: 'Multiple FreshMart locations',
+          paymentTerms: '30 days net',
+          warrantyRequirement: '3 years minimum',
+          certifications: 'Food safety standards'
+        }
+      }
+    };
+
+    // Search and filter functionality
+    function filterRFQs() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const statusFilter = document.getElementById('statusFilter').value;
+      const priorityFilter = document.getElementById('priorityFilter').value;
+      
+      const cards = document.querySelectorAll('#rfqGrid > div');
+      
+      cards.forEach(card => {
+        const rfqId = card.getAttribute('data-rfq');
+        const cardText = card.textContent.toLowerCase();
+        const cardStatus = card.querySelector('.status-badge').textContent.toLowerCase().replace(' ', '-');
+        const cardPriority = card.querySelector('[class*="priority-"]').textContent.toLowerCase().split(' ')[0];
+        
+        const matchesSearch = searchTerm === '' || cardText.includes(searchTerm);
+        const matchesStatus = statusFilter === '' || cardStatus === statusFilter;
+        const matchesPriority = priorityFilter === '' || cardPriority === priorityFilter;
+        
+        if (matchesSearch && matchesStatus && matchesPriority) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    // Event listeners for filters
+    document.getElementById('searchInput').addEventListener('input', filterRFQs);
+    document.getElementById('statusFilter').addEventListener('change', filterRFQs);
+    document.getElementById('priorityFilter').addEventListener('change', filterRFQs);
+    document.getElementById('dateFilter').addEventListener('change', filterRFQs);
+
+    // Open RFQ details modal
+    function openRFQDetails(rfqId) {
+      const data = rfqData[rfqId];
+      
+      if (!data) {
+        showToast(`RFQ data not found for ${rfqId}`, 'error');
+        return;
+      }
+      
+      document.getElementById('modalTitle').textContent = `${rfqId} - ${data.title}`;
+      document.getElementById('modalSubtitle').textContent = `Buyer: ${data.buyer} | Deadline: ${data.deadline}`;
+      
+      const content = `
+        <div class="space-y-6">
+          <!-- RFQ Overview -->
+          <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4">
+            <div class="grid md:grid-cols-4 gap-4">
+              <div>
+                <span class="text-sm font-medium text-gray-600">Status:</span>
+                <div class="flex items-center mt-1">
+                  <span class="status-badge ${getStatusClass(data.status)}">${data.status}</span>
+                </div>
+              </div>
+              <div>
+                <span class="text-sm font-medium text-gray-600">Priority:</span>
+                <div class="flex items-center mt-1">
+                  <span class="priority-${data.priority.toLowerCase()} px-2 py-1 rounded-full text-xs font-medium">
+                    ${data.priority} Priority
+                  </span>
+                </div>
+              </div>
+              <div>
+                <span class="text-sm font-medium text-gray-600">Time Left:</span>
+                <div class="flex items-center mt-1">
+                  <i class="fas fa-clock text-red-500 mr-2"></i>
+                  <span class="text-sm font-semibold text-red-600">${data.timeLeft}</span>
+                </div>
+              </div>
+              <div>
+                <span class="text-sm font-medium text-gray-600">Buyer:</span>
+                <div class="flex items-center mt-1">
+                  <i class="fas fa-building text-blue-500 mr-2"></i>
+                  <span class="text-sm font-semibold">${data.buyer}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div>
+            <h4 class="font-semibold text-gray-800 mb-2">
+              <i class="fas fa-info-circle text-blue-500 mr-2"></i>Description:
+            </h4>
+            <p class="text-gray-600 bg-gray-50 p-3 rounded-lg">${data.description}</p>
+          </div>
+
+          <!-- Requirements -->
+          <div>
+            <h4 class="font-semibold text-gray-800 mb-3">
+              <i class="fas fa-list-ul text-green-500 mr-2"></i>Requirements:
+            </h4>
+            <div class="space-y-3" id="requirementsList">
+              ${data.requirements.map((req, index) => `
+                <div class="border border-gray-200 rounded-lg p-4 bg-white">
+                  <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                      <h5 class="font-medium text-gray-800">${req.item}</h5>
+                      <p class="text-sm text-gray-600 mt-1">${req.specs}</p>
+                    </div>
+                    <div class="text-right ml-4">
+                      <span class="text-sm font-semibold text-purple-600 bg-purple-100 px-2 py-1 rounded">${req.quantity}</span>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- Additional Information -->
+          <div class="bg-gray-50 rounded-lg p-4">
+            <h4 class="font-semibold text-gray-800 mb-3">
+              <i class="fas fa-clipboard-list text-orange-500 mr-2"></i>Additional Information:
+            </h4>
+            <div class="grid md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <span class="font-medium text-gray-700">Delivery Location:</span>
+                <p class="text-gray-600">${data.additionalInfo.deliveryLocation}</p>
+              </div>
+              <div>
+                <span class="font-medium text-gray-700">Payment Terms:</span>
+                <p class="text-gray-600">${data.additionalInfo.paymentTerms}</p>
+              </div>
+              <div>
+                <span class="font-medium text-gray-700">Warranty Required:</span>
+                <p class="text-gray-600">${data.additionalInfo.warrantyRequirement}</p>
+              </div>
+              <div>
+                <span class="font-medium text-gray-700">Certifications:</span>
+                <p class="text-gray-600">${data.additionalInfo.certifications}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('modalContent').innerHTML = content;
+      
+      // Show pricing section for new quotes
+      document.getElementById('pricingSection').style.display = 'block';
+      
+      // Populate pricing table
+      populatePricingTable(data.requirements);
+      
+      document.getElementById('rfqModal').classList.remove('hidden');
+    }
+
+    // Populate pricing table with requirements
+    function populatePricingTable(requirements) {
+      const tableBody = document.getElementById('pricingTableBody');
+      tableBody.innerHTML = '';
+
+      requirements.forEach((req, index) => {
+        const row = document.createElement('tr');
+        row.className = 'border-b border-gray-100 hover:bg-gray-50';
+        
+        // Extract quantity number
+        const quantity = parseInt(req.quantity.split(' ')[0]) || 1;
+        
+        row.innerHTML = `
+          <td class="px-4 py-3">
+            <div class="font-medium text-gray-800">${req.item}</div>
+          </td>
+          <td class="px-4 py-3">
+            <div class="text-sm text-gray-600">${req.specs}</div>
+          </td>
+          <td class="px-4 py-3 text-center">
+            <span class="font-semibold text-purple-600 bg-purple-100 px-2 py-1 rounded">${quantity}</span>
+          </td>
+          <td class="px-4 py-3 text-center">
+            <input 
+              type="number" 
+              step="0.01" 
+              min="0" 
+              class="w-28 px-3 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-purple-500 focus:border-transparent net-price-input" 
+              placeholder="0.00"
+              data-quantity="${quantity}"
+              data-index="${index}"
+              onchange="calculateTotal()"
+            />
+          </td>
+          <td class="px-4 py-3 text-right">
+            <span class="font-bold text-green-600 total-price" id="total-${index}">₹0.00</span>
+          </td>
+        `;
+        
+        tableBody.appendChild(row);
+      });
+      
+      // Reset grand total
+      document.getElementById('grandTotal').textContent = '₹0.00';
+    }
+
+    // Calculate totals when price is entered
+    function calculateTotal() {
+      let grandTotal = 0;
+      
+      // Get all net price inputs
+      const priceInputs = document.querySelectorAll('.net-price-input');
+      
+      priceInputs.forEach((input, index) => {
+        const netPrice = parseFloat(input.value) || 0;
+        const quantity = parseInt(input.dataset.quantity) || 1;
+        const total = netPrice * quantity;
+        
+        // Update individual total
+        const totalElement = document.getElementById(`total-${index}`);
+        if (totalElement) {
+          totalElement.textContent = `₹${total.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        }
+        
+        // Add to grand total
+        grandTotal += total;
+      });
+      
+      // Update grand total with Indian formatting
+      document.getElementById('grandTotal').textContent = `₹${grandTotal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    }
+
+    // Save quotation as draft
+    function saveAsDraft() {
+      const priceInputs = document.querySelectorAll('.net-price-input');
+      let draftData = [];
+      
+      priceInputs.forEach((input, index) => {
+        if (parseFloat(input.value) > 0) {
+          draftData.push({
+            itemIndex: index,
+            netPrice: parseFloat(input.value),
+            quantity: parseInt(input.dataset.quantity)
+          });
+        }
+      });
+      
+      // Store in localStorage
+      const rfqId = document.getElementById('modalTitle').textContent.split(' - ')[0];
+      localStorage.setItem(`draft_${rfqId}`, JSON.stringify(draftData));
+      
+      showToast('Quotation saved as draft successfully!', 'success');
+    }
+
+    // Submit quotation to buyer
+    function submitQuotation() {
+      // Validate that all prices are entered
+      const priceInputs = document.querySelectorAll('.net-price-input');
+      let allPricesEntered = true;
+      let hasValidPrices = false;
+      let totalItems = 0;
+      let pricedItems = 0;
+      
+      priceInputs.forEach(input => {
+        totalItems++;
+        const price = parseFloat(input.value) || 0;
+        if (price > 0) {
+          hasValidPrices = true;
+          pricedItems++;
+        }
+      });
+      
+      if (!hasValidPrices) {
+        showToast('Please enter at least one valid price before submitting!', 'error');
+        return;
+      }
+      
+      // Check delivery timeline and payment terms
+      const deliveryTimeline = document.getElementById('deliveryTimeline').value;
+      const paymentTerms = document.getElementById('paymentTerms').value;
+      
+      if (!deliveryTimeline || !paymentTerms) {
+        showToast('Please select delivery timeline and payment terms!', 'error');
+        return;
+      }
+      
+      // Get grand total
+      const grandTotal = document.getElementById('grandTotal').textContent;
+      const rfqId = document.getElementById('modalTitle').textContent.split(' - ')[0];
+      
+      // Collect quotation data
+      const quotationData = {
+        rfqId: rfqId,
+        rfqTitle: document.getElementById('modalTitle').textContent.split(' - ')[1],
+        prices: [],
+        grandTotal: grandTotal,
+        deliveryTimeline: deliveryTimeline,
+        paymentTerms: paymentTerms,
+        notes: document.getElementById('additionalNotes').value,
+        submittedAt: new Date().toISOString(),
+        submittedDate: new Date().toLocaleDateString('en-IN'),
+        vendorId: 'VENDOR_001',
+        vendorName: 'Your Company Name',
+        status: 'submitted',
+        totalItems: totalItems,
+        pricedItems: pricedItems
+      };
+      
+      // Collect individual prices
+      priceInputs.forEach((input, index) => {
+        const netPrice = parseFloat(input.value) || 0;
+        if (netPrice > 0) {
+          quotationData.prices.push({
+            itemIndex: index,
+            itemName: input.closest('tr').querySelector('td:first-child .font-medium').textContent,
+            netPrice: netPrice,
+            quantity: parseInt(input.dataset.quantity),
+            total: netPrice * parseInt(input.dataset.quantity)
+          });
+        }
+      });
+      
+      // Simulate sending to buyer dashboard
+      simulateBuyerNotification(quotationData);
+      
+      // Show success message
+      showToast(`Quotation submitted successfully! Total: ${grandTotal} for ${pricedItems} items`, 'success');
+      
+      // Close modal
+      closeModal();
+      
+      // Show additional success message
+      setTimeout(() => {
+        showToast('Your quotation has been sent to the buyer dashboard!', 'info');
+      }, 2000);
+    }
+
+    // Simulate sending notification to buyer dashboard
+    function simulateBuyerNotification(quotationData) {
+      // Store quotation in localStorage for buyer dashboard
+      let buyerQuotations = JSON.parse(localStorage.getItem('buyerQuotations') || '[]');
+      buyerQuotations.push(quotationData);
+      localStorage.setItem('buyerQuotations', JSON.stringify(buyerQuotations));
+      
+      // Create buyer notification
+      const notification = {
+        id: Date.now(),
+        type: 'new_quotation',
+        title: 'New Quotation Received',
+        message: `${quotationData.vendorName} submitted a quotation for ${quotationData.rfqId}`,
+        total: quotationData.grandTotal,
+        vendor: quotationData.vendorName,
+        rfqId: quotationData.rfqId,
+        itemCount: quotationData.pricedItems,
+        timestamp: new Date().toLocaleString(),
+        isRead: false
+      };
+      
+      let buyerNotifications = JSON.parse(localStorage.getItem('buyerNotifications') || '[]');
+      buyerNotifications.unshift(notification);
+      localStorage.setItem('buyerNotifications', JSON.stringify(buyerNotifications));
+      
+      console.log('Quotation sent to buyer dashboard:', quotationData);
+    }
+
+    // Enhanced toast function
+    function showToast(message, type = 'info') {
+      // Remove existing toast
+      const existingToast = document.querySelector('.toast');
+      if (existingToast) {
+        existingToast.remove();
+      }
+      
+      // Create toast
+      const toast = document.createElement('div');
+      toast.className = `toast fixed top-4 right-4 px-6 py-4 rounded-lg text-white font-medium shadow-lg z-50 transform transition-all duration-300 translate-x-full max-w-sm`;
+      
+      // Set colors based on type
+      if (type === 'success') {
+        toast.classList.add('bg-green-500');
+        toast.innerHTML = `<i class="fas fa-check-circle mr-2"></i>${message}`;
+      } else if (type === 'error') {
+        toast.classList.add('bg-red-500');
+        toast.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i>${message}`;
+      } else {
+        toast.classList.add('bg-blue-500');
+        toast.innerHTML = `<i class="fas fa-info-circle mr-2"></i>${message}`;
+      }
+      
+      document.body.appendChild(toast);
+      
+      // Animate in
+      setTimeout(() => {
+        toast.classList.remove('translate-x-full');
+      }, 100);
+      
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        toast.classList.add('translate-x-full');
+        setTimeout(() => {
+          if (toast.parentNode) {
+            toast.remove();
+          }
+        }, 300);
+      }, 5000);
+    }
+
+    // View submitted quotation (for already quoted RFQs)
+    function viewSubmittedQuote(rfqId) {
+      const data = rfqData[rfqId];
+      if (!data) return;
+
+      document.getElementById('modalTitle').textContent = `${rfqId} - ${data.title} (Submitted)`;
+      document.getElementById('modalSubtitle').textContent = `Buyer: ${data.buyer} | Status: ${data.status}`;
+
+      // Create sample submitted quote data for demo
+      const sampleQuoteData = {
+        submittedDate: '2024-12-10',
+        quotedItems: [
+          { item: data.requirements[0]?.item || 'Sample Item 1', quantity: '5', unitPrice: '15,000', total: '75,000' },
+          { item: data.requirements[1]?.item || 'Sample Item 2', quantity: '25', unitPrice: '2,500', total: '62,500' },
+          { item: data.requirements[2]?.item || 'Sample Item 3', quantity: '1', unitPrice: '45,000', total: '45,000' }
+        ],
+        grandTotal: '1,82,500',
+        deliveryTimeline: '30 Days',
+        paymentTerms: '50% Advance, 50% on Delivery',
+        notes: 'All items include installation and 1-year warranty. Prices are inclusive of transportation charges.'
+      };
+
+      const content = `
+        <div class="space-y-6">
+          <!-- Quote Status Banner -->
+          <div class="bg-gradient-to-r from-green-50 to-blue-50 border-l-4 border-green-500 rounded-lg p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-lg font-semibold text-green-800">
+                  <i class="fas fa-check-circle mr-2"></i>Quote Submitted Successfully
+                </h3>
+                <p class="text-sm text-green-600">Submitted on ${sampleQuoteData.submittedDate} | Status: ${data.status}</p>
+              </div>
+              <div class="text-right">
+                <div class="text-2xl font-bold text-green-600">₹${sampleQuoteData.grandTotal}</div>
+                <div class="text-sm text-gray-600">Total Quote Value</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RFQ Information -->
+          <div class="bg-gray-50 rounded-lg p-4">
+            <h4 class="font-semibold text-gray-800 mb-3">
+              <i class="fas fa-info-circle text-blue-500 mr-2"></i>Original RFQ Details
+            </h4>
+            <div class="grid md:grid-cols-2 gap-4 text-sm">
+              <div><span class="font-medium">Buyer:</span> ${data.buyer}</div>
+              <div><span class="font-medium">Priority:</span> ${data.priority}</div>
+              <div><span class="font-medium">Deadline:</span> ${data.deadline}</div>
+              <div><span class="font-medium">Status:</span> ${data.status}</div>
+            </div>
+            <div class="mt-3">
+              <span class="font-medium">Description:</span>
+              <p class="text-gray-600 mt-1">${data.description}</p>
+            </div>
+          </div>
+
+          <!-- Submitted Quote Details -->
+          <div class="bg-white border rounded-lg overflow-hidden">
+            <div class="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-4">
+              <h4 class="font-semibold">
+                <i class="fas fa-file-invoice-dollar mr-2"></i>Your Submitted Quotation
+              </h4>
+            </div>
+            
+            <!-- Quote Items Table -->
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead class="bg-gray-100">
+                  <tr>
+                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Item</th>
+                    <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700">Quantity</th>
+                    <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700">Unit Price (₹)</th>
+                    <th class="px-4 py-3 text-right text-sm font-semibold text-gray-700">Total (₹)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${sampleQuoteData.quotedItems.map(item => `
+                    <tr class="border-b border-gray-100">
+                      <td class="px-4 py-3 font-medium">${item.item}</td>
+                      <td class="px-4 py-3 text-center">${item.quantity}</td>
+                      <td class="px-4 py-3 text-center">₹${item.unitPrice}</td>
+                      <td class="px-4 py-3 text-right font-semibold text-green-600">₹${item.total}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+                <tfoot class="bg-green-50">
+                  <tr>
+                    <td colspan="3" class="px-4 py-3 text-right font-bold text-gray-800">Grand Total:</td>
+                    <td class="px-4 py-3 text-right font-bold text-2xl text-green-600">₹${sampleQuoteData.grandTotal}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+
+          <!-- Quote Terms -->
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="bg-blue-50 rounded-lg p-4">
+              <h5 class="font-semibold text-gray-800 mb-2">
+                <i class="fas fa-truck text-blue-500 mr-2"></i>Delivery Terms
+              </h5>
+              <p class="text-gray-700">${sampleQuoteData.deliveryTimeline}</p>
+            </div>
+            <div class="bg-green-50 rounded-lg p-4">
+              <h5 class="font-semibold text-gray-800 mb-2">
+                <i class="fas fa-credit-card text-green-500 mr-2"></i>Payment Terms
+              </h5>
+              <p class="text-gray-700">${sampleQuoteData.paymentTerms}</p>
+            </div>
+          </div>
+
+          <!-- Additional Notes -->
+          <div class="bg-yellow-50 rounded-lg p-4">
+            <h5 class="font-semibold text-gray-800 mb-2">
+              <i class="fas fa-sticky-note text-yellow-500 mr-2"></i>Additional Notes
+            </h5>
+            <p class="text-gray-700">${sampleQuoteData.notes}</p>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex justify-between items-center pt-4 border-t">
+            <div class="flex gap-3">
+              <button onclick="downloadQuote('${rfqId}')" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                <i class="fas fa-download mr-2"></i>Download Quote
+              </button>
+              <button onclick="emailQuote('${rfqId}')" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                <i class="fas fa-envelope mr-2"></i>Email to Buyer
+              </button>
+            </div>
+            ${data.status === 'Quoted' || data.status === 'In Review' ? `
+              <button onclick="editQuote('${rfqId}')" class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                <i class="fas fa-edit mr-2"></i>Edit Quote
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `;
+
+      document.getElementById('modalContent').innerHTML = content;
+      
+      // Hide the pricing section for view mode
+      document.getElementById('pricingSection').style.display = 'none';
+      
+      document.getElementById('rfqModal').classList.remove('hidden');
+    }
+
+    // Download quote function
+    function downloadQuote(rfqId) {
+      showToast('Quote PDF download started!', 'success');
+      // In real implementation, this would generate and download a PDF
+    }
+
+    // Email quote function
+    function emailQuote(rfqId) {
+      showToast('Quote has been emailed to the buyer!', 'success');
+      // In real implementation, this would send an email
+    }
+
+    // Edit quote function
+    function editQuote(rfqId) {
+      closeModal();
+      setTimeout(() => {
+        openRFQDetails(rfqId);
+        showToast('You can now modify your quote and resubmit', 'info');
+      }, 300);
+    }
+
+    // Close modal
+    function closeModal() {
+      document.getElementById('rfqModal').classList.add('hidden');
+    }
+
+    // Go back function
+    function goBack() {
+      window.history.back();
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('rfqModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeModal();
+      }
+    });
+
+    // Pagination functionality
+    let currentPage = 1;
+    const itemsPerPage = 6;
+    let allRfqCards = [];
+
+    // Initialize pagination
+    function initPagination() {
+      allRfqCards = Array.from(document.querySelectorAll('#rfqGrid > div'));
+      showPage(1);
+    }
+
+    // Show specific page
+    function showPage(pageNumber) {
+      currentPage = pageNumber;
+      const startIndex = (pageNumber - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      
+      // Hide all cards first
+      allRfqCards.forEach(card => {
+        card.style.display = 'none';
+      });
+      
+      // Show cards for current page
+      const visibleCards = getFilteredCards();
+      const cardsToShow = visibleCards.slice(startIndex, endIndex);
+      
+      cardsToShow.forEach(card => {
+        card.style.display = 'block';
+      });
+      
+      updatePaginationButtons();
+      updatePageInfo();
+    }
+
+    // Get filtered cards based on current filters
+    function getFilteredCards() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const statusFilter = document.getElementById('statusFilter').value;
+      const priorityFilter = document.getElementById('priorityFilter').value;
+      
+      return allRfqCards.filter(card => {
+        const cardText = card.textContent.toLowerCase();
+        const cardStatus = card.querySelector('.status-badge').textContent.toLowerCase().replace(' ', '-');
+        const cardPriority = card.querySelector('[class*="priority-"]').textContent.toLowerCase().split(' ')[0];
+        
+        const matchesSearch = searchTerm === '' || cardText.includes(searchTerm);
+        const matchesStatus = statusFilter === '' || cardStatus === statusFilter;
+        const matchesPriority = priorityFilter === '' || cardPriority === priorityFilter;
+        
+        return matchesSearch && matchesStatus && matchesPriority;
+      });
+    }
+
+    // Update pagination buttons
+    function updatePaginationButtons() {
+      const visibleCards = getFilteredCards();
+      const totalPages = Math.ceil(visibleCards.length / itemsPerPage);
+      
+      // Update page buttons
+      const pageButtons = document.querySelectorAll('.page-btn');
+      pageButtons.forEach(btn => {
+        const page = parseInt(btn.dataset.page);
+        btn.classList.remove('bg-purple-600', 'text-white');
+        btn.classList.add('bg-white', 'shadow-sm', 'hover:bg-gray-50');
+        
+        if (page === currentPage) {
+          btn.classList.remove('bg-white', 'shadow-sm', 'hover:bg-gray-50');
+          btn.classList.add('bg-purple-600', 'text-white');
+        }
+        
+        // Hide/show buttons based on total pages
+        if (page <= totalPages) {
+          btn.style.display = 'block';
+        } else {
+          btn.style.display = 'none';
+        }
+      });
+      
+      // Update prev/next buttons
+      document.getElementById('prevPage').disabled = currentPage === 1;
+      document.getElementById('nextPage').disabled = currentPage === totalPages;
+      
+      // Update ellipsis visibility
+      const ellipsis = document.getElementById('ellipsis');
+      if (totalPages > 6) {
+        ellipsis.style.display = 'block';
+      } else {
+        ellipsis.style.display = 'none';
+      }
+    }
+
+    // Update page info (optional - can show "Showing X of Y results")
+    function updatePageInfo() {
+      const visibleCards = getFilteredCards();
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = Math.min(startIndex + itemsPerPage, visibleCards.length);
+      
+      // You can add a page info element if needed
+      console.log(`Showing ${startIndex + 1}-${endIndex} of ${visibleCards.length} RFQs`);
+    }
+
+    // Go to specific page
+    function goToPage(pageNumber) {
+      const visibleCards = getFilteredCards();
+      const totalPages = Math.ceil(visibleCards.length / itemsPerPage);
+      
+      if (pageNumber >= 1 && pageNumber <= totalPages) {
+        showPage(pageNumber);
+      }
+    }
+
+    // Change page (prev/next)
+    function changePage(direction) {
+      const visibleCards = getFilteredCards();
+      const totalPages = Math.ceil(visibleCards.length / itemsPerPage);
+      
+      if (direction === 'prev' && currentPage > 1) {
+        goToPage(currentPage - 1);
+      } else if (direction === 'next' && currentPage < totalPages) {
+        goToPage(currentPage + 1);
+      }
+    }
+
+    // Updated filter function to work with pagination
+    function filterRFQs() {
+      // Reset to first page when filtering
+      currentPage = 1;
+      showPage(1);
+    }
+
+    // Initialize pagination when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      initPagination();
+    });
+  </script>
+</body>
+</html>

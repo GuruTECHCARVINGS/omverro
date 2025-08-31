@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vendor Registration</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --primary-purple: #6A1B9A;
+      --secondary-purple: #8E24AA;
+      --bg-gray: #FAFAFA;
+      --border-gray: #E0E0E0;
+      --text-gray: #212121;
+    }
+  </style>
+</head>
+<body class="bg-[#FAFAFA] text-[#212121] font-sans">
+
+  <div class="max-w-4xl mx-auto mt-10 p-8 bg-white shadow-2xl rounded-2xl border border-gray-200">
+
+    <h2 class="text-3xl font-extrabold mb-8 text-center text-[#6A1B9A]">🌐 Vendor Registration Form</h2>
+
+    <!-- Wrap Form in a Container -->
+    <div id="formContainer">
+      <form id="vendorForm" class="space-y-6" enctype="multipart/form-data">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-semibold text-[#6A1B9A]">Company Name</label>
+            <input type="text" name="company_name" placeholder="e.g., ABC Pvt Ltd" class="w-full border border-[#E0E0E0] p-3 rounded-md bg-white" required>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-[#6A1B9A]">Business Type</label>
+            <input type="text" name="business_type" placeholder="e.g., Manufacturer" class="w-full border border-[#E0E0E0] p-3 rounded-md bg-white" required>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-[#6A1B9A]">Contact Person</label>
+            <input type="text" name="contact_person" class="w-full border border-[#E0E0E0] p-3 rounded-md bg-white" required>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-[#6A1B9A]">Email</label>
+            <input type="email" name="email" class="w-full border border-[#E0E0E0] p-3 rounded-md bg-white" required>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-[#6A1B9A]">Mobile Number</label>
+            <input type="tel" name="mobile" class="w-full border border-[#E0E0E0] p-3 rounded-md bg-white" required>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-[#6A1B9A]">GST Number</label>
+            <input type="text" name="gst_number" class="w-full border border-[#E0E0E0] p-3 rounded-md bg-white" required>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-[#6A1B9A]">Upload GST Certificate</label>
+            <input type="file" name="gst_certificate" accept=".pdf,.jpg,.jpeg,.png" class="w-full border border-[#E0E0E0] p-3 rounded-md bg-white" required>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-[#6A1B9A]">Upload PAN Card</label>
+            <input type="file" name="pan_card" accept=".pdf,.jpg,.jpeg,.png" class="w-full border border-[#E0E0E0] p-3 rounded-md bg-white" required>
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-semibold text-[#6A1B9A] mb-1">Registered Business Address</label>
+            <div class="bg-gray-100 p-4 rounded border border-gray-200 mb-3 flex items-start gap-3">
+              <div class="text-[#6A1B9A] text-xl">📍</div>
+              <div>
+                <p class="font-semibold text-[#333]">Typical Registered Business Address</p>
+                <p class="text-sm text-gray-700">123, Business Park, MG Road, Bengaluru, Karnataka, 560001</p>
+              </div>
+            </div>
+            <textarea name="business_address" placeholder="Enter your registered business address..." class="w-full border border-[#E0E0E0] p-3 rounded-md bg-white" rows="3" required></textarea>
+            <p class="text-gray-500 text-sm mt-1">Please provide your own address details in the box above.</p>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-[#6A1B9A]">Pincode</label>
+            <input type="text" name="pincode" class="w-full border border-[#E0E0E0] p-3 rounded-md bg-white" required>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-[#6A1B9A]">Country</label>
+            <input type="text" name="country" value="India" class="w-full border border-[#E0E0E0] p-3 rounded-md bg-white" required>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-[#6A1B9A]">State</label>
+            <input type="text" name="state" class="w-full border border-[#E0E0E0] p-3 rounded-md bg-white" required>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-[#6A1B9A]">Business Sector</label>
+            <select name="business_sector" class="w-full border border-[#E0E0E0] p-3 rounded-md bg-white" required>
+              <option value="">-- Select Sector --</option>
+              <option value="manufacturing">Manufacturing</option>
+              <option value="services">Services</option>
+              <option value="retail">Retail</option>
+              <option value="technology">Technology</option>
+              <option value="logistics">Logistics</option>
+              <option value="others">Others</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-[#6A1B9A]">Pan-India Supply Capability</label>
+            <select name="pan_india" class="w-full border border-[#E0E0E0] p-3 rounded-md bg-white" required>
+              <option value="">-- Select Option --</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-[#6A1B9A]">Company Website (Optional)</label>
+            <input type="url" name="website" placeholder="https://example.com" class="w-full border border-[#E0E0E0] p-3 rounded-md bg-white">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-[#6A1B9A]">Company Registration Number</label>
+            <input type="text" name="reg_number" class="w-full border border-[#E0E0E0] p-3 rounded-md bg-white" required>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-[#6A1B9A]">Years in Business</label>
+            <input type="number" name="years_in_business" min="0" class="w-full border border-[#E0E0E0] p-3 rounded-md bg-white" required>
+          </div>
+        </div>
+
+        <div class="text-center pt-4">
+          <button type="submit" onclick="handleRegistration(event)" class="bg-gradient-to-r from-[#6A1B9A] to-[#8E24AA] hover:from-[#7B1FA2] hover:to-[#9C27B0] text-white px-8 py-3 rounded-lg text-lg shadow-lg">
+            Register
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Success Message -->
+    <div id="successMessage" class="hidden text-center mt-10">
+      <h3 class="text-green-600 text-2xl font-semibold">✅ Registration Successful!</h3>
+      <p class="text-gray-700 mt-2">Thank you for registering with us. Please proceed to the next step for onboarding.</p>
+      <a href="./2_Vendor_onboarding.html" class="inline-block mt-5 bg-[#6A1B9A] hover:bg-[#7B1FA2] text-white px-6 py-3 rounded-lg">Proceed to Onboarding</a>
+    </div>
+
+  </div>
+
+  <script>
+    function handleRegistration(event) {
+      event.preventDefault();
+      const formContainer = document.getElementById('formContainer');
+      formContainer.remove(); // Remove the form entirely
+      document.getElementById('successMessage').classList.remove('hidden');
+    }
+  </script>
+
+</body>
+</html>

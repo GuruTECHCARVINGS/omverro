@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <title>Active Orders - Vendor Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet"/>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #F9F9FA;
+      color: #212121;
+    }
+    
+    /* Custom purple shades */
+    .purple-light {
+      background-color: #E1BEE7;
+      color: #6A1B9A;
+    }
+    .purple-dark {
+      color: #6A1B9A;
+    }
+    .purple-bg {
+      background-color: #6A1B9A;
+      color: white;
+    }
+    .box-white {
+      background-color: #FFFFFF;
+      border: 1px solid #E0E0E0;
+      border-radius: 1rem;
+    }
+    
+    /* Sidebar styles */
+    .sidebar-active {
+      background-color: #6A1B9A !important;
+      color: white !important;
+      box-shadow: 0 4px 12px rgba(106, 27, 154, 0.3);
+    }
+    .sidebar-active i {
+      color: white !important;
+    }
+    .sidebar {
+      background-color: #FAFAFA;
+      color: #333333;
+      min-height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 30;
+      width: 256px;
+      transition: transform 0.3s ease;
+    }
+    .sidebar a {
+      color: #555555;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    .sidebar a:hover {
+      background-color: #F3F0FF !important;
+      color: #6A1B9A !important;
+      transform: translateX(4px);
+    }
+    .sidebar a:hover i {
+      color: #6A1B9A !important;
+    }
+    .sidebar-icon-bg {
+      background-color: #E1BEE7;
+      color: #6A1B9A;
+      border-radius: 0.75rem;
+      padding: 0.5rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    /* Status badges */
+    .status-badge {
+      padding: 0.4rem 0.8rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .status-pending { background-color: #fef3c7; color: #d97706; }
+    .status-processing { background-color: #dbeafe; color: #2563eb; }
+    .status-shipped { background-color: #dcfce7; color: #16a34a; }
+    .status-delivered { background-color: #f0f9ff; color: #0369a1; }
+    .status-cancelled { background-color: #fee2e2; color: #dc2626; }
+    .status-on-hold { background-color: #fef3c7; color: #f59e0b; }
+    
+    /* Priority badges */
+    .priority-high { background-color: #fee2e2; color: #dc2626; }
+    .priority-medium { background-color: #fef3c7; color: #d97706; }
+    .priority-low { background-color: #dcfce7; color: #16a34a; }
+    
+    /* Table styles */
+    .table-container {
+      overflow-x: auto;
+      border-radius: 1rem;
+    }
+    
+    table {
+      min-width: 1200px;
+    }
+    
+    .table-row:hover {
+      background-color: #f8fafc;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Filter styles */
+    .filter-btn {
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      border: 1px solid #e5e7eb;
+      background-color: white;
+      transition: all 0.2s;
+    }
+    .filter-btn:hover {
+      background-color: #f3f4f6;
+    }
+    .filter-btn.active {
+      background-color: #6A1B9A;
+      color: white;
+      border-color: #6A1B9A;
+    }
+    
+    /* Action button styles */
+    .action-btn {
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      border: 1px solid;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .action-btn-primary {
+      background-color: #6A1B9A;
+      color: white;
+      border-color: #6A1B9A;
+    }
+    .action-btn-primary:hover {
+      background-color: #5B1A8B;
+    }
+    .action-btn-secondary {
+      background-color: white;
+      color: #6A1B9A;
+      border-color: #6A1B9A;
+    }
+    .action-btn-secondary:hover {
+      background-color: #f8f4f9;
+    }
+    
+    /* Modal styles */
+    .modal-backdrop {
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+    }
+    
+    /* Animation classes */
+    .fade-in {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Search input */
+    .search-input {
+      padding-left: 2.5rem;
+    }
+    
+    /* Card hover effects */
+    .hover-card {
+      transition: all 0.3s ease;
+    }
+    .hover-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(106, 27, 154, 0.1);
+    }
+    
+    /* Mobile sidebar */
+    @media (max-width: 768px) {
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        z-index: 50;
+        width: 280px;
+        transition: left 0.3s ease;
+      }
+      .sidebar.open {
+        left: 0;
+      }
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 40;
+      }
+      .sidebar-overlay.open {
+        display: block;
+      }
+      .main-content {
+        margin-left: 0;
+        width: 100%;
+      }
+      .mobile-menu-btn {
+        display: block;
+      }
+    }
+    
+    @media (min-width: 769px) {
+      .mobile-menu-btn {
+        display: none;
+      }
+      .main-content {
+        margin-left: 256px;
+        width: calc(100% - 256px);
+        padding-left: 1rem;
+      }
+    }
+    
+    /* Improved icon spacing */
+    .sidebar i {
+      width: 20px;
+      text-align: center;
+    }
+    
+    /* Layout improvements */
+    .main-content {
+      transition: margin-left 0.3s ease, width 0.3s ease;
+    }
+    
+    /* Sidebar collapse styles */
+    .sidebar.collapsed {
+      transform: translateX(-100%);
+    }
+    
+    .main-content.full-width {
+      margin-left: 0 !important;
+      width: 100% !important;
+    }
+    
+    /* Sidebar toggle button */
+    .sidebar-toggle {
+      position: absolute;
+      top: 50%;
+      right: 15px;
+      transform: translateY(-50%);
+      z-index: 40;
+      background-color: #6A1B9A;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(106, 27, 154, 0.3);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 14px;
+    }
+    
+    .sidebar-toggle:hover {
+      background-color: #5B1A8B;
+      transform: translateY(-50%) scale(1.05);
+    }
+    
+    .sidebar-toggle.collapsed {
+      position: fixed;
+      top: 30px;
+      right: auto;
+      left: 20px;
+      transform: none;
+      z-index: 50;
+      width: 40px;
+      height: 40px;
+      font-size: 16px;
+      box-shadow: 0 4px 15px rgba(106, 27, 154, 0.4);
+      animation: pulse 2s infinite;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .sidebar-toggle.collapsed:hover {
+      animation: none;
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(106, 27, 154, 0.8);
+    }
+    
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 4px 15px rgba(106, 27, 154, 0.4);
+      }
+      50% {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(106, 27, 154, 0.6);
+      }
+      100% {
+        transform: scale(1);
+        box-shadow: 0 4px 15px rgba(106, 27, 154, 0.4);
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gray-50">
+  <!-- Sidebar -->
+  <aside class="sidebar w-64 flex flex-col border-r border-gray-300 select-none">
+    <div class="flex items-center gap-3 px-4 py-4 border-b border-gray-300 relative">
+      <img src="data:image/jpeg;base64,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" 
+           class="w-8 h-8 rounded-full" alt="Vendor Portal Logo">
+      <span class="font-semibold text-lg">Vendor Portal</span>
+      <!-- Sidebar Toggle Button -->
+      <button id="sidebarToggle" class="sidebar-toggle">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+    </div>
+    <nav class="flex flex-col gap-1 mt-6 px-4 flex-grow text-sm font-medium">
+      <a href="vendordashboard.html" class="flex items-center gap-3 px-4 py-3 rounded-xl transition hover:bg-purple-50 hover:text-purple-700">
+        <i class="fas fa-tachometer-alt w-5"></i>
+        Dashboard
+      </a>
+      <a href="./2_homepage.html" class="flex items-center gap-3 px-4 py-3 rounded-xl transition hover:bg-purple-50 hover:text-purple-700">
+        <i class="fas fa-clipboard-list w-5"></i>
+        RFQ Management
+      </a>
+      <a href="Vendor_Order.html" class="sidebar-active flex items-center gap-3 px-4 py-3 rounded-xl transition">
+        <i class="fas fa-shopping-cart w-5"></i>
+        Orders
+      </a>
+      <a href="Vendor_ASN.html" class="flex items-center gap-3 px-4 py-3 rounded-xl transition hover:bg-purple-50 hover:text-purple-700">
+        <i class="fas fa-truck-loading w-5"></i>
+        ASN & Shipping
+      </a>
+      <a href="Vendor_Product_inventory.html" class="flex items-center gap-3 px-4 py-3 rounded-xl transition hover:bg-purple-50 hover:text-purple-700">
+        <i class="fas fa-box-open w-5"></i>
+        Products & Inventory
+      </a>
+      <a href="Vendor_payment.html" class="flex items-center gap-3 px-4 py-3 rounded-xl transition hover:bg-purple-50 hover:text-purple-700">
+        <i class="fas fa-credit-card w-5"></i>
+        Payments
+      </a>
+      <a href="Vendor_portal_invoices.html" class="flex items-center gap-3 px-4 py-3 rounded-xl transition hover:bg-purple-50 hover:text-purple-700">
+        <i class="fas fa-file-invoice-dollar w-5"></i>
+        Invoices
+      </a>
+      <a href="Vendor_analytics.html" class="flex items-center gap-3 px-4 py-3 rounded-xl transition hover:bg-purple-50 hover:text-purple-700">
+        <i class="fas fa-chart-line w-5"></i>
+        Analytics & Reports
+      </a>
+      <a href="Vendor_supporttickets.html" class="flex items-center gap-3 px-4 py-3 rounded-xl transition hover:bg-purple-50 hover:text-purple-700">
+        <i class="fas fa-headset w-5"></i>
+        Support Center
+      </a>
+      <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl transition hover:bg-purple-50 hover:text-purple-700">
+        <i class="fas fa-handshake w-5"></i>
+        Compliance
+      </a>
+      <a href="Vendor_Settings.html" class="flex items-center gap-3 px-4 py-3 rounded-xl transition hover:bg-purple-50 hover:text-purple-700">
+        <i class="fas fa-cog w-5"></i>
+        Settings
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Sidebar overlay for mobile -->
+  <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+  <!-- Main content -->
+  <main class="main-content flex-1 p-2 md:p-4 overflow-x-auto relative">
+    <!-- Header -->
+    <header class="flex justify-between items-center mb-8">
+      <div class="flex items-center gap-4">
+        <button id="mobileMenuBtn" class="mobile-menu-btn text-2xl text-gray-600 hover:text-purple-700 md:hidden">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div>
+          <h1 class="text-2xl md:text-3xl font-bold text-[#212121] select-none">Active Orders</h1>
+          <p class="text-[#666666] mt-1 text-sm md:text-base">Manage and track all your active order fulfillments</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-4 md:gap-8 text-[#212121] relative">
+        <div class="relative">
+          <button aria-label="Notifications" class="text-xl md:text-2xl hover:text-purple-700 transition relative">
+            <i class="far fa-bell"></i>
+            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 md:h-5 md:w-5 flex items-center justify-center">3</span>
+          </button>
+        </div>
+        <div class="relative">
+          <button aria-label="Messages" class="text-xl md:text-2xl hover:text-purple-700 transition relative">
+            <i class="far fa-envelope"></i>
+            <span class="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full h-4 w-4 md:h-5 md:w-5 flex items-center justify-center">5</span>
+          </button>
+        </div>
+        <div class="relative" id="profile-menu-container">
+          <button id="profile-button" aria-label="Profile" class="text-xl md:text-2xl hover:text-purple-700 transition focus:outline-none">
+            <i class="far fa-user-circle"></i>
+          </button>
+          <div id="profile-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white border border-gray-300 rounded-lg shadow-lg z-50">
+            <div class="px-4 py-3 border-b border-gray-200">
+              <p class="text-sm font-medium text-gray-800">John Vendor</p>
+              <p class="text-xs text-gray-500">john@vendor.com</p>
+            </div>
+            <a href="Vendor_Settings.html" class="block px-4 py-2 text-gray-800 hover:bg-purple-100 hover:text-purple-700">
+              <i class="fas fa-user-edit mr-2"></i>Profile Settings
+            </a>
+            <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-purple-100 hover:text-purple-700">
+              <i class="fas fa-bell mr-2"></i>Notifications
+            </a>
+            <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-purple-100 hover:text-purple-700">
+              <i class="fas fa-question-circle mr-2"></i>Help & Support
+            </a>
+            <div class="border-t border-gray-200">
+              <a href="login.html" class="block px-4 py-2 text-gray-800 hover:bg-purple-100 hover:text-purple-700 rounded-b-lg">
+                <i class="fas fa-sign-out-alt mr-2"></i>Log Out
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Summary Cards -->
+    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="box-white p-6 shadow hover-card rounded-2xl">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Total Active Orders</p>
+            <p class="text-3xl font-bold text-[#212121] mt-2">48</p>
+            <p class="text-sm text-green-600 mt-1">+8 from yesterday</p>
+          </div>
+          <div class="sidebar-icon-bg">
+            <i class="fas fa-shopping-cart text-xl"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="box-white p-6 shadow hover-card rounded-2xl">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Orders in Processing</p>
+            <p class="text-3xl font-bold text-[#212121] mt-2">15</p>
+            <p class="text-sm text-blue-600 mt-1">Require attention</p>
+          </div>
+          <div class="sidebar-icon-bg">
+            <i class="fas fa-cogs text-xl"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="box-white p-6 shadow hover-card rounded-2xl">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Ready to Ship</p>
+            <p class="text-3xl font-bold text-[#212121] mt-2">23</p>
+            <p class="text-sm text-orange-600 mt-1">Awaiting ASN</p>
+          </div>
+          <div class="sidebar-icon-bg">
+            <i class="fas fa-truck text-xl"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="box-white p-6 shadow hover-card rounded-2xl">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Total Value</p>
+            <p class="text-3xl font-bold text-[#212121] mt-2">₹12.8L</p>
+            <p class="text-sm text-green-600 mt-1">Active orders value</p>
+          </div>
+          <div class="sidebar-icon-bg">
+            <i class="fas fa-rupee-sign text-xl"></i>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters and Search -->
+    <section class="box-white p-6 shadow rounded-2xl mb-8">
+      <div class="flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between">
+        <!-- Search -->
+        <div class="relative flex-1 max-w-md">
+          <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+          <input type="text" id="searchInput" placeholder="Search orders, products, or customers..." 
+                 class="search-input w-full py-2 pl-10 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+        </div>
+        
+        <!-- Filters -->
+        <div class="flex flex-wrap gap-3">
+          <button class="filter-btn active" data-filter="all">All Orders</button>
+          <button class="filter-btn" data-filter="pending">Pending</button>
+          <button class="filter-btn" data-filter="processing">Processing</button>
+          <button class="filter-btn" data-filter="shipped">Shipped</button>
+          <button class="filter-btn" data-filter="high-priority">High Priority</button>
+        </div>
+        
+        <!-- Export -->
+        <button class="action-btn action-btn-secondary flex items-center gap-2">
+          <i class="fas fa-download"></i>
+          Export
+        </button>
+      </div>
+    </section>
+
+    <!-- Orders Table -->
+    <section class="box-white shadow rounded-2xl overflow-hidden">
+      <div class="table-container">
+        <table class="w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+              </th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Order Details</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Customer</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Products</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Priority</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Due Date</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Value</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTableBody" class="bg-white divide-y divide-gray-200">
+            <!-- Orders will be populated by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Pagination -->
+    <section class="flex items-center justify-between mt-6">
+      <div class="text-sm text-gray-600">
+        Showing <span id="showingFrom">1</span> to <span id="showingTo">10</span> of <span id="totalOrders">48</span> orders
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="prevPage" class="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Previous</button>
+        <div id="pageNumbers" class="flex gap-1">
+          <!-- Page numbers will be populated by JavaScript -->
+        </div>
+        <button id="nextPage" class="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Next</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Order Details Modal -->
+  <div id="orderModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto fade-in">
+      <div class="p-6 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-bold text-[#212121]">Order Details</h2>
+          <button id="closeModal" class="text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+      </div>
+      <div id="modalContent" class="p-6">
+        <!-- Modal content will be populated by JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <button id="sidebarToggleCollapsed" class="sidebar-toggle collapsed" style="display:none; position:fixed; top:30px; left:20px; z-index:50;">
+    <i class="fas fa-chevron-right"></i>
+  </button>
+
+  <script>
+    // Sample orders data
+    const ordersData = [
+      {
+        id: 'ORD-1247',
+        customer: 'TechCorp Industries',
+        customerEmail: 'procurement@techcorp.com',
+        products: ['Industrial Bearings', 'Steel Components'],
+        quantity: 150,
+        status: 'processing',
+        priority: 'high',
+        dueDate: '2025-08-02',
+        value: 125000,
+        orderDate: '2025-07-28',
+        deliveryAddress: '123 Industrial Park, Mumbai, Maharashtra 400001'
+      },
+      {
+        id: 'ORD-1246',
+        customer: 'Manufacturing Solutions Ltd',
+        customerEmail: 'orders@mansol.com',
+        products: ['Steel Pipes', 'Fittings'],
+        quantity: 200,
+        status: 'shipped',
+        priority: 'medium',
+        dueDate: '2025-08-01',
+        value: 85600,
+        orderDate: '2025-07-26',
+        deliveryAddress: '456 Factory Road, Pune, Maharashtra 411001'
+      },
+      {
+        id: 'ORD-1245',
+        customer: 'ElectroMax Systems',
+        customerEmail: 'supply@electromax.com',
+        products: ['Electronic Components', 'Sensors'],
+        quantity: 75,
+        status: 'pending',
+        priority: 'high',
+        dueDate: '2025-07-31',
+        value: 45200,
+        orderDate: '2025-07-25',
+        deliveryAddress: '789 Tech Valley, Bangalore, Karnataka 560001'
+      },
+      {
+        id: 'ORD-1244',
+        customer: 'SafeWork Equipment Co',
+        customerEmail: 'procurement@safework.com',
+        products: ['Safety Equipment', 'Protective Gear'],
+        quantity: 300,
+        status: 'processing',
+        priority: 'medium',
+        dueDate: '2025-08-05',
+        value: 72800,
+        orderDate: '2025-07-24',
+        deliveryAddress: '321 Safety Street, Chennai, Tamil Nadu 600001'
+      },
+      {
+        id: 'ORD-1243',
+        customer: 'BuildPro Construction',
+        customerEmail: 'materials@buildpro.com',
+        products: ['Raw Materials', 'Construction Supplies'],
+        quantity: 500,
+        status: 'shipped',
+        priority: 'low',
+        dueDate: '2025-08-08',
+        value: 98500,
+        orderDate: '2025-07-22',
+        deliveryAddress: '654 Builder Avenue, Delhi, Delhi 110001'
+      }
+    ];
+
+    let currentPage = 1;
+    const ordersPerPage = 10;
+    let filteredOrders = [...ordersData];
+
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', function() {
+      renderOrders();
+      setupEventListeners();
+    });
+
+    function setupEventListeners() {
+      // Sidebar toggle functionality
+      const sidebarToggle = document.getElementById('sidebarToggle');
+      const sidebarToggleCollapsed = document.getElementById('sidebarToggleCollapsed');
+      const sidebar = document.querySelector('.sidebar');
+      const mainContent = document.querySelector('.main-content');
+      const toggleIcon = sidebarToggle.querySelector('i');
+      const toggleIconCollapsed = sidebarToggleCollapsed.querySelector('i');
+
+      function collapseSidebar() {
+        sidebar.classList.add('collapsed');
+        mainContent.classList.add('full-width');
+        sidebarToggle.style.display = 'none';
+        sidebarToggleCollapsed.style.display = 'block';
+      }
+
+      function expandSidebar() {
+        sidebar.classList.remove('collapsed');
+        mainContent.classList.remove('full-width');
+        sidebarToggle.style.display = 'block';
+        sidebarToggleCollapsed.style.display = 'none';
+      }
+
+      sidebarToggle.addEventListener('click', () => {
+        collapseSidebar();
+      });
+
+      sidebarToggleCollapsed.addEventListener('click', () => {
+        expandSidebar();
+      });
+      
+      // Mobile menu functionality
+      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+      const sidebarOverlay = document.getElementById('sidebarOverlay');
+      
+      if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', () => {
+          sidebar.classList.toggle('open');
+          sidebarOverlay.classList.toggle('open');
+        });
+      }
+      
+      if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', () => {
+          sidebar.classList.remove('open');
+          sidebarOverlay.classList.remove('open');
+        });
+      }
+      
+      // Close mobile menu when clicking on sidebar links
+      document.querySelectorAll('.sidebar a').forEach(link => {
+        link.addEventListener('click', () => {
+          if (window.innerWidth <= 768) {
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('open');
+          }
+        });
+      });
+      
+      // Profile dropdown
+      const profileButton = document.getElementById('profile-button');
+      const profileDropdown = document.getElementById('profile-dropdown');
+
+      profileButton.addEventListener('click', () => {
+        profileDropdown.classList.toggle('hidden');
+      });
+
+      window.addEventListener('click', (e) => {
+        if (!profileButton.contains(e.target) && !profileDropdown.contains(e.target)) {
+          profileDropdown.classList.add('hidden');
+        }
+      });
+
+      // Search functionality
+      document.getElementById('searchInput').addEventListener('input', handleSearch);
+
+      // Filter buttons
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', handleFilter);
+      });
+
+      // Modal close
+      document.getElementById('closeModal').addEventListener('click', closeModal);
+      document.getElementById('orderModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+      });
+
+      // Select all checkbox
+      document.getElementById('selectAll').addEventListener('change', handleSelectAll);
+    }
+
+    function renderOrders() {
+      const tbody = document.getElementById('ordersTableBody');
+      const startIndex = (currentPage - 1) * ordersPerPage;
+      const endIndex = startIndex + ordersPerPage;
+      const ordersToShow = filteredOrders.slice(startIndex, endIndex);
+
+      tbody.innerHTML = ordersToShow.map(order => `
+        <tr class="table-row transition-all cursor-pointer" data-order-id="${order.id}">
+          <td class="px-6 py-4">
+            <input type="checkbox" class="order-checkbox rounded border-gray-300 text-purple-600 focus:ring-purple-500" data-order-id="${order.id}">
+          </td>
+          <td class="px-6 py-4">
+            <div class="flex flex-col">
+              <span class="font-semibold text-gray-900">${order.id}</span>
+              <span class="text-sm text-gray-500">Ordered: ${formatDate(order.orderDate)}</span>
+            </div>
+          </td>
+          <td class="px-6 py-4">
+            <div class="flex flex-col">
+              <span class="font-medium text-gray-900">${order.customer}</span>
+              <span class="text-sm text-gray-500">${order.customerEmail}</span>
+            </div>
+          </td>
+          <td class="px-6 py-4">
+            <div class="flex flex-col">
+              <span class="font-medium text-gray-900">${order.products[0]}</span>
+              ${order.products.length > 1 ? `<span class="text-sm text-gray-500">+${order.products.length - 1} more</span>` : ''}
+              <span class="text-sm text-gray-500">Qty: ${order.quantity}</span>
+            </div>
+          </td>
+          <td class="px-6 py-4">
+            <span class="status-badge status-${order.status}">${order.status}</span>
+          </td>
+          <td class="px-6 py-4">
+            <span class="status-badge priority-${order.priority}">${order.priority}</span>
+          </td>
+          <td class="px-6 py-4">
+            <div class="flex flex-col">
+              <span class="font-medium text-gray-900">${formatDate(order.dueDate)}</span>
+              <span class="text-sm ${getDueDateColor(order.dueDate)}">${getDaysUntilDue(order.dueDate)}</span>
+            </div>
+          </td>
+          <td class="px-6 py-4">
+            <span class="font-semibold text-gray-900">₹${order.value.toLocaleString()}</span>
+          </td>
+          <td class="px-6 py-4">
+            <div class="flex gap-2">
+              <button onclick="viewOrder('${order.id}')" class="action-btn action-btn-primary">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button onclick="editOrder('${order.id}')" class="action-btn action-btn-secondary">
+                <i class="fas fa-edit"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+
+      // Add click handlers for table rows
+      tbody.querySelectorAll('.table-row').forEach(row => {
+        row.addEventListener('click', function(e) {
+          if (!e.target.closest('input') && !e.target.closest('button')) {
+            const orderId = this.dataset.orderId;
+            viewOrder(orderId);
+          }
+        });
+      });
+
+      updatePagination();
+    }
+
+    function handleSearch(e) {
+      const searchTerm = e.target.value.toLowerCase();
+      filteredOrders = ordersData.filter(order => 
+        order.id.toLowerCase().includes(searchTerm) ||
+        order.customer.toLowerCase().includes(searchTerm) ||
+        order.products.some(product => product.toLowerCase().includes(searchTerm))
+      );
+      currentPage = 1;
+      renderOrders();
+    }
+
+    function handleFilter(e) {
+      // Update active filter button
+      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+      e.target.classList.add('active');
+
+      const filter = e.target.dataset.filter;
+      
+      if (filter === 'all') {
+        filteredOrders = [...ordersData];
+      } else if (filter === 'high-priority') {
+        filteredOrders = ordersData.filter(order => order.priority === 'high');
+      } else {
+        filteredOrders = ordersData.filter(order => order.status === filter);
+      }
+      
+      currentPage = 1;
+      renderOrders();
+    }
+
+    function handleSelectAll(e) {
+      const checkboxes = document.querySelectorAll('.order-checkbox');
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = e.target.checked;
+      });
+    }
+
+    function viewOrder(orderId) {
+      const order = ordersData.find(o => o.id === orderId);
+      if (!order) return;
+
+      const modalContent = document.getElementById('modalContent');
+      modalContent.innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Order Information</h3>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Order ID:</span>
+                <span class="font-medium">${order.id}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Order Date:</span>
+                <span class="font-medium">${formatDate(order.orderDate)}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Due Date:</span>
+                <span class="font-medium">${formatDate(order.dueDate)}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Status:</span>
+                <span class="status-badge status-${order.status}">${order.status}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Priority:</span>
+                <span class="status-badge priority-${order.priority}">${order.priority}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Total Value:</span>
+                <span class="font-semibold text-xl">₹${order.value.toLocaleString()}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Customer Details</h3>
+            <div class="space-y-3">
+              <div>
+                <span class="text-gray-600">Company:</span>
+                <div class="font-medium">${order.customer}</div>
+              </div>
+              <div>
+                <span class="text-gray-600">Email:</span>
+                <div class="font-medium">${order.customerEmail}</div>
+              </div>
+              <div>
+                <span class="text-gray-600">Delivery Address:</span>
+                <div class="font-medium">${order.deliveryAddress}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mt-8">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Products</h3>
+          <div class="bg-gray-50 rounded-lg p-4">
+            <div class="space-y-2">
+              ${order.products.map(product => `
+                <div class="flex justify-between items-center">
+                  <span class="font-medium">${product}</span>
+                  <span class="text-gray-600">Qty: ${Math.floor(order.quantity / order.products.length)}</span>
+                </div>
+              `).join('')}
+            </div>
+            <div class="border-t pt-3 mt-3">
+              <div class="flex justify-between items-center font-semibold">
+                <span>Total Quantity:</span>
+                <span>${order.quantity}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flex gap-4 mt-8 pt-6 border-t border-gray-200">
+          <button onclick="updateOrderStatus('${order.id}')" class="action-btn action-btn-primary flex items-center gap-2">
+            <i class="fas fa-edit"></i>
+            Update Status
+          </button>
+          <button onclick="createASN('${order.id}')" class="action-btn action-btn-secondary flex items-center gap-2">
+            <i class="fas fa-truck"></i>
+            Create ASN
+          </button>
+          <button onclick="generateInvoice('${order.id}')" class="action-btn action-btn-secondary flex items-center gap-2">
+            <i class="fas fa-file-invoice"></i>
+            Generate Invoice
+          </button>
+        </div>
+      `;
+      
+      document.getElementById('orderModal').classList.remove('hidden');
+    }
+
+    function editOrder(orderId) {
+      // Implementation for editing order
+      console.log('Edit order:', orderId);
+      // This would typically open an edit form or navigate to an edit page
+    }
+
+    function updateOrderStatus(orderId) {
+      // Implementation for updating order status
+      console.log('Update status for order:', orderId);
+      // This would show a status update form
+    }
+
+    function createASN(orderId) {
+      // Implementation for creating ASN
+      console.log('Create ASN for order:', orderId);
+      // This would navigate to ASN creation page
+    }
+
+    function generateInvoice(orderId) {
+      // Implementation for generating invoice
+      console.log('Generate invoice for order:', orderId);
+      // This would navigate to invoice generation page
+    }
+
+    function closeModal() {
+      document.getElementById('orderModal').classList.add('hidden');
+    }
+
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    }
+
+    function getDaysUntilDue(dueDateString) {
+      const today = new Date();
+      const dueDate = new Date(dueDateString);
+      const diffTime = dueDate - today;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays < 0) return `${Math.abs(diffDays)} days overdue`;
+      if (diffDays === 0) return 'Due today';
+      if (diffDays === 1) return 'Due tomorrow';
+      return `${diffDays} days remaining`;
+    }
+
+    function getDueDateColor(dueDateString) {
+      const today = new Date();
+      const dueDate = new Date(dueDateString);
+      const diffTime = dueDate - today;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays < 0) return 'text-red-600';
+      if (diffDays <= 1) return 'text-orange-600';
+      if (diffDays <= 3) return 'text-yellow-600';
+      return 'text-green-600';
+    }
+
+    function updatePagination() {
+      const totalOrders = filteredOrders.length;
+      const totalPages = Math.ceil(totalOrders / ordersPerPage);
+      const startIndex = (currentPage - 1) * ordersPerPage + 1;
+      const endIndex = Math.min(currentPage * ordersPerPage, totalOrders);
+
+      document.getElementById('showingFrom').textContent = startIndex;
+      document.getElementById('showingTo').textContent = endIndex;
+      document.getElementById('totalOrders').textContent = totalOrders;
+
+      // Update page numbers (simplified)
+      const pageNumbers = document.getElementById('pageNumbers');
+      pageNumbers.innerHTML = '';
+      
+      for (let i = 1; i <= Math.min(totalPages, 5); i++) {
+        const button = document.createElement('button');
+        button.textContent = i;
+        button.className = `px-3 py-2 border rounded-lg text-sm ${i === currentPage ? 'bg-purple-600 text-white border-purple-600' : 'border-gray-300 hover:bg-gray-50'}`;
+        button.addEventListener('click', () => {
+          currentPage = i;
+          renderOrders();
+        });
+        pageNumbers.appendChild(button);
+      }
+
+      // Update prev/next buttons
+      document.getElementById('prevPage').disabled = currentPage === 1;
+      document.getElementById('nextPage').disabled = currentPage === totalPages;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <title> Request For Quotation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    href="https://fonts.googleapis.com/icon?family=Material+Icons"
+    rel="stylesheet"
+  />
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    rel="stylesheet"
+  />
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap");
+    body {
+      font-family: "Roboto", sans-serif;
+      background: #F7F7F7; /* Light Gray base between F5F5F5 and FAFAFA */
+      min-height: 100vh;
+      color: #212121; /* Dark Gray text */
+    }
+    header {
+      background: linear-gradient(90deg, #6a1b9a, #8e24aa); /* Purple gradient */
+      color: white;
+    }
+    /* SAP Fiori Launchpad tile style themed with Purple and Gray */
+    .fiori-tile {
+      @apply bg-white rounded-xl flex flex-col items-center justify-center text-center cursor-pointer select-none transition-transform duration-300 ease-out;
+      width: 182px;
+      height: 182px;
+      padding: 1rem;
+      box-shadow: 0 4px 8px rgb(0 0 0 / 0.1);
+      border: 1px solid #dbdbdb; /* Light gray border for white tiles */
+      will-change: transform;
+      user-select: none;
+      color: #212121; /* Dark gray text */
+    }
+    .fiori-tile:focus-visible {
+      outline: 3px solid #7b1fa2; /* Highlight Purple focus ring */
+      outline-offset: 2px;
+      border-color: #7b1fa2;
+      z-index: 10;
+    }
+    .fiori-tile:hover,
+    .fiori-tile:focus-visible {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 24px rgb(106 27 154 / 0.3); /* Purple tinted shadow */
+      border-color: #7b1fa2;
+      z-index: 10;
+    }
+    .fiori-tile img {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 0.75rem;
+      user-select: none;
+      object-fit: contain;
+      filter: drop-shadow(0 0 3px rgba(106,27,154,0.4)); /* subtle purple glow around icon */
+    }
+    .fiori-tile h2 {
+      font-weight: 700;
+      font-size: 1.125rem; /* 18px */
+      color: #4a148c; /* Dark Purple for titles */
+      margin-bottom: 0.25rem;
+      user-select: none;
+    }
+    .fiori-tile p {
+      font-size: 0.875rem; /* 14px */
+      color: #555555; /* Medium dark gray text */
+      max-width: 140px;
+      user-select: none;
+    }
+    a.fiori-link {
+      text-decoration: none;
+      color: inherit;
+      user-select: none;
+    }
+    a.fiori-link:focus-visible {
+      outline: 3px solid #7b1fa2;
+      outline-offset: 4px;
+      border-radius: 0.75rem;
+    }
+    /* Profile button adjusted */
+    #profileBtn {
+      background-color: #7b1fa2; /* Purple */
+      color: #f3e5f5; /* Light purple-ish icon */
+    }
+    #profileBtn:hover {
+      background-color: #6a1b9a;
+      color: #e1bee7;
+    }
+    /* Profile menu styling */
+    #profileMenu {
+      border: 1px solid #dbdbdb;
+    }
+    #profileMenu a:hover,
+    #profileMenu button:hover {
+      background-color: #ede7f6;
+      color: #4a148c;
+    }
+  </style>
+</head>
+<body>
+  <header
+    class="flex items-center justify-between px-1 sm:px-10 py-5 shadow-md relative"
+  >
+    <div class="flex items-center space-x-6">
+      <img
+        alt="Mitsubishi Electric red logo with three diamond shapes"
+        class="w-12 h-12 object-contain"
+        height="30"
+        src="https://media.licdn.com/dms/image/v2/D560BAQGXc0zxzyvurA/company-logo_200_200/company-logo_200_200/0/1737107658724/techcarvings_consultancy_pvt_ltd_logo?e=2147483647&v=beta&t=q75AmCilrus_--oITKIAATFgioUt-0t29OJVhWNv2kw"
+        width="30"
+      />
+      <h1
+        class="text-white text-center sm:text-3xl font-extrabold tracking-tight select-none"
+      >
+        Request For Quotation
+      </h1>
+    </div>
+    <div class="relative">
+      <button
+        id="profileBtn"
+        aria-label="User profile menu button"
+        tabindex="0"
+        role="button"
+        class="w-14 h-14 rounded-full flex items-center justify-center hover:bg-purple-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-700 transition-colors"
+        aria-haspopup="true"
+        aria-expanded="false"
+      >
+        <i class="fas fa-user-circle text-4xl"></i>
+      </button>
+      <div
+        id="profileMenu"
+        class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-20"
+        role="menu"
+        aria-orientation="vertical"
+        aria-labelledby="profileBtn"
+        tabindex="-1"
+      >
+        <a
+          href="#"
+          class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+          role="menuitem"
+          tabindex="-1"
+          id="profile-option"
+          >My Profile</a
+        >
+        <a
+          href="#"
+          class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+          role="menuitem"
+          tabindex="-1"
+          id="settings-option"
+          >Settings</a
+        >
+        <a
+          href="#"
+          class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+          role="menuitem"
+          tabindex="-1"
+          id="notifications-option"
+          >Notifications</a
+        >
+        <a
+          href="#"
+          class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+          role="menuitem"
+          tabindex="-1"
+          id="help-option"
+          >Help</a
+        >
+        <button
+          id="logoutBtn"
+          class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100"
+          role="menuitem"
+          tabindex="-1"
+        >
+          Logout
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main
+    class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 justify-center"
+  >
+    <a href="./3_RFQ_inbox.html" aria-label="Go to RFQ Inbox" class="fiori-tile" id="rfqInboxBtn">
+      <img
+        alt="Icon representing RFQ Inbox with a document and checkmark in blue shades"
+        src="https://storage.googleapis.com/a1aa/image/5bfc9db1-8447-47b4-4bd1-42ac5ead4c40.jpg"
+        loading="lazy"
+        decoding="async"
+      />
+      <h2>RFQ Inbox</h2>
+      <p>List of all open/closed RFQs</p>
+    </a>
+
+    <a href="./6_submitted_quotations.html" aria-label="Go to Submitted Quotations" class="fiori-tile" id="submittedQuotesBtn">
+      <img
+        alt="Icon representing Submitted Quotations with a blue document icon"
+        src="https://storage.googleapis.com/a1aa/image/a62c41d9-408e-4b61-e36b-7282379c5420.jpg"
+        loading="lazy"
+        decoding="async"
+      />
+      <h2>Submitted Quotations</h2>
+      <p> Submitted quotes</p>
+    </a>
+
+    <a href="./7_Accepted _quotation.html" aria-label="Go to Accepted Quotations" class="fiori-tile" id="acceptedQuotesBtn">
+      <img
+        alt="Icon representing Accepted Quotations with a blue clipboard and checkmark"
+        src="https://storage.googleapis.com/a1aa/image/f4400adb-e6bb-4dd6-fb01-eed58c8bcbdd.jpg"
+        loading="lazy"
+        decoding="async"
+      />
+      <h2>Accepted Quotations</h2>
+      <p>Optimalate quotations</p>
+    </a>
+
+    <a href="./9_quotation histroy.html" aria-label="Go to Quotation History" class="fiori-tile" id="quotationHistoryBtn">
+      <img
+        alt="Icon representing Quotation History with a blue clock icon"
+        src="https://storage.googleapis.com/a1aa/image/1abd410b-a7fd-4d14-a0c1-6b036f95ee49.jpg"
+        loading="lazy"
+        decoding="async"
+      />
+      <h2>Quotation History</h2>
+      <p>Review past quotations</p>
+    </a>
+
+    <a href="./Email_center.html" aria-label="Go to Email Center" class="fiori-tile" id="emailCenterBtn">
+      <img
+        alt="Icon representing Email Center with a blue speech bubble containing three dots"
+        src="https://storage.googleapis.com/a1aa/image/0a76793c-0e00-43d6-6242-c5e09431de97.jpg"
+        loading="lazy"
+        decoding="async"
+      />
+      <h2>Email Center</h2>
+      <p>Send message to buyers</p>
+    </a>
+
+    <a href="./8_Rejected _quotations.html" aria-label="Go to Rejected Quotations" class="fiori-tile" id="rejectedQuotesBtn">
+      <img
+        alt="Icon representing Rejected Quotations with a blue document icon"
+        src="https://storage.googleapis.com/a1aa/image/d6573b6d-d503-45bc-90fe-8dbbec51ce2c.jpg"
+        loading="lazy"
+        decoding="async"
+      />
+      <h2>Rejected Quotations</h2>
+      <p>View declined quotes</p>
+    </a>
+  </main>
+
+  <script>
+    // Toggle profile menu visibility
+    const profileBtn = document.getElementById("profileBtn");
+    const profileMenu = document.getElementById("profileMenu");
+
+    profileBtn.addEventListener("click", () => {
+      const isExpanded = profileBtn.getAttribute("aria-expanded") === "true";
+      profileBtn.setAttribute("aria-expanded", !isExpanded);
+      profileMenu.classList.toggle("hidden");
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener("click", (event) => {
+      if (
+        !profileBtn.contains(event.target) &&
+        !profileMenu.contains(event.target)
+      ) {
+        profileMenu.classList.add("hidden");
+        profileBtn.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    // Keyboard accessibility for menu
+    profileBtn.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        profileMenu.classList.add("hidden");
+        profileBtn.setAttribute("aria-expanded", "false");
+        profileBtn.focus();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,396 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Purchase Orders</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+  />
+  <style>
+    /* Custom scrollbar for left and right scrollable areas */
+    .scrollbar-thin::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-track {
+      background: #f5f5f5;
+    }
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background: #c1a0d9;
+      border-radius: 4px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+      background: #a070c9;
+    }
+    /* Diagonal stripes background for info area */
+    .diagonal-stripes {
+      background-image: repeating-linear-gradient(
+        45deg,
+        #f9f7fb 0,
+        #f9f7fb 10px,
+        #e9dff9 10px,
+        #e9dff9 20px
+      );
+    }
+  </style>
+</head>
+<body class="bg-[#f9f9fa] font-sans select-none text-[#212121]">
+  <!-- Top Purple Border -->
+  <div class="w-full h-1 bg-gradient-to-r from-[#6A1B9A] to-[#8E24AA]"></div>
+
+  <!-- Header -->
+  <header class="flex items-center bg-[#fafafa] border-b border-gray-300 px-2 h-12">
+    <a href="vendordashboard.html">
+    <button
+      aria-label="Home"
+      class="text-[#333333] hover:text-[#6A1B9A] focus:outline-none focus:ring-2 focus:ring-purple-600"
+    >
+      <i class="fas fa-home fa-lg"></i>
+    </button>
+  </a>
+  </header>
+
+  <!-- Main content area -->
+  <main class="flex flex-col md:flex-row h-[calc(100vh-4rem-1rem)] border-b border-gray-300">
+    <!-- Left panel -->
+    <section class="flex flex-col w-full md:w-80 border-r border-gray-300 bg-white">
+      <!-- Top nav inside left panel -->
+      <nav class="flex items-center border-b border-gray-300 h-12">
+        <a href="vendordashboard.html">
+        <button
+          aria-label="Back"
+          class="px-3 text-[#333333] hover:text-[#6A1B9A] focus:outline-none focus:ring-2 focus:ring-purple-600"
+        >
+          <i class="fas fa-arrow-left fa-lg"></i>
+        </button>
+      </a>
+        <div class="flex-1 text-center text-[#333333] font-normal text-sm">
+          Purchase Orders (30)
+        </div>
+      </nav>
+
+      <!-- Search bar and refresh -->
+      <div class="flex items-center border-b border-gray-300 h-10 px-2 bg-[#fafafa]">
+        <input
+          type="search"
+          placeholder="Search"
+          class="flex-1 italic text-xs text-[#333333] bg-white border border-gray-300 rounded-sm px-2 py-0.5 focus:outline-none focus:ring-2 focus:ring-purple-600"
+          aria-label="Search"
+        />
+        <button
+          aria-label="Search"
+          class="ml-2 text-[#333333] hover:text-[#6A1B9A] focus:outline-none focus:ring-2 focus:ring-purple-600"
+        >
+          <i class="fas fa-search fa-sm"></i>
+        </button>
+        <button
+          aria-label="Refresh"
+          class="ml-2 text-[#333333] hover:text-[#6A1B9A] focus:outline-none focus:ring-2 focus:ring-purple-600"
+        >
+          <i class="fas fa-sync-alt fa-sm"></i>
+        </button>
+      </div>
+
+      <!-- Status Segregation Tabs -->
+      <nav class="flex border-b border-gray-300 bg-gradient-to-r from-[#6A1B9A] to-[#8E24AA] text-white text-xs font-semibold">
+        <button class="flex-1 py-1 px-2 border-r border-purple-700 hover:bg-purple-800 focus:outline-none focus:bg-purple-900">
+          Pending
+        </button>
+        <button class="flex-1 py-1 px-2 border-r border-purple-700 hover:bg-purple-800 focus:outline-none focus:bg-purple-900">
+          Total
+        </button>
+        <button class="flex-1 py-1 px-2 border-r border-purple-700 hover:bg-purple-800 focus:outline-none focus:bg-purple-900">
+          Shipped
+        </button>
+        <button class="flex-1 py-1 px-2 hover:bg-purple-800 focus:outline-none focus:bg-purple-900">
+          Open
+        </button>
+      </nav>
+
+      <!-- Product categories and list -->
+      <div class="flex-1 overflow-y-auto scrollbar-thin">
+        <ul class="text-xs text-[#212121]">
+          <li class="px-3 py-1 bg-white font-semibold border-b border-gray-300">
+            CONFIRMATION OVERDUE
+          </li>
+
+          <!-- First product item (selected) -->
+          <li
+            class="bg-white border-b border-gray-300 cursor-pointer px-3 py-2"
+            aria-current="true"
+          >
+            <div class="flex justify-between items-start">
+              <div class="font-semibold text-base leading-tight">
+                INTEL CPU Cooling Paste
+              </div>
+              <div class="text-lg font-normal text-[#212121]">0</div>
+            </div>
+            <div class="flex justify-between items-start text-xs text-[#333333] mt-1">
+              <div>
+                Cooling Paste CPU - Intel<br />
+                Shipping: 23.09.2013
+              </div>
+              <div class="text-xs font-semibold text-gray-500">KG</div>
+            </div>
+          </li>
+
+          <!-- Second product item -->
+          <li class="border-b border-gray-300 cursor-pointer px-3 py-2 bg-white">
+            <div class="flex justify-between items-start">
+              <div class="font-semibold text-sm leading-tight">
+                Intel Motherboard 'Quad Core'
+              </div>
+              <div class="text-lg font-normal text-[#212121]">0</div>
+            </div>
+            <div class="flex justify-between items-start text-xs text-[#333333] mt-1">
+              <div>
+                Mother Board Intel<br />
+                Shipping: 14.10.2013
+              </div>
+              <div class="text-xs font-semibold text-gray-500">PC</div>
+            </div>
+          </li>
+
+          <!-- Third product item -->
+          <li class="border-b border-gray-300 cursor-pointer px-3 py-2 bg-white">
+            <div class="flex justify-between items-start">
+              <div class="font-semibold text-base leading-tight">
+                INTEL CPU Cooling Paste
+              </div>
+              <div class="text-lg font-normal text-[#212121]">0</div>
+            </div>
+            <div class="flex justify-between items-start text-xs text-[#333333] mt-1">
+              <div>
+                Cooling Paste CPU - Intel<br />
+                Shipping: 23.09.2013
+              </div>
+              <div class="text-xs font-semibold text-gray-500">KG</div>
+            </div>
+            <div class="text-xs text-[#333333] mt-0.5">
+              <span class="font-semibold">1</span> Unread No...
+            </div>
+          </li>
+
+          <!-- Fourth product item -->
+          <li class="border-b border-gray-300 cursor-pointer px-3 py-2 bg-white">
+            <div class="flex justify-between items-start">
+              <div class="font-semibold text-base leading-tight">
+                INTEL CPU Cooling Paste
+              </div>
+              <div class="text-lg font-normal text-[#212121]">0</div>
+            </div>
+            <div class="flex justify-between items-start text-xs text-[#333333] mt-1">
+              <div>
+                Cooling Paste CPU - Intel<br />
+                Shipping: 23.09.2013
+              </div>
+              <div class="text-xs font-semibold text-gray-500">KG</div>
+            </div>
+            <div class="text-xs text-[#333333] mt-0.5">
+              <span class="font-semibold">1</span> Unread No...
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Right panel -->
+    <section class="flex-1 flex flex-col bg-white border-l border-gray-300">
+      <!-- Top nav inside right panel -->
+      <nav
+        class="flex items-center border-b border-gray-300 h-12 px-4 text-[#333333] text-sm font-normal"
+      >
+        <div class="flex-1 text-center">Display Purchase Order</div>
+      </nav>
+
+      <!-- Info area with light purple background and diagonal stripes -->
+      <section
+        class="flex flex-col px-6 py-4 border-b border-gray-300 relative overflow-y-auto diagonal-stripes"
+      >
+        <div class="flex justify-between items-start">
+          <h1 class="text-xl font-normal text-[#212121] leading-tight max-w-[70%]">
+            INTEL CPU Cooling Paste
+          </h1>
+          <div class="text-2xl font-normal text-[#212121] text-right">
+            0<br /><span class="text-xs font-normal">KG</span>
+          </div>
+        </div>
+
+        <div class="mt-2 text-sm text-[#333333] max-w-[70%]">
+          <a
+            href="#"
+            class="text-[#6A1B9A] font-semibold hover:underline"
+            >Cooling Paste CPU - Intel</a
+          ><br />
+          Shipping: 23.09.2013<br />
+          Total Requested Quantity: 20 KG
+        </div>
+
+        <div class="text-[#6A1B9A] font-normal text-sm absolute top-4 right-6">
+          Fully Confirmed
+        </div>
+
+        <!-- Buttons row -->
+        <div class="flex space-x-8 mt-6">
+          <!-- Info button selected -->
+          <button
+            class="flex flex-col items-center justify-center border border-gray-400 rounded-sm w-20 h-20 text-[#6A1B9A] focus:outline-none focus:ring-2 focus:ring-purple-600"
+            aria-pressed="true"
+          >
+            <div
+              class="flex items-center justify-center w-12 h-12 bg-[#6A1B9A] text-white rounded"
+            >
+              <i class="fas fa-info fa-lg"></i>
+            </div>
+            <span class="mt-1 text-xs font-normal">Info</span>
+          </button>
+
+          <!-- Notes button -->
+          <button
+            class="flex flex-col items-center justify-center border border-[#6A1B9A] rounded-sm w-20 h-20 text-[#6A1B9A] focus:outline-none focus:ring-2 focus:ring-purple-600 relative"
+            aria-pressed="false"
+          >
+            <div
+              class="flex items-center justify-center w-12 h-12 rounded border border-[#6A1B9A]"
+            >
+              <i class="fas fa-calendar-alt fa-lg"></i>
+            </div>
+            <span class="mt-1 text-xs font-normal">Notes</span>
+            <span
+              class="absolute top-2 right-6 text-xs font-semibold text-[#333333]"
+              >1</span
+            >
+          </button>
+
+          <!-- Contacts button -->
+          <button
+            class="flex flex-col items-center justify-center border border-[#6A1B9A] rounded-sm w-20 h-20 text-[#6A1B9A] focus:outline-none focus:ring-2 focus:ring-purple-600"
+            aria-pressed="false"
+          >
+            <div
+              class="flex items-center justify-center w-12 h-12 rounded border border-[#6A1B9A]"
+            >
+              <i class="fas fa-users fa-lg"></i>
+            </div>
+            <span class="mt-1 text-xs font-normal">Contacts</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Details area with scroll -->
+      <section
+        class="flex-1 overflow-y-auto scrollbar-thin px-6 py-4 text-xs text-[#333333] flex flex-col"
+      >
+        <dl class="max-w-lg space-y-2">
+          <div class="flex justify-between">
+            <dt class="text-right w-40">Purchase Order:</dt>
+            <dd class="font-semibold text-[#212121]">4500002747 - 00010</dd>
+          </div>
+          <div class="flex justify-between">
+            <dt class="text-right w-40">Customer Product Desc.:</dt>
+            <dd class="font-semibold text-[#212121]">
+              <a
+                href="#"
+                class="hover:underline"
+                >Cooling Paste CPU - Intel</a
+              >
+            </dd>
+          </div>
+          <div class="flex justify-between">
+            <dt class="text-right w-40">Customer Product Number:</dt>
+            <dd class="font-semibold text-[#212121]">CP83241501@QI3002</dd>
+          </div>
+          <div class="flex justify-between">
+            <dt class="text-right w-40">Revision Level:</dt>
+            <dd class="text-[#333333]">&nbsp;</dd>
+          </div>
+          <div class="flex justify-between">
+            <dt class="text-right w-40">Price:</dt>
+            <dd class="font-semibold text-[#212121]">USD 25.00</dd>
+          </div>
+          <div class="flex justify-between">
+            <dt class="text-right w-40">Incoterm:</dt>
+            <dd class="text-[#333333]">&nbsp;</dd>
+          </div>
+          <div class="flex justify-between">
+            <dt class="text-right w-40">Created On:</dt>
+            <dd class="font-semibold text-[#212121]">20131003101920</dd>
+          </div>
+
+          <div class="h-6"></div>
+
+          <div class="flex justify-between">
+            <dt class="text-right w-40 align-top">Ship To:</dt>
+            <dd class="font-semibold text-[#212121] max-w-[60%]">
+              Werk 0001<br />
+              Berliner Alle, 103<br />
+              Berlin, 10966<br />
+              DE
+            </dd>
+          </div>
+
+          <div class="h-6"></div>
+
+          <div class="flex justify-between">
+            <dt class="text-right w-40 align-top">Ship From:</dt>
+            <dd class="font-semibold text-[#212121] max-w-[60%]">
+              SUNEWYORK@QI3002<br />
+              NewYork
+            </dd>
+          </div>
+        </dl>
+
+        <!-- Approve / Reject Buttons -->
+        <div class="mt-6 flex space-x-4">
+          <button
+            type="button"
+            class="flex-1 bg-[#6A1B9A] hover:bg-[#8E24AA] text-white font-semibold py-2 rounded focus:outline-none focus:ring-2 focus:ring-purple-600"
+          >
+            Acknowledge
+          </button>
+          <button
+            type="button"
+            class="flex-1 bg-gray-300 hover:bg-gray-400 text-[#333333] font-semibold py-2 rounded focus:outline-none focus:ring-2 focus:ring-purple-600"
+          >
+            Reject
+          </button>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer
+    class="flex items-center justify-between bg-gray-300 border-t border-gray-400 h-12 px-3 text-[#333333] text-sm"
+  >
+    <button
+      aria-label="Settings"
+      class="text-[#333333] hover:text-[#6A1B9A] focus:outline-none focus:ring-2 focus:ring-purple-600"
+    >
+      <i class="fas fa-cog fa-lg"></i>
+    </button>
+    <button
+      aria-label="Sort"
+      class="text-[#333333] hover:text-[#6A1B9A] focus:outline-none focus:ring-2 focus:ring-purple-600"
+    >
+      <i class="fas fa-sort fa-lg"></i>
+    </button>
+    <button
+      aria-label="More options"
+      class="text-[#333333] hover:text-[#6A1B9A] focus:outline-none focus:ring-2 focus:ring-purple-600"
+    >
+      <i class="fas fa-ellipsis-h fa-lg"></i>
+    </button>
+  </footer>
+
+  <!-- Bottom right corner share icon -->
+  <button
+    aria-label="Share"
+    class="fixed bottom-2 right-2 text-[#333333] hover:text-[#6A1B9A] focus:outline-none focus:ring-2 focus:ring-purple-600"
+  >
+    <i class="fas fa-share-square fa-lg"></i>
+  </button>
+</body>
+</html>

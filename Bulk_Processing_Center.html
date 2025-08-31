@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Bulk Processing Center - Buyer Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+      :root {
+        --muted: #64748b;
+      }
+      body {
+        font-family: "Inter", sans-serif;
+        background: linear-gradient(120deg, #f8fafc 0%, #f1f5f9 100%);
+        color: #111827;
+      }
+      .box-white {
+        background: rgba(255,255,255,0.95);
+        border: 1px solid #E5E7EB;
+        border-radius: 1.25rem;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        backdrop-filter: blur(8px) saturate(180%);
+        transition: box-shadow .2s, border-color .2s;
+      }
+      .ring-gradient { position: relative; }
+      .ring-gradient::before {
+        content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px;
+        background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+        pointer-events: none;
+      }
+      .header-blur {
+        backdrop-filter: saturate(180%) blur(12px);
+        background-color: rgba(255,255,255,0.95);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      }
+      .reveal { opacity: 1; transform: translateY(0) scale(1); transition: all .6s cubic-bezier(.4,2,.3,1); }
+      .badge { font-size: .7rem; font-weight: 700; padding: .25rem .5rem; border-radius: 999px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+      .status-pending { background: #FEF3C7; color: #D97706; border: 1px solid #D9770633; }
+      .status-processing { background: #DBEAFE; color: #2563EB; border: 1px solid #2563EB33; }
+      .status-completed { background: #D1FAE5; color: #059669; border: 1px solid #05966933; }
+      .status-failed { background: #FEE2E2; color: #DC2626; border: 1px solid #DC262633; }
+      .progress-bar { height: 8px; border-radius: 4px; background: #E5E7EB; overflow: hidden; }
+      .progress-fill { height: 100%; border-radius: 4px; transition: width .3s ease; }
+      .fab {
+        position: fixed; bottom: 2.5rem; right: 2.5rem; z-index: 50;
+        background: linear-gradient(135deg, #059669 0%, #065f46 100%);
+        color: #fff; border-radius: 50%; width: 60px; height: 60px;
+        box-shadow: 0 8px 24px rgba(5,150,105,0.25);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2rem; cursor: pointer; border: none;
+        transition: box-shadow .2s, background .2s;
+      }
+      .fab:hover { box-shadow: 0 16px 40px rgba(5,150,105,0.35); background: linear-gradient(135deg, #065f46 0%, #059669 100%); }
+      .table-row { transition: background-color .2s; }
+      .table-row:hover { background-color: #f8fafc; }
+      .processing-card { background: rgba(255,255,255,0.95); border-radius: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+  <!-- Header -->
+  <header id="app-header" class="bg-white border-b border-gray-200 sticky top-0 z-50 transition-colors">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <h1 class="text-xl font-bold text-gray-900 leading-tight">Bulk Processing Center</h1>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Page Header -->
+    <div class="mb-6 md:mb-8">
+      <div class="flex items-center gap-3 mb-4">
+        <button onclick="window.location.href='BuyerDashboard.html'" class="p-2 rounded-lg hover:bg-gray-100 text-gray-600" title="Back to Dashboard">
+          <i class="fas fa-arrow-left"></i>
+        </button>
+        <div>
+          <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Bulk Processing Center</h1>
+          <p class="text-gray-600 text-sm md:text-base">Efficiently process multiple PRs, POs, and approvals in bulk</p>
+        </div>
+      </div>
+
+      <!-- Processing Stats -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
+        <div class="box-white p-3 md:p-4 reveal">
+          <div class="flex items-center gap-2 md:gap-3">
+            <div class="p-2 bg-blue-50 rounded-lg">
+              <i class="fas fa-clock text-blue-600 text-sm md:text-base"></i>
+            </div>
+            <div>
+              <div class="text-xl md:text-2xl font-bold text-gray-900">12</div>
+              <div class="text-xs md:text-sm text-gray-500">Pending Jobs</div>
+            </div>
+          </div>
+        </div>
+        <div class="box-white p-3 md:p-4 reveal">
+          <div class="flex items-center gap-2 md:gap-3">
+            <div class="p-2 bg-indigo-50 rounded-lg">
+              <i class="fas fa-cog text-indigo-600 text-sm md:text-base"></i>
+            </div>
+            <div>
+              <div class="text-xl md:text-2xl font-bold text-gray-900">8</div>
+              <div class="text-xs md:text-sm text-gray-500">Processing</div>
+            </div>
+          </div>
+        </div>
+        <div class="box-white p-3 md:p-4 reveal">
+          <div class="flex items-center gap-2 md:gap-3">
+            <div class="p-2 bg-emerald-50 rounded-lg">
+              <i class="fas fa-check-circle text-emerald-600 text-sm md:text-base"></i>
+            </div>
+            <div>
+              <div class="text-xl md:text-2xl font-bold text-gray-900">45</div>
+              <div class="text-xs md:text-sm text-gray-500">Completed Today</div>
+            </div>
+          </div>
+        </div>
+        <div class="box-white p-3 md:p-4 reveal">
+          <div class="flex items-center gap-2 md:gap-3">
+            <div class="p-2 bg-rose-50 rounded-lg">
+              <i class="fas fa-exclamation-triangle text-rose-600 text-sm md:text-base"></i>
+            </div>
+            <div>
+              <div class="text-xl md:text-2xl font-bold text-gray-900">2</div>
+              <div class="text-xs md:text-sm text-gray-500">Failed Jobs</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <button onclick="openBulkPRModal()" class="processing-card p-4 hover:shadow-lg transition-shadow">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="p-2 bg-blue-100 rounded-lg">
+            <i class="fas fa-file-alt text-blue-600"></i>
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-900">Bulk PR Processing</h3>
+            <p class="text-sm text-gray-600">Process multiple PRs</p>
+          </div>
+        </div>
+        <div class="text-xs text-gray-500">15 pending PRs</div>
+      </button>
+
+      <button onclick="openBulkPOModal()" class="processing-card p-4 hover:shadow-lg transition-shadow">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="p-2 bg-emerald-100 rounded-lg">
+            <i class="fas fa-shopping-cart text-emerald-600"></i>
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-900">Bulk PO Processing</h3>
+            <p class="text-sm text-gray-600">Create multiple POs</p>
+          </div>
+        </div>
+        <div class="text-xs text-gray-500">8 pending POs</div>
+      </button>
+
+      <button onclick="openBulkApprovalModal()" class="processing-card p-4 hover:shadow-lg transition-shadow">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="p-2 bg-amber-100 rounded-lg">
+            <i class="fas fa-check-double text-amber-600"></i>
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-900">Bulk Approvals</h3>
+            <p class="text-sm text-gray-600">Approve multiple items</p>
+          </div>
+        </div>
+        <div class="text-xs text-gray-500">23 pending approvals</div>
+      </button>
+
+      <button onclick="openBulkCommunicationModal()" class="processing-card p-4 hover:shadow-lg transition-shadow">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="p-2 bg-purple-100 rounded-lg">
+            <i class="fas fa-envelope text-purple-600"></i>
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-900">Bulk Communication</h3>
+            <p class="text-sm text-gray-600">Send bulk emails</p>
+          </div>
+        </div>
+        <div class="text-xs text-gray-500">12 pending messages</div>
+      </button>
+    </div>
+
+    <!-- Active Processing Jobs -->
+    <div class="box-white ring-gradient reveal mb-6">
+      <div class="p-4 md:p-6 border-b border-gray-200">
+        <h2 class="text-lg md:text-xl font-semibold text-gray-900">Active Processing Jobs</h2>
+        <p class="text-gray-600 text-sm md:text-base">Monitor and manage your bulk processing operations</p>
+      </div>
+
+      <div class="p-4 md:p-6 space-y-4">
+        <!-- Job 1 -->
+        <div class="border border-gray-200 rounded-lg p-4">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-blue-100 rounded-lg">
+                <i class="fas fa-file-alt text-blue-600"></i>
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-900">Bulk PR Approval - IT Department</h3>
+                <p class="text-sm text-gray-600">Processing 25 PRs for IT equipment</p>
+              </div>
+            </div>
+            <span class="badge status-processing text-xs">Processing</span>
+          </div>
+          <div class="flex items-center gap-4 mb-2">
+            <div class="flex-1">
+              <div class="progress-bar">
+                <div class="progress-fill bg-blue-600" style="width: 75%"></div>
+              </div>
+            </div>
+            <span class="text-sm text-gray-600">75%</span>
+          </div>
+          <div class="flex items-center justify-between text-sm text-gray-500">
+            <span>Started: 2 hours ago</span>
+            <span>ETA: 15 mins</span>
+          </div>
+        </div>
+
+        <!-- Job 2 -->
+        <div class="border border-gray-200 rounded-lg p-4">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-emerald-100 rounded-lg">
+                <i class="fas fa-shopping-cart text-emerald-600"></i>
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-900">Bulk PO Creation - Marketing</h3>
+                <p class="text-sm text-gray-600">Creating 12 POs for marketing materials</p>
+              </div>
+            </div>
+            <span class="badge status-processing text-xs">Processing</span>
+          </div>
+          <div class="flex items-center gap-4 mb-2">
+            <div class="flex-1">
+              <div class="progress-bar">
+                <div class="progress-fill bg-emerald-600" style="width: 60%"></div>
+              </div>
+            </div>
+            <span class="text-sm text-gray-600">60%</span>
+          </div>
+          <div class="flex items-center justify-between text-sm text-gray-500">
+            <span>Started: 45 mins ago</span>
+            <span>ETA: 25 mins</span>
+          </div>
+        </div>
+
+        <!-- Job 3 -->
+        <div class="border border-gray-200 rounded-lg p-4">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-amber-100 rounded-lg">
+                <i class="fas fa-envelope text-amber-600"></i>
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-900">Bulk Vendor Communication</h3>
+                <p class="text-sm text-gray-600">Sending payment reminders to 8 vendors</p>
+              </div>
+            </div>
+            <span class="badge status-completed text-xs">Completed</span>
+          </div>
+          <div class="flex items-center gap-4 mb-2">
+            <div class="flex-1">
+              <div class="progress-bar">
+                <div class="progress-fill bg-emerald-600" style="width: 100%"></div>
+              </div>
+            </div>
+            <span class="text-sm text-gray-600">100%</span>
+          </div>
+          <div class="flex items-center justify-between text-sm text-gray-500">
+            <span>Completed: 10 mins ago</span>
+            <span>Duration: 5 mins</span>
+          </div>
+        </div>
+
+        <!-- Job 4 -->
+        <div class="border border-gray-200 rounded-lg p-4">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-rose-100 rounded-lg">
+                <i class="fas fa-exclamation-triangle text-rose-600"></i>
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-900">Bulk Status Update - Failed</h3>
+                <p class="text-sm text-gray-600">Updating status for 5 items</p>
+              </div>
+            </div>
+            <span class="badge status-failed text-xs">Failed</span>
+          </div>
+          <div class="flex items-center gap-4 mb-2">
+            <div class="flex-1">
+              <div class="progress-bar">
+                <div class="progress-fill bg-rose-600" style="width: 30%"></div>
+              </div>
+            </div>
+            <span class="text-sm text-gray-600">30%</span>
+          </div>
+          <div class="flex items-center justify-between text-sm text-gray-500">
+            <span>Failed: 5 mins ago</span>
+            <span>Error: API timeout</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Processing History -->
+    <div class="box-white ring-gradient reveal">
+      <div class="p-4 md:p-6 border-b border-gray-200">
+        <h2 class="text-lg md:text-xl font-semibold text-gray-900">Processing History</h2>
+        <p class="text-gray-600 text-sm md:text-base">View completed and failed bulk processing jobs</p>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[800px]">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job Details</th>
+              <th class="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+              <th class="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
+              <th class="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th class="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
+              <th class="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Completed</th>
+              <th class="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr class="table-row">
+              <td class="px-3 md:px-6 py-4">
+                <div>
+                  <div class="text-sm font-medium text-gray-900">Bulk PR Approval - Finance</div>
+                  <div class="text-sm text-gray-500">Approved 18 PRs for office supplies</div>
+                </div>
+              </td>
+              <td class="px-3 md:px-6 py-4">
+                <span class="badge bg-blue-50 text-blue-700 text-xs">PR Processing</span>
+              </td>
+              <td class="px-3 md:px-6 py-4 text-sm text-gray-900">18 items</td>
+              <td class="px-3 md:px-6 py-4">
+                <span class="badge status-completed text-xs">Completed</span>
+              </td>
+              <td class="px-3 md:px-6 py-4 text-sm text-gray-900">12 mins</td>
+              <td class="px-3 md:px-6 py-4 text-sm text-gray-900">2 hours ago</td>
+              <td class="px-3 md:px-6 py-4 text-sm font-medium">
+                <button class="text-indigo-600 hover:text-indigo-800 text-xs" onclick="viewJobDetails('JOB-001')">
+                  <i class="fas fa-eye"></i> View
+                </button>
+              </td>
+            </tr>
+
+            <tr class="table-row">
+              <td class="px-3 md:px-6 py-4">
+                <div>
+                  <div class="text-sm font-medium text-gray-900">Bulk PO Creation - Operations</div>
+                  <div class="text-sm text-gray-500">Created 12 POs for machinery parts</div>
+                </div>
+              </td>
+              <td class="px-3 md:px-6 py-4">
+                <span class="badge bg-emerald-50 text-emerald-700 text-xs">PO Processing</span>
+              </td>
+              <td class="px-3 md:px-6 py-4 text-sm text-gray-900">12 items</td>
+              <td class="px-3 md:px-6 py-4">
+                <span class="badge status-completed text-xs">Completed</span>
+              </td>
+              <td class="px-3 md:px-6 py-4 text-sm text-gray-900">8 mins</td>
+              <td class="px-3 md:px-6 py-4 text-sm text-gray-900">4 hours ago</td>
+              <td class="px-3 md:px-6 py-4 text-sm font-medium">
+                <button class="text-indigo-600 hover:text-indigo-800 text-xs" onclick="viewJobDetails('JOB-002')">
+                  <i class="fas fa-eye"></i> View
+                </button>
+              </td>
+            </tr>
+
+            <tr class="table-row">
+              <td class="px-3 md:px-6 py-4">
+                <div>
+                  <div class="text-sm font-medium text-gray-900">Bulk Vendor Notifications</div>
+                  <div class="text-sm text-gray-500">Sent delivery reminders to 15 vendors</div>
+                </div>
+              </td>
+              <td class="px-3 md:px-6 py-4">
+                <span class="badge bg-purple-50 text-purple-700 text-xs">Communication</span>
+              </td>
+              <td class="px-3 md:px-6 py-4 text-sm text-gray-900">15 items</td>
+              <td class="px-3 md:px-6 py-4">
+                <span class="badge status-completed text-xs">Completed</span>
+              </td>
+              <td class="px-3 md:px-6 py-4 text-sm text-gray-900">3 mins</td>
+              <td class="px-3 md:px-6 py-4 text-sm text-gray-900">6 hours ago</td>
+              <td class="px-3 md:px-6 py-4 text-sm font-medium">
+                <button class="text-indigo-600 hover:text-indigo-800 text-xs" onclick="viewJobDetails('JOB-003')">
+                  <i class="fas fa-eye"></i> View
+                </button>
+              </td>
+            </tr>
+
+            <tr class="table-row">
+              <td class="px-3 md:px-6 py-4">
+                <div>
+                  <div class="text-sm font-medium text-gray-900">Bulk Status Update - Failed</div>
+                  <div class="text-sm text-gray-500">Failed to update 3 items due to validation errors</div>
+                </div>
+              </td>
+              <td class="px-3 md:px-6 py-4">
+                <span class="badge bg-amber-50 text-amber-700 text-xs">Status Update</span>
+              </td>
+              <td class="px-3 md:px-6 py-4 text-sm text-gray-900">3 items</td>
+              <td class="px-3 md:px-6 py-4">
+                <span class="badge status-failed text-xs">Failed</span>
+              </td>
+              <td class="px-3 md:px-6 py-4 text-sm text-gray-900">2 mins</td>
+              <td class="px-3 md:px-6 py-4 text-sm text-gray-900">8 hours ago</td>
+              <td class="px-3 md:px-6 py-4 text-sm font-medium">
+                <button class="text-rose-600 hover:text-rose-800 text-xs" onclick="viewJobErrors('JOB-004')">
+                  <i class="fas fa-exclamation-triangle"></i> Errors
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="px-4 md:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="text-sm text-gray-700 text-center sm:text-left">
+          Showing <span class="font-medium">1</span> to <span class="font-medium">4</span> of <span class="font-medium">67</span> jobs
+        </div>
+        <div class="flex gap-2">
+          <button class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50">Previous</button>
+          <button class="px-3 py-1 bg-indigo-600 text-white border border-indigo-600 rounded text-sm">1</button>
+          <button class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50">2</button>
+          <button class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50">3</button>
+          <button class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50">Next</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bulk PR Processing Modal -->
+  <div id="bulkPRModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-4 md:p-6 border-b border-gray-200">
+          <h3 class="text-lg md:text-xl font-semibold text-gray-900">Bulk PR Processing</h3>
+          <p class="text-gray-600 text-sm">Process multiple Purchase Requisitions efficiently</p>
+        </div>
+        <div class="p-4 md:p-6 space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Select PRs</label>
+              <select multiple class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-600 focus:border-slate-600 text-sm" size="6">
+                <option>PR-2024-001 - Office Supplies</option>
+                <option>PR-2024-002 - IT Equipment</option>
+                <option>PR-2024-003 - Marketing Materials</option>
+                <option>PR-2024-004 - Maintenance Tools</option>
+                <option>PR-2024-005 - Software Licenses</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Action</label>
+              <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-600 focus:border-slate-600 text-sm">
+                <option>Approve Selected</option>
+                <option>Reject Selected</option>
+                <option>Send for Review</option>
+                <option>Hold for Budget Check</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Comments (Optional)</label>
+            <textarea rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-600 focus:border-slate-600 text-sm" placeholder="Add comments for this bulk action"></textarea>
+          </div>
+        </div>
+        <div class="p-4 md:p-6 border-t border-gray-200 flex flex-col sm:flex-row justify-end gap-3">
+          <button onclick="closeBulkPRModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm w-full sm:w-auto">Cancel</button>
+          <button class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm w-full sm:w-auto">Process PRs</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bulk PO Processing Modal -->
+  <div id="bulkPOModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-4 md:p-6 border-b border-gray-200">
+          <h3 class="text-lg md:text-xl font-semibold text-gray-900">Bulk PO Processing</h3>
+          <p class="text-gray-600 text-sm">Create multiple Purchase Orders from approved PRs</p>
+        </div>
+        <div class="p-4 md:p-6 space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Select Approved PRs</label>
+              <select multiple class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-600 focus:border-slate-600 text-sm" size="6">
+                <option>PR-2024-001 - Office Supplies (Approved)</option>
+                <option>PR-2024-002 - IT Equipment (Approved)</option>
+                <option>PR-2024-003 - Marketing Materials (Approved)</option>
+                <option>PR-2024-004 - Maintenance Tools (Approved)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Vendor Assignment</label>
+              <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-600 focus:border-slate-600 text-sm">
+                <option>Auto-assign to preferred vendors</option>
+                <option>Manual vendor selection</option>
+                <option>Use vendor from PR</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Date</label>
+              <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-600 focus:border-slate-600 text-sm">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Payment Terms</label>
+              <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-600 focus:border-slate-600 text-sm">
+                <option>Net 30 days</option>
+                <option>Net 45 days</option>
+                <option>Net 60 days</option>
+                <option>Immediate</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="p-4 md:p-6 border-t border-gray-200 flex flex-col sm:flex-row justify-end gap-3">
+          <button onclick="closeBulkPOModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm w-full sm:w-auto">Cancel</button>
+          <button class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm w-full sm:w-auto">Create POs</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Action Button -->
+  <button onclick="openBulkPRModal()" class="fab" title="Start Bulk Processing">
+    <i class="fas fa-play"></i>
+  </button>
+
+  <script>
+    // Header blur on scroll
+    const header = document.getElementById('app-header');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 6) header.classList.add('header-blur');
+      else header.classList.remove('header-blur');
+    });
+
+    // Simple reveal animation
+    setTimeout(() => {
+      document.querySelectorAll('.reveal').forEach(el => {
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0) scale(1)';
+      });
+    }, 100);
+
+    // Modal functions
+    function openBulkPRModal() { document.getElementById('bulkPRModal').classList.remove('hidden'); }
+    function closeBulkPRModal() { document.getElementById('bulkPRModal').classList.add('hidden'); }
+    function openBulkPOModal() { document.getElementById('bulkPOModal').classList.remove('hidden'); }
+    function closeBulkPOModal() { document.getElementById('bulkPOModal').classList.add('hidden'); }
+    function openBulkApprovalModal() { alert('Bulk Approval modal would open here'); }
+    function openBulkCommunicationModal() { alert('Bulk Communication modal would open here'); }
+
+    // Job action functions
+    function viewJobDetails(jobId) { alert(`Viewing details for job: ${jobId}`); }
+    function viewJobErrors(jobId) { alert(`Viewing errors for job: ${jobId}`); }
+
+    // Close modals when clicking outside
+    document.getElementById('bulkPRModal').addEventListener('click', (e) => {
+      if (e.target.id === 'bulkPRModal') closeBulkPRModal();
+    });
+    document.getElementById('bulkPOModal').addEventListener('click', (e) => {
+      if (e.target.id === 'bulkPOModal') closeBulkPOModal();
+    });
+  </script>
+</body>
+</html></content>
+<parameter name="filePath">d:\Demo\Vendor Portal APP - new build\Bulk_Processing_Center.html

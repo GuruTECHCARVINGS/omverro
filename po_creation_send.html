@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PO Creation & Send - Buyer Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body{font-family:'Inter',sans-serif}
+    .card{transition:transform .2s ease, box-shadow .2s ease}
+    .card:hover{transform:translateY(-2px); box-shadow:0 10px 25px rgba(0,0,0,.07)}
+    .gradient-blue{background:linear-gradient(135deg,#3b82f6 0%,#1d4ed8 100%)}
+    .gradient-green{background:linear-gradient(135deg,#10b981 0%,#059669 100%)}
+    .gradient-purple{background:linear-gradient(135deg,#8b5cf6 0%,#7c3aed 100%)}
+    .gradient-orange{background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%)}
+    .gradient-red{background:linear-gradient(135deg,#ef4444 0%,#dc2626 100%)}
+    .input{width:100%; border:1px solid #d1d5db; border-radius:.5rem; padding:.625rem .75rem}
+    .label{display:block; font-size:.875rem; color:#374151; margin-bottom:.375rem; font-weight:500}
+    .pill{padding:.125rem .5rem; border-radius:9999px; font-size:.75rem; font-weight:600}
+    .table th{font-size:.75rem; text-transform:uppercase; letter-spacing:.04em; color:#6b7280}
+    .table td input{width:100%}
+    .badge{padding:.25rem .5rem; border-radius:9999px; font-size:.75rem; font-weight:600}
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <!-- Header -->
+  <header class="bg-white border-b">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="h-16 flex items-center justify-between">
+        <div class="flex items-center">
+          <button class="mr-3 p-2 rounded-lg hover:bg-gray-100" title="Back to Buyer Dashboard (Alt+B)" onclick="navigateBack()">
+            <i class="fas fa-arrow-left text-gray-600"></i>
+          </button>
+          <h1 class="text-xl font-semibold text-gray-900">PO Creation & Send</h1>
+          <span class="ml-3 badge bg-blue-100 text-blue-800"><i class="fas fa-bolt mr-1"></i>Auto-save On</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="p-2 rounded-lg hover:bg-gray-100" title="Export"><i class="fas fa-download text-gray-600"></i></button>
+          <button class="p-2 rounded-lg hover:bg-gray-100" title="Settings"><i class="fas fa-cog text-gray-600"></i></button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Breadcrumb -->
+    <nav class="flex mb-6" aria-label="Breadcrumb">
+      <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+          <button onclick="navigateBack()" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+            <i class="fas fa-home w-4 h-4 mr-2"></i>Buyer Dashboard
+          </button>
+        </li>
+        <li class="inline-flex items-center text-sm text-gray-500">
+          <i class="fas fa-chevron-right w-4 h-4 text-gray-400 mx-1"></i>
+          PO Creation & Send
+        </li>
+      </ol>
+    </nav>
+
+    <!-- Metrics -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white rounded-xl p-6 card">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Draft POs</p>
+            <p class="text-3xl font-bold text-blue-600" id="metricDrafts">4</p>
+            <p class="text-xs text-blue-600">Autosaved</p>
+          </div>
+          <div class="p-3 bg-blue-100 rounded-full"><i class="fas fa-file-alt text-blue-600"></i></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-6 card">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Ready to Send</p>
+            <p class="text-3xl font-bold text-green-600" id="metricReady">2</p>
+            <p class="text-xs text-green-600">Validated</p>
+          </div>
+          <div class="p-3 bg-green-100 rounded-full"><i class="fas fa-paper-plane text-green-600"></i></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-6 card">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Sent Today</p>
+            <p class="text-3xl font-bold text-purple-600" id="metricSent">3</p>
+            <p class="text-xs text-purple-600">Via portal/email</p>
+          </div>
+          <div class="p-3 bg-purple-100 rounded-full"><i class="fas fa-check-circle text-purple-600"></i></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-6 card">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Total PO Value</p>
+            <p class="text-3xl font-bold text-orange-600" id="metricValue">₹18.4L</p>
+            <p class="text-xs text-orange-600">Today</p>
+          </div>
+          <div class="p-3 bg-orange-100 rounded-full"><i class="fas fa-indian-rupee-sign text-orange-600"></i></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Form + Items -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Left: Supplier + Header + Delivery -->
+      <div class="lg:col-span-1 space-y-6">
+        <!-- Supplier -->
+        <div class="bg-white rounded-xl p-6 card">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-900"><i class="fas fa-industry mr-2 text-blue-600"></i>Supplier</h3>
+            <span id="supplierStatus" class="badge bg-gray-100 text-gray-700">Not selected</span>
+          </div>
+          <div class="space-y-4">
+            <div>
+              <label class="label">Supplier</label>
+              <select id="supplierSelect" class="input" onchange="onSupplierChange()"></select>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="label">Contact Name</label>
+                <input id="supplierContact" class="input" placeholder="Auto-filled" />
+              </div>
+              <div>
+                <label class="label">Email</label>
+                <input id="supplierEmail" class="input" placeholder="Auto-filled" />
+              </div>
+            </div>
+            <div>
+              <label class="label">Address</label>
+              <textarea id="supplierAddress" class="input" rows="2" placeholder="Auto-filled"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Header -->
+        <div class="bg-white rounded-xl p-6 card">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4"><i class="fas fa-file-signature mr-2 text-green-600"></i>PO Header</h3>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="label">PO Number</label>
+              <input id="poNumber" class="input font-semibold" />
+            </div>
+            <div>
+              <label class="label">PO Date</label>
+              <input id="poDate" type="date" class="input" />
+            </div>
+            <div>
+              <label class="label">Buyer</label>
+              <input id="buyerName" class="input" placeholder="Your name" />
+            </div>
+            <div>
+              <label class="label">Department</label>
+              <select id="department" class="input">
+                <option>IT</option>
+                <option>Operations</option>
+                <option>Marketing</option>
+                <option>Finance</option>
+                <option>HR</option>
+              </select>
+            </div>
+            <div>
+              <label class="label">Currency</label>
+              <select id="currency" class="input">
+                <option value="INR">INR (₹)</option>
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+              </select>
+            </div>
+            <div>
+              <label class="label">Payment Terms</label>
+              <select id="paymentTerms" class="input">
+                <option>Net 30</option>
+                <option>Net 45</option>
+                <option>Advance 50%</option>
+                <option>On Delivery</option>
+              </select>
+            </div>
+            <div>
+              <label class="label">Incoterms</label>
+              <select id="incoterms" class="input">
+                <option>FOB</option>
+                <option>CIF</option>
+                <option>DAP</option>
+                <option>EXW</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delivery/Billing -->
+        <div class="bg-white rounded-xl p-6 card">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4"><i class="fas fa-truck mr-2 text-orange-600"></i>Delivery & Billing</h3>
+          <div class="grid grid-cols-1 gap-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="label">Requested Delivery Date</label>
+                <input id="deliveryDate" type="date" class="input" />
+              </div>
+              <div>
+                <label class="label">Delivery Method</label>
+                <select id="deliveryMethod" class="input">
+                  <option>Standard</option>
+                  <option>Express</option>
+                  <option>Pickup</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="label">Ship To</label>
+              <textarea id="shipTo" class="input" rows="2" placeholder="Shipping address"></textarea>
+            </div>
+            <div>
+              <label class="label">Bill To</label>
+              <textarea id="billTo" class="input" rows="2" placeholder="Billing address"></textarea>
+              <label class="mt-2 inline-flex items-center text-sm text-gray-600"><input type="checkbox" id="billSame" class="mr-2" />Same as Ship To</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Items + Summary + Notes -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Items -->
+        <div class="bg-white rounded-xl p-6 card">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-900"><i class="fas fa-list-ul mr-2 text-blue-600"></i>Line Items</h3>
+            <div class="flex items-center gap-2">
+              <button class="px-3 py-2 gradient-blue text-white rounded-lg hover:opacity-90" onclick="addItemRow()"><i class="fas fa-plus mr-2"></i>Add Item</button>
+              <button class="px-3 py-2 border rounded-lg hover:bg-gray-50" onclick="clearItems()"><i class="fas fa-trash mr-2 text-red-600"></i>Clear</button>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full table">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-3 py-2 text-left">Item</th>
+                  <th class="px-3 py-2 text-left">Description</th>
+                  <th class="px-3 py-2 text-left">Qty</th>
+                  <th class="px-3 py-2 text-left">Unit</th>
+                  <th class="px-3 py-2 text-left">Unit Price</th>
+                  <th class="px-3 py-2 text-left">Tax %</th>
+                  <th class="px-3 py-2 text-left">Total</th>
+                  <th class="px-3 py-2 text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="itemsBody" class="text-sm"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="bg-white rounded-xl p-6 card">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="md:col-span-2">
+              <h4 class="text-md font-semibold text-gray-900 mb-2">Notes & Attachments</h4>
+              <div class="space-y-3">
+                <textarea id="vendorNote" class="input" rows="2" placeholder="Note to vendor (visible on PO)"></textarea>
+                <textarea id="internalNote" class="input" rows="2" placeholder="Internal note (not shared)"></textarea>
+                <div class="flex items-center gap-3">
+                  <label class="px-3 py-2 border rounded-lg cursor-pointer hover:bg-gray-50">
+                    <i class="fas fa-paperclip mr-2"></i>
+                    <span>Attach files</span>
+                    <input id="attachments" type="file" multiple class="hidden" onchange="onAttach()" />
+                  </label>
+                  <div id="attachmentList" class="text-sm text-gray-600"></div>
+                </div>
+              </div>
+            </div>
+            <div class="bg-gray-50 rounded-xl p-4 border">
+              <h4 class="text-md font-semibold text-gray-900 mb-3">Totals</h4>
+              <div class="space-y-2 text-sm">
+                <div class="flex justify-between"><span>Subtotal</span><span id="subtotal">₹0</span></div>
+                <div class="flex justify-between"><span>Tax</span><span id="taxTotal">₹0</span></div>
+                <div class="flex justify-between items-center">
+                  <span>Shipping</span>
+                  <input id="shipping" class="w-28 input py-1" value="0" oninput="recalcTotals()" />
+                </div>
+                <div class="flex justify-between items-center">
+                  <span>Discount</span>
+                  <div class="flex items-center gap-2">
+                    <input id="discount" class="w-20 input py-1" value="0" oninput="recalcTotals()" />
+                    <select id="discountType" class="input w-24 py-1" onchange="recalcTotals()">
+                      <option value="amount">₹</option>
+                      <option value="percent">%</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="border-t pt-2 mt-2 flex justify-between font-semibold text-gray-900 text-base">
+                  <span>Grand Total</span><span id="grandTotal">₹0</span>
+                </div>
+              </div>
+              <div class="mt-4 flex flex-wrap gap-2">
+                <button class="flex-1 px-3 py-2 gradient-purple text-white rounded-lg hover:opacity-90" onclick="previewPO()"><i class="fas fa-eye mr-2"></i>Preview</button>
+                <button class="flex-1 px-3 py-2 gradient-green text-white rounded-lg hover:opacity-90" onclick="sendPO()"><i class="fas fa-paper-plane mr-2"></i>Send</button>
+                <button class="w-full px-3 py-2 border rounded-lg hover:bg-gray-50" onclick="saveDraft(true)"><i class="fas fa-save mr-2"></i>Save Draft</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Preview/Modal -->
+  <div id="modal" class="hidden fixed inset-0 bg-gray-700/50 z-50">
+    <div class="relative max-w-4xl mx-auto bg-white rounded-xl shadow-xl mt-16 max-h-[80vh] overflow-y-auto">
+      <div class="flex items-center justify-between px-6 py-4 border-b">
+        <h3 class="text-lg font-semibold" id="modalTitle">Preview</h3>
+        <button class="p-2 hover:bg-gray-100 rounded-lg" onclick="closeModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div id="modalBody" class="p-6"></div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="hidden fixed top-4 right-4 text-white px-4 py-2 rounded-lg shadow-lg"></div>
+
+  <script>
+    // Sample Data
+    const vendors = [
+      { id:'V-001', name:'TechNova Solutions', contact:'Anita Rao', email:'anita@technova.com', address:'#21, 1st Main, Electronic City, Bangalore - 560100', paymentTerms:'Net 30' },
+      { id:'V-002', name:'GreenLeaf Supplies', contact:'Rahul Mehta', email:'rahul@greenleaf.co', address:'Plot 8, MIDC, Pune - 411019', paymentTerms:'Net 45' },
+      { id:'V-003', name:'Omega Hardware', contact:'Kiran Shah', email:'kiran@omega-hw.in', address:'Gala 12, Andheri IND Estate, Mumbai - 400093', paymentTerms:'On Delivery' }
+    ];
+
+    const products = [
+      { sku:'LTP-DEL-5410', desc:'Dell Latitude 5410', unit:'Nos', price:45000, tax:18 },
+      { sku:'SRV-HP-DL360', desc:'HP ProLiant DL360 Server', unit:'Nos', price:185000, tax:18 },
+      { sku:'CHR-ERGO', desc:'Ergonomic Chair', unit:'Nos', price:4800, tax:12 },
+      { sku:'DSK-STD', desc:'Standing Desk', unit:'Nos', price:9500, tax:12 }
+    ];
+
+    // Helpers
+    const Rs = n => '₹' + (Number(n)||0).toLocaleString('en-IN');
+    const el = id => document.getElementById(id);
+
+    function navigateBack(){
+      try{ showToast('Back to Buyer Dashboard', 'info'); setTimeout(()=>location.href='BuyerDashboard.html', 350);}catch{ history.back(); }
+    }
+
+    // Init form
+    function initForm(){
+      // Supplier list
+      const sel = el('supplierSelect');
+      sel.innerHTML = '<option value="">Select Supplier</option>' + vendors.map(v=>`<option value="${v.id}">${v.name}</option>`).join('');
+
+      // Defaults
+      el('poNumber').value = genPONumber();
+      el('poDate').valueAsDate = new Date();
+      el('buyerName').value = 'Buyer User';
+      el('shipTo').value = 'Acme Corp Warehouse\nKoramangala, Bengaluru 560095\nKarnataka, India';
+      el('billTo').value = 'Acme Corp Finance\nMG Road, Bengaluru 560001\nKarnataka, India';
+
+      // Events
+      el('billSame').addEventListener('change',()=>{ if(el('billSame').checked) el('billTo').value = el('shipTo').value; });
+
+      // Sample vendor + items
+      sel.value = vendors[0].id; onSupplierChange();
+      addItemRow(products[0], 2);
+      addItemRow(products[2], 4);
+      recalcTotals();
+
+      // Auto-save draft
+      setInterval(()=>saveDraft(false), 4000);
+
+      // Shortcuts
+      document.addEventListener('keydown', (e)=>{
+        if(e.altKey && (e.key==='b' || e.key==='B')){ e.preventDefault(); navigateBack(); }
+        if((e.ctrlKey||e.metaKey) && (e.key==='s' || e.key==='S')){ e.preventDefault(); saveDraft(true); }
+        if(e.key==='Escape') closeModal();
+      });
+    }
+
+    function genPONumber(){
+      const d = new Date();
+      return `PO-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}-${Math.floor(1000+Math.random()*9000)}`;
+    }
+
+    function onSupplierChange(){
+      const id = el('supplierSelect').value; const v = vendors.find(x=>x.id===id);
+      if(!v){ el('supplierStatus').className='badge bg-gray-100 text-gray-700'; el('supplierStatus').textContent='Not selected'; return; }
+      el('supplierContact').value = v.contact; el('supplierEmail').value = v.email; el('supplierAddress').value = v.address; el('paymentTerms').value = v.paymentTerms;
+      el('supplierStatus').className='badge bg-green-100 text-green-800'; el('supplierStatus').textContent='Selected';
+    }
+
+    // Items
+    function addItemRow(pref=null, qty=1){
+      const tbody = el('itemsBody');
+      const tr = document.createElement('tr');
+      tr.className = 'border-b';
+      const p = pref || { sku:'', desc:'', unit:'Nos', price:0, tax:18 };
+      tr.innerHTML = `
+        <td class="px-3 py-2 w-44">
+          <select class="input py-1" onchange="onProductChange(this)">
+            <option value="">Select</option>
+            ${products.map(pr=>`<option value="${pr.sku}" ${p.sku===pr.sku?'selected':''}>${pr.sku}</option>`).join('')}
+          </select>
+        </td>
+        <td class="px-3 py-2"><input class="input py-1" value="${p.desc}" placeholder="Description" oninput="recalcTotals()"/></td>
+        <td class="px-3 py-2 w-24"><input class="input py-1" type="number" min="0" step="1" value="${qty}" oninput="recalcTotals()"/></td>
+        <td class="px-3 py-2 w-24"><input class="input py-1" value="${p.unit}" oninput="recalcTotals()"/></td>
+        <td class="px-3 py-2 w-32"><input class="input py-1" type="number" min="0" step="0.01" value="${p.price}" oninput="recalcTotals()"/></td>
+        <td class="px-3 py-2 w-24"><input class="input py-1" type="number" min="0" step="0.01" value="${p.tax}" oninput="recalcTotals()"/></td>
+        <td class="px-3 py-2 w-36 font-semibold"><span>₹0</span></td>
+        <td class="px-3 py-2 w-24">
+          <button class="text-red-600 hover:text-red-800" title="Remove" onclick="this.closest('tr').remove(); recalcTotals();"><i class="fas fa-trash"></i></button>
+        </td>`;
+      tbody.appendChild(tr);
+      recalcTotals();
+    }
+
+    function onProductChange(sel){
+      const sku = sel.value; const p = products.find(x=>x.sku===sku); if(!p) return;
+      const tr = sel.closest('tr');
+      tr.children[1].querySelector('input').value = p.desc;
+      tr.children[2].querySelector('input').value = tr.children[2].querySelector('input').value || 1;
+      tr.children[3].querySelector('input').value = p.unit;
+      tr.children[4].querySelector('input').value = p.price;
+      tr.children[5].querySelector('input').value = p.tax;
+      recalcTotals();
+    }
+
+    function clearItems(){ el('itemsBody').innerHTML=''; recalcTotals(); }
+
+    function recalcTotals(){
+      const rows = [...el('itemsBody').querySelectorAll('tr')];
+      let subtotal = 0, tax = 0;
+      rows.forEach(r=>{
+        const qty = parseFloat(r.children[2].querySelector('input').value)||0;
+        const price = parseFloat(r.children[4].querySelector('input').value)||0;
+        const tx = parseFloat(r.children[5].querySelector('input').value)||0;
+        const line = qty*price; const lineTax = line*tx/100; subtotal += line; tax += lineTax;
+        r.children[6].querySelector('span').textContent = Rs(line+lineTax);
+      });
+      const shipping = parseFloat(el('shipping').value)||0;
+      let discount = parseFloat(el('discount').value)||0;
+      if(el('discountType').value==='percent') discount = (subtotal+tax+shipping)*discount/100;
+      const grand = Math.max(0, subtotal + tax + shipping - discount);
+      el('subtotal').textContent = Rs(subtotal);
+      el('taxTotal').textContent = Rs(tax);
+      el('grandTotal').textContent = Rs(grand);
+    }
+
+    // Attachments
+    function onAttach(){
+      const list = [...el('attachments').files].map(f=>f.name).join(', ');
+      el('attachmentList').textContent = list || '';
+    }
+
+    // Draft save
+    function collectPO(){
+      const items = [...el('itemsBody').querySelectorAll('tr')].map(r=>({
+        sku: r.children[0].querySelector('select').value,
+        desc: r.children[1].querySelector('input').value,
+        qty: parseFloat(r.children[2].querySelector('input').value)||0,
+        unit: r.children[3].querySelector('input').value,
+        price: parseFloat(r.children[4].querySelector('input').value)||0,
+        tax: parseFloat(r.children[5].querySelector('input').value)||0
+      }));
+      return {
+        supplierId: el('supplierSelect').value,
+        supplierContact: el('supplierContact').value,
+        supplierEmail: el('supplierEmail').value,
+        supplierAddress: el('supplierAddress').value,
+        header: {
+          number: el('poNumber').value,
+          date: el('poDate').value,
+          buyer: el('buyerName').value,
+          dept: el('department').value,
+          currency: el('currency').value,
+          paymentTerms: el('paymentTerms').value,
+          incoterms: el('incoterms').value
+        },
+        logistics: {
+          deliveryDate: el('deliveryDate').value,
+          method: el('deliveryMethod').value,
+          shipTo: el('shipTo').value,
+          billTo: el('billTo').value
+        },
+        notes: { vendor: el('vendorNote').value, internal: el('internalNote').value },
+        totals: {
+          subtotal: el('subtotal').textContent,
+          tax: el('taxTotal').textContent,
+          shipping: el('shipping').value,
+          discount: el('discount').value + (el('discountType').value==='percent'?'%':'₹'),
+          grand: el('grandTotal').textContent
+        },
+        items
+      };
+    }
+
+    function saveDraft(userTriggered){
+      const data = collectPO();
+      localStorage.setItem('poDraft', JSON.stringify(data));
+      if(userTriggered) showToast('Draft saved', 'success');
+    }
+
+    function loadDraft(){
+      try{
+        const raw = localStorage.getItem('poDraft'); if(!raw) return false;
+        const d = JSON.parse(raw);
+        if(d.supplierId){ el('supplierSelect').value = d.supplierId; onSupplierChange(); }
+        el('supplierContact').value = d.supplierContact||'';
+        el('supplierEmail').value = d.supplierEmail||'';
+        el('supplierAddress').value = d.supplierAddress||'';
+        if(d.header){ el('poNumber').value=d.header.number||genPONumber(); el('poDate').value=d.header.date||new Date().toISOString().slice(0,10); el('buyerName').value=d.header.buyer||''; el('department').value=d.header.dept||'IT'; el('currency').value=d.header.currency||'INR'; el('paymentTerms').value=d.header.paymentTerms||'Net 30'; el('incoterms').value=d.header.incoterms||'FOB'; }
+        if(d.logistics){ el('deliveryDate').value=d.logistics.deliveryDate||''; el('deliveryMethod').value=d.logistics.method||'Standard'; el('shipTo').value=d.logistics.shipTo||''; el('billTo').value=d.logistics.billTo||''; }
+        el('vendorNote').value = d.notes?.vendor||'';
+        el('internalNote').value = d.notes?.internal||'';
+        el('shipping').value = d.totals?.shipping||0;
+        const items = d.items||[]; clearItems(); items.forEach(it=> addItemRow({sku:it.sku, desc:it.desc, unit:it.unit, price:it.price, tax:it.tax}, it.qty));
+        recalcTotals();
+        showToast('Loaded draft', 'info');
+        return true;
+      }catch{ return false; }
+    }
+
+    // Preview
+    function previewPO(){
+      const d = collectPO();
+      const v = vendors.find(x=>x.id===d.supplierId);
+      const body = `
+        <div class="border rounded-lg p-4">
+          <div class="flex justify-between mb-4">
+            <div>
+              <h4 class="text-xl font-semibold">Purchase Order</h4>
+              <div class="text-sm text-gray-600">${d.header.number} • ${d.header.date}</div>
+            </div>
+            <div class="text-right text-sm">
+              <div><span class="text-gray-600">Buyer:</span> <span class="font-medium">${d.header.buyer}</span></div>
+              <div><span class="text-gray-600">Dept:</span> <span class="font-medium">${d.header.dept}</span></div>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-6 mb-4 text-sm">
+            <div>
+              <div class="font-semibold mb-1">Supplier</div>
+              <div>${v? v.name : ''}</div>
+              <div>${d.supplierContact} • ${d.supplierEmail}</div>
+              <div class="text-gray-600 whitespace-pre-line">${d.supplierAddress||''}</div>
+            </div>
+            <div>
+              <div class="font-semibold mb-1">Ship/Bill</div>
+              <div><span class="text-gray-600">Ship To:</span> ${d.logistics.shipTo}</div>
+              <div><span class="text-gray-600">Bill To:</span> ${d.logistics.billTo}</div>
+              <div><span class="text-gray-600">Delivery:</span> ${d.logistics.deliveryDate||'-'} (${d.logistics.method})</div>
+            </div>
+          </div>
+          <div class="overflow-x-auto mb-4">
+            <table class="w-full text-sm">
+              <thead class="bg-gray-50"><tr><th class="px-3 py-2 text-left">Item</th><th class="px-3 py-2 text-left">Description</th><th class="px-3 py-2 text-left">Qty</th><th class="px-3 py-2 text-left">Unit</th><th class="px-3 py-2 text-left">Price</th><th class="px-3 py-2 text-left">Tax%</th><th class="px-3 py-2 text-left">Amount</th></tr></thead>
+              <tbody>
+                ${d.items.map(it=>{
+                  const line = it.qty*it.price; const tx=line*it.tax/100; return `<tr class='border-b'>
+                    <td class='px-3 py-2'>${it.sku||'-'}</td>
+                    <td class='px-3 py-2'>${it.desc||'-'}</td>
+                    <td class='px-3 py-2'>${it.qty}</td>
+                    <td class='px-3 py-2'>${it.unit||''}</td>
+                    <td class='px-3 py-2'>${Rs(it.price)}</td>
+                    <td class='px-3 py-2'>${it.tax}%</td>
+                    <td class='px-3 py-2 font-semibold'>${Rs(line+tx)}</td>
+                  </tr>`;}).join('')}
+              </tbody>
+            </table>
+          </div>
+          <div class="grid grid-cols-3 gap-4 text-sm">
+            <div class="col-span-2">
+              <div class="font-semibold">Note to vendor</div>
+              <div class="text-gray-700 whitespace-pre-line">${d.notes.vendor||'-'}</div>
+            </div>
+            <div class="bg-gray-50 rounded p-3 border">
+              <div class="flex justify-between"><span>Subtotal</span><span>${d.totals.subtotal}</span></div>
+              <div class="flex justify-between"><span>Tax</span><span>${d.totals.tax}</span></div>
+              <div class="flex justify-between"><span>Shipping</span><span>₹${d.totals.shipping||0}</span></div>
+              <div class="flex justify-between"><span>Discount</span><span>${d.totals.discount}</span></div>
+              <div class="border-t mt-2 pt-2 flex justify-between font-semibold"><span>Grand Total</span><span>${d.totals.grand}</span></div>
+            </div>
+          </div>
+        </div>`;
+      el('modalTitle').textContent = 'PO Preview';
+      el('modalBody').innerHTML = body;
+      openModal();
+    }
+
+    function sendPO(){
+      // Simple validation
+      if(!el('supplierSelect').value){ showToast('Select supplier before sending', 'error'); return; }
+      if(el('itemsBody').children.length===0){ showToast('Add at least one line item', 'error'); return; }
+      const d = collectPO();
+      const body = `
+        <div class="space-y-4">
+          <div class="bg-blue-50 border border-blue-200 p-3 rounded">
+            <div class="font-semibold text-blue-900">Send Purchase Order</div>
+            <div class="text-sm text-blue-700">${d.header.number} • Total ${d.totals.grand}</div>
+          </div>
+          <div>
+            <div class="label">Channels</div>
+            <label class="inline-flex items-center mr-4"><input type="checkbox" id="chEmail" class="mr-2" checked/>Email to supplier</label>
+            <label class="inline-flex items-center mr-4"><input type="checkbox" id="chPortal" class="mr-2" checked/>Publish on vendor portal</label>
+            <label class="inline-flex items-center"><input type="checkbox" id="chDownload" class="mr-2"/>Download PDF</label>
+          </div>
+          <div>
+            <label class="label">Email Message</label>
+            <textarea id="sendMsg" class="input" rows="3">Dear ${d.supplierContact||'Supplier'},\nPlease find Purchase Order ${d.header.number} attached. Kindly acknowledge receipt and confirm delivery timelines.\nRegards,\n${d.header.buyer||'Buyer'}</textarea>
+          </div>
+          <div class="flex justify-end gap-2">
+            <button class="px-3 py-2 border rounded-lg hover:bg-gray-50" onclick="closeModal()">Cancel</button>
+            <button class="px-3 py-2 gradient-green text-white rounded-lg hover:opacity-90" onclick="confirmSend()"><i class="fas fa-paper-plane mr-2"></i>Send PO</button>
+          </div>
+        </div>`;
+      el('modalTitle').textContent = 'Send PO';
+      el('modalBody').innerHTML = body;
+      openModal();
+    }
+
+    function confirmSend(){
+      closeModal();
+      showToast('Sending PO...', 'info');
+      setTimeout(()=>{
+        showToast('PO sent successfully and published on portal', 'success');
+        // Reset number for next PO
+        el('poNumber').value = genPONumber();
+      }, 1200);
+    }
+
+    function openModal(){ el('modal').classList.remove('hidden'); }
+    function closeModal(){ el('modal').classList.add('hidden'); }
+
+    function showToast(msg, type='info'){
+      const t = el('toast');
+      const color = {success:'bg-green-600', error:'bg-red-600', info:'bg-blue-600', warning:'bg-yellow-600'}[type]||'bg-gray-800';
+      t.className = `fixed top-4 right-4 text-white px-4 py-2 rounded-lg shadow-lg ${color}`;
+      t.textContent = msg; t.classList.remove('hidden');
+      setTimeout(()=> t.classList.add('hidden'), 2500);
+    }
+
+    // Init
+    document.addEventListener('DOMContentLoaded', ()=>{
+      initForm();
+      // Try restoring previous draft
+      if(!loadDraft()) recalcTotals();
+    });
+  </script>
+</body>
+</html>

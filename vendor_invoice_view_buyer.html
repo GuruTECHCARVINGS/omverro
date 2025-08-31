@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Buyer Portal – PO-based Invoice & Approval</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: linear-gradient(120deg,#f3f6fd 0%,#e9eafc 100%); color:#111827 }
+  .card { box-shadow: 0 8px 28px rgba(59,130,246,.08); border:1px solid #E5E7EB; border-radius:1rem; background:#fff; overflow: hidden }
+    .badge { font-size:.7rem; font-weight:700; padding:.25rem .5rem; border-radius:999px; border:1px solid; }
+    .badge.status-pending-validation { background:#FFF7ED; color:#9A3412; border-color:#FED7AA }
+    .badge.status-needs-match { background:#FEF3C7; color:#92400E; border-color:#FDE68A }
+    .badge.status-on-hold { background:#FEF2F2; color:#B91C1C; border-color:#FCA5A5 }
+    .badge.status-approved { background:#ECFDF5; color:#047857; border-color:#A7F3D0 }
+    .badge.status-rejected { background:#FEE2E2; color:#991B1B; border-color:#FCA5A5 }
+    .badge.status-paid { background:#EEF2FF; color:#1D4ED8; border-color:#C7D2FE }
+  .badge.status-draft { background:#F3F4F6; color:#374151; border-color:#E5E7EB }
+  .badge.status-submitted { background:#E0E7FF; color:#4338CA; border-color:#C7D2FE }
+    .pill { font-size:.72rem; font-weight:700; padding:.25rem .5rem; border-radius:999px; }
+    .reveal { opacity:0; transform: translateY(8px); transition: .5s }
+    .reveal.show { opacity:1; transform: none }
+    .progress { height:8px; background:#E5E7EB; border-radius:999px; overflow:hidden }
+    .progress > span { display:block; height:100% }
+    .timeline-item { border-left: 3px solid #E5E7EB; padding-left: .85rem; margin-left:.35rem }
+    .timeline-item.completed { border-color:#34D399 }
+    .timeline-item.current { border-color:#60A5FA }
+    .timeline-item.rejected { border-color:#F87171 }
+    .timeline-item.hold { border-color:#FBBF24 }
+  /* Prevent large currency strings from overflowing */
+  .amount { overflow-wrap: anywhere; word-break: break-word; line-height: 1.1 }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button onclick="navBack()" class="h-10 w-10 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100" title="Back to Buyer Dashboard"><i class="fas fa-arrow-left"></i></button>
+        <div>
+          <h1 class="text-lg sm:text-xl font-bold text-gray-900">PO-based Invoice & Approval</h1>
+          <p class="text-xs text-gray-500 -mt-0.5">3-way match • Exceptions • Approvals • Payments</p>
+        </div>
+      </div>
+      <div class="hidden md:flex items-center gap-3">
+        <div class="relative">
+          <input id="q" type="search" placeholder="Search Invoice/PO/Supplier..." class="w-72 pl-10 pr-3 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none"/>
+          <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+        </div>
+        <button class="h-10 px-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700" onclick="exportCSV()"><i class="fas fa-file-export mr-1"></i>Export</button>
+        <button class="h-10 px-3 rounded-lg bg-gray-50 border hover:bg-gray-100" onclick="refreshData()"><i class="fas fa-sync-alt"></i></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- KPIs -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
+      <div class="card p-5 reveal">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-gray-500">Pending Invoices</div>
+            <div id="kpiPending" class="text-3xl font-extrabold text-orange-600">--</div>
+            <div class="text-xs text-orange-600">Need action</div>
+          </div>
+          <div class="p-3 bg-orange-100 rounded-full"><i class="fas fa-hourglass-half text-orange-600"></i></div>
+        </div>
+      </div>
+      <div class="card p-5 reveal">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-gray-500">Exceptions</div>
+            <div id="kpiExceptions" class="text-3xl font-extrabold text-red-600">--</div>
+            <div class="text-xs text-red-600">Mismatch/Hold</div>
+          </div>
+          <div class="p-3 bg-red-100 rounded-full"><i class="fas fa-exclamation-triangle text-red-600"></i></div>
+        </div>
+      </div>
+      <div class="card p-5 reveal">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-gray-500">Approved</div>
+            <div id="kpiApproved" class="text-3xl font-extrabold text-green-600">--</div>
+            <div class="text-xs text-green-600">Awaiting payment</div>
+          </div>
+          <div class="p-3 bg-green-100 rounded-full"><i class="fas fa-check-circle text-green-600"></i></div>
+        </div>
+      </div>
+      <div class="card p-5 reveal">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-gray-500">Paid this month</div>
+            <div id="kpiPaid" class="text-3xl font-extrabold text-blue-600">--</div>
+            <div class="text-xs text-blue-600">Completed</div>
+          </div>
+          <div class="p-3 bg-blue-100 rounded-full"><i class="fas fa-rupee-sign text-blue-600"></i></div>
+        </div>
+      </div>
+      <div class="card p-5 reveal">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-gray-500">Avg. Approval Time</div>
+            <div id="kpiAvgTime" class="text-3xl font-extrabold text-purple-600">--</div>
+            <div class="text-xs text-purple-600">Days</div>
+          </div>
+          <div class="p-3 bg-purple-100 rounded-full"><i class="fas fa-stopwatch text-purple-600"></i></div>
+        </div>
+      </div>
+      <div class="card p-5 reveal">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-gray-500">Value in Process</div>
+            <div id="kpiValue" class="amount text-3xl font-extrabold text-teal-600">--</div>
+            <div class="text-xs text-teal-600">Across statuses</div>
+          </div>
+          <div class="p-3 bg-teal-100 rounded-full"><i class="fas fa-wallet text-teal-600"></i></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="card p-5 mb-6 reveal">
+      <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
+        <div class="md:col-span-2">
+          <label class="text-xs text-gray-500">Search</label>
+          <div class="relative">
+            <input id="search" type="text" placeholder="Invoice ID / PO / Supplier" class="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600"/>
+            <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+          </div>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Status</label>
+          <select id="fStatus" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600">
+            <option value="">All</option>
+            <option>Draft</option>
+            <option>Submitted</option>
+            <option>Pending Validation</option>
+            <option>Needs Match</option>
+            <option>On Hold</option>
+            <option>Approved</option>
+            <option>Rejected</option>
+            <option>Paid</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Supplier</label>
+          <select id="fSupplier" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600">
+            <option value="">All</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">From Date</label>
+          <input id="fFrom" type="date" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600"/>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">To Date</label>
+          <input id="fTo" type="date" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600"/>
+        </div>
+        <div class="flex items-end gap-2">
+          <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" onclick="applyFilters()"><i class="fas fa-filter mr-1"></i>Apply</button>
+          <button class="px-4 py-2 bg-gray-50 border rounded-lg hover:bg-gray-100" onclick="resetFilters()"><i class="fas fa-undo mr-1"></i>Reset</button>
+        </div>
+      </div>
+      <div class="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-600">
+        Quick dates:
+        <button class="px-2.5 py-1 rounded border hover:bg-gray-50" onclick="setDatePreset('today')">Today</button>
+        <button class="px-2.5 py-1 rounded border hover:bg-gray-50" onclick="setDatePreset('last7')">Last 7 days</button>
+        <button class="px-2.5 py-1 rounded border hover:bg-gray-50" onclick="setDatePreset('month')">This month</button>
+        <button class="px-2.5 py-1 rounded border hover:bg-gray-50" onclick="setDatePreset('clear')">Clear</button>
+      </div>
+    </section>
+
+    <!-- Toolbar -->
+    <section class="flex flex-col md:flex-row items-center justify-between gap-3 mb-3">
+      <div class="text-sm text-gray-600">Invoices are PO-based with 3-way match (PO-Receipt-Invoice). Exceptions require review before approval.</div>
+      <div class="flex gap-2">
+        <button class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700" onclick="bulkApprove()"><i class="fas fa-check mr-1"></i>Bulk Approve</button>
+        <button class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600" onclick="createInvoice()"><i class="fas fa-file-invoice-dollar mr-1"></i>Capture Invoice</button>
+      </div>
+    </section>
+
+    <!-- Table -->
+    <section class="card overflow-hidden reveal">
+  <div class="overflow-x-auto p-1">
+        <table class="min-w-full">
+          <thead class="bg-gray-50 text-gray-600 text-xs uppercase">
+            <tr>
+              <th class="px-4 py-3 text-left">Invoice</th>
+              <th class="px-4 py-3 text-left">PO / Supplier</th>
+              <th class="px-4 py-3 text-right">Amount</th>
+              <th class="px-4 py-3 text-left">Status</th>
+              <th class="px-4 py-3 text-left">3-way Match</th>
+              <th class="px-4 py-3 text-left">Dates</th>
+              <th class="px-4 py-3 text-right">Aging</th>
+              <th class="px-4 py-3 text-left">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tbody" class="text-sm"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal -->
+  <div id="modal" class="fixed inset-0 bg-black/30 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl w-full max-w-5xl shadow-2xl">
+      <div class="flex items-center justify-between px-5 py-4 border-b">
+        <h3 id="modalTitle" class="text-lg font-semibold text-gray-900">Invoice</h3>
+        <button class="h-10 w-10 rounded-lg bg-gray-50 hover:bg-gray-100" onclick="closeModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div id="modalBody" class="p-5 max-h-[70vh] overflow-y-auto"></div>
+      <div class="px-5 py-4 border-t flex items-center justify-between">
+        <div class="text-xs text-gray-500">Press ESC to close • Alt+B to go back</div>
+        <div class="flex gap-2">
+          <button id="btnApprove" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700" onclick="approveCurrent()"><i class="fas fa-check mr-1"></i>Approve</button>
+          <button id="btnHold" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600" onclick="holdCurrent()"><i class="fas fa-pause mr-1"></i>Hold</button>
+          <button id="btnReject" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700" onclick="rejectCurrent()"><i class="fas fa-times mr-1"></i>Reject</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed top-4 right-4 hidden text-white px-4 py-2 rounded-lg shadow-lg"></div>
+
+  <script>
+    // Utilities
+    const $ = (id) => document.getElementById(id);
+    const Rs = (n) => new Intl.NumberFormat('en-IN', { style:'currency', currency:'INR', maximumFractionDigits: 0 }).format(n||0);
+    const fmtDate = (d) => typeof d === 'string' && d ? new Date(d).toLocaleDateString('en-IN') : d || '-';
+    const daysBetween = (a,b) => Math.max(0, Math.round((new Date(b) - new Date(a)) / 86400000));
+    const showToast = (m, t='info') => { const el = $('toast'); const colors = {success:'bg-green-600', info:'bg-blue-600', warning:'bg-yellow-600', error:'bg-red-600'}; el.className = `fixed top-4 right-4 text-white px-4 py-2 rounded-lg shadow-lg ${colors[t]||colors.info}`; el.textContent = m; el.classList.remove('hidden'); setTimeout(()=> el.classList.add('hidden'), 2200); };
+    function navBack(){ window.location.href = 'BuyerDashboard.html'; }
+
+    // Sample Data
+    const invoices = [
+      {
+        id:'INV-2024-001', po:'PO-2024-001', supplier:'Global Furniture Ltd', supplierCode:'SUP-001', terms:'Net 30', currency:'INR',
+        status:'Pending Validation', received:'2024-01-12', invoiceDate:'2024-01-11', due:'2024-02-10', department:'Admin',
+        subtotal: 790000, taxes:[{type:'CGST', rate:9, amount:71100},{type:'SGST', rate:9, amount:71100}], freight: 2000, other: 0,
+        lines:[
+          {sku:'FUR-DSK-EXE', desc:'Executive Desks', qtyInv:10, priceInv:25000, qtyPO:10, pricePO:24500, qtyGRN:10},
+          {sku:'FUR-CHR-ERG', desc:'Office Chairs', qtyInv:25, priceInv:12000, qtyPO:25, pricePO:12000, qtyGRN:25}
+        ],
+        attachments:[{name:'Invoice_INV-2024-001.pdf', type:'pdf'},{name:'PO_PO-2024-001.pdf', type:'pdf'}],
+        approvers:[{role:'AP Clerk', user:'Neha Gupta', status:'completed', date:'2024-01-12 10:10'},{role:'Finance Head', user:'Amit Singh', status:'pending'}],
+        comments:[{user:'Neha Gupta', text:'Price variance on Desks (2%) – needs approval', time:'2024-01-12 10:15'}]
+      },
+      {
+        id:'INV-2024-002', po:'PO-2024-002', supplier:'Microsoft India Pvt Ltd', supplierCode:'SUP-002', terms:'Net 15', currency:'INR',
+        status:'Approved', received:'2024-01-08', invoiceDate:'2024-01-07', due:'2024-01-22', department:'IT',
+        subtotal: 890000, taxes:[{type:'IGST', rate:18, amount:160200}], freight:0, other:0,
+        lines:[
+          {sku:'SW-O365-E5', desc:'Office 365 Enterprise', qtyInv:100, priceInv:8500, qtyPO:100, pricePO:8500, qtyGRN:100},
+          {sku:'CLOUD-AZR', desc:'Azure Credits', qtyInv:1, priceInv:430000, qtyPO:1, pricePO:430000, qtyGRN:1}
+        ],
+        attachments:[{name:'Invoice_INV-2024-002.pdf', type:'pdf'}],
+        approvers:[{role:'AP Clerk', user:'Neha Gupta', status:'completed', date:'2024-01-08 12:05'},{role:'Finance Head', user:'Amit Singh', status:'completed', date:'2024-01-08 14:10'}],
+        comments:[{user:'Amit Singh', text:'Approved, process for payment', time:'2024-01-08 14:12'}]
+      },
+      {
+        id:'INV-2024-003', po:'PO-2024-010', supplier:'Materials Plus Ltd', supplierCode:'SUP-010', terms:'Net 60', currency:'INR',
+        status:'On Hold', received:'2024-01-18', invoiceDate:'2024-01-16', due:'2024-03-17', department:'Manufacturing',
+        subtotal: 2000000, taxes:[{type:'IGST', rate:18, amount:360000}], freight: 40000, other: 0,
+        lines:[
+          {sku:'MAT-STEEL-A', desc:'Steel Sheets Grade A', qtyInv:500, priceInv:2800, qtyPO:500, pricePO:2800, qtyGRN:0},
+          {sku:'MAT-AL-RD', desc:'Aluminum Rods', qtyInv:200, priceInv:3200, qtyPO:200, pricePO:3200, qtyGRN:0}
+        ],
+        attachments:[{name:'Invoice_INV-2024-003.pdf', type:'pdf'},{name:'SupplierDelayNote.pdf', type:'pdf'}],
+        approvers:[{role:'AP Clerk', user:'Neha Gupta', status:'pending'}],
+        comments:[{user:'AP Bot', text:'GRN missing – put on hold until receipt', time:'2024-01-18 09:20'}]
+      },
+      {
+        id:'INV-2024-004', po:'PO-2024-003', supplier:'Fresh Meals Catering', supplierCode:'SUP-003', terms:'Monthly', currency:'INR',
+        status:'Approved', received:'2024-01-09', invoiceDate:'2024-01-08', due:'2024-01-20', department:'HR',
+        subtotal: 420000, taxes:[{type:'GST', rate:5, amount:21000}], freight:0, other:0,
+        lines:[
+          {sku:'CAT-LUNCH', desc:'Monthly Catering Service', qtyInv:1, priceInv:420000, qtyPO:1, pricePO:420000, qtyGRN:1}
+        ],
+        attachments:[{name:'Invoice_INV-2024-004.pdf', type:'pdf'},{name:'ServiceReport_Jan.pdf', type:'pdf'}],
+        approvers:[{role:'AP Clerk', user:'Neha Gupta', status:'completed', date:'2024-01-09 10:10'},{role:'HR Head', user:'Anita Rao', status:'completed', date:'2024-01-09 12:25'}],
+        comments:[{user:'HR Head', text:'Service verified as per SLA', time:'2024-01-09 12:10'}]
+      },
+      {
+        id:'INV-2024-005', po:'PO-2024-008', supplier:'City Transport Services', supplierCode:'SUP-011', terms:'Monthly', currency:'INR',
+        status:'Rejected', received:'2024-01-10', invoiceDate:'2024-01-09', due:'2024-01-31', department:'HR',
+        subtotal: 1020000, taxes:[{type:'GST', rate:5, amount:51000}], freight:0, other:0,
+        lines:[{sku:'TRANS-DAILY', desc:'Daily Employee Shuttle', qtyInv:1, priceInv:1020000, qtyPO:1, pricePO:1000000, qtyGRN:0}],
+        attachments:[{name:'Invoice_INV-2024-005.pdf', type:'pdf'}],
+        approvers:[{role:'AP Clerk', user:'Neha Gupta', status:'completed', date:'2024-01-10 11:00'},{role:'Finance Head', user:'Amit Singh', status:'rejected', date:'2024-01-10 13:30'}],
+        comments:[{user:'Amit Singh', text:'Rejected – exceeds approved budget & GRN missing', time:'2024-01-10 13:31'}]
+      },
+      {
+        id:'INV-2024-006', po:'PO-2024-009', supplier:'QualityPro Software Inc', supplierCode:'SUP-012', terms:'Net 15', currency:'INR',
+        status:'Paid', received:'2024-01-15', invoiceDate:'2024-01-10', due:'2024-01-25', paidOn:'2024-01-20', department:'Quality Assurance',
+        subtotal: 380000, taxes:[{type:'IGST', rate:18, amount:68400}], freight:0, other:0,
+        lines:[
+          {sku:'QMS-SUITE', desc:'QMS Suite License', qtyInv:50, priceInv:6500, qtyPO:50, pricePO:6500, qtyGRN:50},
+          {sku:'QMS-IMPL', desc:'Implementation & Training', qtyInv:1, priceInv:55000, qtyPO:1, pricePO:55000, qtyGRN:1}
+        ],
+        attachments:[{name:'Invoice_INV-2024-006.pdf', type:'pdf'}],
+        approvers:[{role:'AP Clerk', user:'Neha Gupta', status:'completed', date:'2024-01-15 11:45'},{role:'Finance Head', user:'Amit Singh', status:'completed', date:'2024-01-16 09:10'}],
+        comments:[{user:'Finance Ops', text:'Paid via NEFT TXN#987654', time:'2024-01-20 10:00'}]
+      },
+      {
+        id:'INV-2024-007', po:'PO-2024-011', supplier:'Alpha Print Services', supplierCode:'SUP-013', terms:'Net 30', currency:'INR',
+        status:'Needs Match', received:'2024-01-18', invoiceDate:'2024-01-17', due:'2024-02-16', department:'Marketing',
+        subtotal: 265000, taxes:[{type:'CGST', rate:9, amount:11925},{type:'SGST', rate:9, amount:11925}], freight: 1500, other: 0,
+        lines:[
+          {sku:'PRT-BRO', desc:'Brochure Printing', qtyInv:5000, priceInv:45, qtyPO:5000, pricePO:43, qtyGRN:5000},
+          {sku:'PRT-BNR', desc:'Event Banners', qtyInv:20, priceInv:2200, qtyPO:20, pricePO:2000, qtyGRN:20}
+        ],
+        attachments:[{name:'Invoice_INV-2024-007.pdf', type:'pdf'}],
+        approvers:[{role:'AP Clerk', user:'Neha Gupta', status:'pending'}],
+        comments:[{user:'AP Bot', text:'Price variance > 2% on banners', time:'2024-01-18 10:22'}]
+      },
+      {
+        id:'INV-2024-008', po:'PO-2024-012', supplier:'Green Energy Co', supplierCode:'SUP-014', terms:'Net 45', currency:'INR',
+        status:'Pending Validation', received:'2024-01-21', invoiceDate:'2024-01-20', due:'2024-03-05', department:'Facilities',
+        subtotal: 540000, taxes:[{type:'GST', rate:5, amount:27000}], freight:0, other:0,
+        lines:[{sku:'ENG-SOLAR', desc:'Solar Maintenance – Jan', qtyInv:1, priceInv:540000, qtyPO:1, pricePO:540000, qtyGRN:1}],
+        attachments:[{name:'Invoice_INV-2024-008.pdf', type:'pdf'},{name:'ServiceReport_Jan.pdf', type:'pdf'}],
+        approvers:[{role:'AP Clerk', user:'Neha Gupta', status:'pending'}]
+      },
+      {
+        id:'INV-2024-009', po:'PO-2024-013', supplier:'TechParts Distributors', supplierCode:'SUP-015', terms:'Net 30', currency:'INR',
+        status:'Approved', received:'2024-01-19', invoiceDate:'2024-01-18', due:'2024-02-17', department:'Manufacturing',
+        subtotal: 960000, taxes:[{type:'IGST', rate:18, amount:172800}], freight:12000, other:0,
+        lines:[
+          {sku:'PART-BEAR', desc:'Bearings', qtyInv:800, priceInv:800, qtyPO:800, pricePO:800, qtyGRN:800},
+          {sku:'PART-BELT', desc:'Drive Belts', qtyInv:300, priceInv:600, qtyPO:300, pricePO:600, qtyGRN:300}
+        ],
+        attachments:[{name:'Invoice_INV-2024-009.pdf', type:'pdf'}],
+        approvers:[{role:'AP Clerk', user:'Neha Gupta', status:'completed', date:'2024-01-19 12:32'},{role:'Finance Head', user:'Amit Singh', status:'completed', date:'2024-01-19 15:01'}]
+      },
+      {
+        id:'INV-2024-010', po:'PO-2024-014', supplier:'SecureNet Pvt Ltd', supplierCode:'SUP-016', terms:'Net 15', currency:'INR',
+        status:'Paid', received:'2024-01-12', invoiceDate:'2024-01-10', due:'2024-01-25', paidOn:'2024-01-22', department:'IT',
+        subtotal: 210000, taxes:[{type:'IGST', rate:18, amount:37800}], freight:0, other:0,
+        lines:[{sku:'SEC-MON', desc:'Security Monitoring – Jan', qtyInv:1, priceInv:210000, qtyPO:1, pricePO:210000, qtyGRN:1}],
+        attachments:[{name:'Invoice_INV-2024-010.pdf', type:'pdf'}],
+        approvers:[{role:'AP Clerk', user:'Neha Gupta', status:'completed', date:'2024-01-12 14:00'},{role:'Finance Head', user:'Amit Singh', status:'completed', date:'2024-01-13 09:40'}]
+      },
+      {
+        id:'INV-2024-011', po:'PO-2024-015', supplier:'OfficeSupplies India', supplierCode:'SUP-017', terms:'Net 30', currency:'INR',
+        status:'On Hold', received:'2024-01-23', invoiceDate:'2024-01-22', due:'2024-02-21', department:'Admin',
+        subtotal: 145000, taxes:[], freight: 0, other:0,
+        lines:[{sku:'STN-STA', desc:'Stationery Bundle', qtyInv:1, priceInv:145000, qtyPO:1, pricePO:145000, qtyGRN:1}],
+        attachments:[{name:'Invoice_INV-2024-011.pdf', type:'pdf'}],
+        approvers:[{role:'AP Clerk', user:'Neha Gupta', status:'pending'}],
+        comments:[{user:'AP Bot', text:'Tax details missing on invoice', time:'2024-01-23 11:08'}]
+      },
+      {
+        id:'INV-2024-012', po:'PO-2024-016', supplier:'CloudMail Services', supplierCode:'SUP-018', terms:'Monthly', currency:'INR',
+        status:'Rejected', received:'2024-01-17', invoiceDate:'2024-01-16', due:'2024-01-31', department:'IT',
+        subtotal: 95000, taxes:[{type:'GST', rate:5, amount:4750}], freight:0, other:0,
+        lines:[{sku:'MAIL-ENT', desc:'Enterprise Email – Jan', qtyInv:1, priceInv:95000, qtyPO:1, pricePO:95000, qtyGRN:1}],
+        attachments:[{name:'Invoice_INV-2024-012.pdf', type:'pdf'}],
+        approvers:[{role:'AP Clerk', user:'Neha Gupta', status:'completed', date:'2024-01-17 10:10'},{role:'Finance Head', user:'Amit Singh', status:'rejected', date:'2024-01-17 12:05'}],
+        comments:[{user:'Amit Singh', text:'Duplicate invoice detected', time:'2024-01-17 12:06'}]
+      },
+      {
+        id:'INV-2024-013', po:'PO-2024-017', supplier:'Fresh Farms Produce', supplierCode:'SUP-019', terms:'Net 15', currency:'INR',
+        status:'Pending Validation', received:'2024-01-24', invoiceDate:'2024-01-23', due:'2024-02-07', department:'HR',
+        subtotal: 180000, taxes:[{type:'GST', rate:5, amount:9000}], freight: 0, other: 0,
+        lines:[{sku:'FRU-VEG', desc:'Cafeteria Supplies – Week 3', qtyInv:1, priceInv:180000, qtyPO:1, pricePO:180000, qtyGRN:1}],
+        attachments:[{name:'Invoice_INV-2024-013.pdf', type:'pdf'}],
+        approvers:[{role:'AP Clerk', user:'Neha Gupta', status:'pending'}]
+      },
+      {
+        id:'INV-2024-014', po:'PO-2024-018', supplier:'Skyline Builders', supplierCode:'SUP-020', terms:'Net 60', currency:'INR',
+        status:'Needs Match', received:'2024-01-26', invoiceDate:'2024-01-24', due:'2024-03-25', department:'Facilities',
+        subtotal: 1250000, taxes:[{type:'IGST', rate:18, amount:225000}], freight: 20000, other: 0,
+        lines:[
+          {sku:'BLD-REN', desc:'Office Renovation – Phase 1', qtyInv:1, priceInv:1250000, qtyPO:1, pricePO:1200000, qtyGRN:0}
+        ],
+        attachments:[{name:'Invoice_INV-2024-014.pdf', type:'pdf'},{name:'WorkOrder.pdf', type:'pdf'}],
+        approvers:[{role:'AP Clerk', user:'Neha Gupta', status:'pending'}],
+        comments:[{user:'AP Bot', text:'GRN missing and price variance > 2%', time:'2024-01-26 09:45'}]
+      },
+      {
+        id:'INV-2024-015', po:'PO-2024-019', supplier:'MedEquip Solutions', supplierCode:'SUP-021', terms:'Net 30', currency:'INR',
+        status:'Approved', received:'2024-01-22', invoiceDate:'2024-01-21', due:'2024-02-20', department:'Health & Safety',
+        subtotal: 430000, taxes:[{type:'CGST', rate:9, amount:38700},{type:'SGST', rate:9, amount:38700}], freight: 3500, other:0,
+        lines:[{sku:'MED-PPE', desc:'PPE Kits', qtyInv:1000, priceInv:430, qtyPO:1000, pricePO:430, qtyGRN:1000}],
+        attachments:[{name:'Invoice_INV-2024-015.pdf', type:'pdf'}],
+        approvers:[{role:'AP Clerk', user:'Neha Gupta', status:'completed', date:'2024-01-22 09:15'},{role:'Finance Head', user:'Amit Singh', status:'completed', date:'2024-01-22 10:40'}]
+      },
+      {
+        id:'INV-2024-016', po:'PO-2024-020', supplier:'DataSafe Storage', supplierCode:'SUP-022', terms:'Monthly', currency:'INR',
+        status:'Paid', received:'2024-01-05', invoiceDate:'2024-01-03', due:'2024-01-18', paidOn:'2024-01-17', department:'IT',
+        subtotal: 76000, taxes:[{type:'GST', rate:5, amount:3800}], freight:0, other:0,
+        lines:[{sku:'BKP-VAULT', desc:'Offsite Backup – Jan', qtyInv:1, priceInv:76000, qtyPO:1, pricePO:76000, qtyGRN:1}],
+        attachments:[{name:'Invoice_INV-2024-016.pdf', type:'pdf'}],
+        approvers:[{role:'AP Clerk', user:'Neha Gupta', status:'completed', date:'2024-01-05 11:50'},{role:'Finance Head', user:'Amit Singh', status:'completed', date:'2024-01-06 10:05'}]
+      },
+      {
+        id:'INV-2024-017', po:'PO-2024-021', supplier:'Rapid Courier', supplierCode:'SUP-023', terms:'Net 15', currency:'INR',
+        status:'Needs Match', received:'2024-01-27', invoiceDate:'2024-01-26', due:'2024-02-10', department:'Operations',
+        subtotal: 98000, taxes:[{type:'GST', rate:5, amount:4900}], freight:0, other:0,
+        lines:[{sku:'CRR-EXP', desc:'Express Courier – Jan', qtyInv:1, priceInv:98000, qtyPO:1, pricePO:90000, qtyGRN:1}],
+        attachments:[{name:'Invoice_INV-2024-017.pdf', type:'pdf'}],
+        approvers:[{role:'AP Clerk', user:'Neha Gupta', status:'pending'}],
+        comments:[{user:'AP Bot', text:'Price variance ~8.9%', time:'2024-01-27 08:40'}]
+      },
+      {
+        id:'INV-2024-018', po:'PO-2024-022', supplier:'BlueOcean Logistics', supplierCode:'SUP-024', terms:'Net 30', currency:'INR',
+        status:'On Hold', received:'2024-01-28', invoiceDate:'2024-01-27', due:'2024-02-26', department:'Logistics',
+        subtotal: 620000, taxes:[{type:'IGST', rate:18, amount:111600}], freight:0, other:0,
+        lines:[
+          {sku:'FRG-SEA', desc:'Sea Freight – Shipment 102', qtyInv:1, priceInv:620000, qtyPO:1, pricePO:620000, qtyGRN:0}
+        ],
+        attachments:[{name:'Invoice_INV-2024-018.pdf', type:'pdf'},{name:'BL_Shipment102.pdf', type:'pdf'}],
+        approvers:[{role:'AP Clerk', user:'Neha Gupta', status:'pending'}],
+        comments:[{user:'AP Bot', text:'Awaiting receipt confirmation (GRN)', time:'2024-01-28 09:12'}]
+      },
+      {
+        id:'INV-2024-019', po:'PO-2024-023', supplier:'InnoTech Labs', supplierCode:'SUP-025', terms:'Net 30', currency:'INR',
+        status:'Draft', received:'', invoiceDate:'2024-01-29', due:'2024-02-28', department:'R&D',
+        subtotal: 310000, taxes:[{type:'GST', rate:5, amount:15500}], freight:0, other:0,
+        lines:[{sku:'LAB-CHEM', desc:'Lab Chemicals Pack', qtyInv:1, priceInv:310000, qtyPO:1, pricePO:300000, qtyGRN:0}],
+        attachments:[], approvers:[], comments:[{user:'AP Clerk', text:'Draft saved – awaiting submission', time:'2024-01-29 10:00'}]
+      },
+      {
+        id:'INV-2024-020', po:'PO-2024-024', supplier:'ProClean Services', supplierCode:'SUP-026', terms:'Net 15', currency:'INR',
+        status:'Submitted', received:'2024-01-30', invoiceDate:'2024-01-29', due:'2024-02-13', department:'Facilities',
+        subtotal: 120000, taxes:[{type:'CGST', rate:9, amount:10800},{type:'SGST', rate:9, amount:10800}], freight:0, other:0,
+        lines:[{sku:'CLN-JAN', desc:'Janitorial Services – Jan', qtyInv:1, priceInv:120000, qtyPO:1, pricePO:120000, qtyGRN:1}],
+        attachments:[{name:'Invoice_INV-2024-020.pdf', type:'pdf'}],
+        approvers:[{role:'AP Clerk', user:'Neha Gupta', status:'pending'}]
+      }
+    ];
+
+    // Populate supplier filter
+    function populateSuppliers(){
+      const set = new Set(invoices.map(i=>i.supplier));
+      const sel = $('fSupplier');
+      sel.innerHTML = '<option value="">All</option>' + Array.from(set).sort().map(s=>`<option>${s}</option>`).join('');
+    }
+
+    // Render table
+    function render(){
+      const tbody = $('tbody');
+      tbody.innerHTML = '';
+      const rows = filteredInvoices().map((inv) => {
+        const total = inv.subtotal + (inv.taxes||[]).reduce((s,t)=>s+(t.amount||0),0) + (inv.freight||0) + (inv.other||0);
+        const matchInfo = evaluateMatch(inv);
+        const aging = inv.paidOn ? daysBetween(inv.invoiceDate, inv.paidOn) : daysBetween(inv.invoiceDate, new Date());
+        const statusClass = `status-${inv.status.toLowerCase().replace(/\s/g,'-')}`;
+        return `
+          <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+            <td class="px-4 py-3 align-top">
+              <div class="font-semibold text-gray-900">${inv.id}</div>
+              <div class="text-xs text-gray-500">${inv.invoiceDate ? fmtDate(inv.invoiceDate) : '-'}</div>
+            </td>
+            <td class="px-4 py-3 align-top">
+              <div class="text-sm text-gray-900">${inv.po}</div>
+              <div class="text-xs text-gray-600">${inv.supplier}</div>
+            </td>
+            <td class="px-4 py-3 text-right align-top">
+              <div class="font-semibold amount">${Rs(total)}</div>
+              <div class="text-xs text-gray-500">Taxes: ${Rs((inv.taxes||[]).reduce((s,t)=>s+(t.amount||0),0))}</div>
+            </td>
+            <td class="px-4 py-3 align-top">
+              <span class="badge ${statusClass}">${inv.status}</span>
+            </td>
+            <td class="px-4 py-3 align-top">
+              ${matchPill(matchInfo)}
+              ${matchInfo.note ? `<div class="text-xs text-gray-500 mt-1">${matchInfo.note}</div>` : ''}
+            </td>
+            <td class="px-4 py-3 align-top">
+              <div class="text-xs text-gray-700">Received: ${fmtDate(inv.received)}</div>
+              <div class="text-xs text-gray-700">Due: ${fmtDate(inv.due)}</div>
+            </td>
+            <td class="px-4 py-3 text-right align-top">
+              <div class="text-sm text-gray-900">${aging} d</div>
+              ${inv.paidOn ? `<div class="text-xs text-green-600">Paid ${fmtDate(inv.paidOn)}</div>` : ''}
+            </td>
+            <td class="px-4 py-3 align-top">
+              <div class="flex items-center gap-2">
+                <button class="px-3 py-1.5 text-sm rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100" onclick="openInvoice('${inv.id}')"><i class="fas fa-eye mr-1"></i>View</button>
+                ${inv.status==='Approved'||inv.status==='Paid'||inv.status==='Rejected' ? '' : `<button class="px-3 py-1.5 text-sm rounded-lg bg-green-50 text-green-700 hover:bg-green-100" onclick="approve('${inv.id}')"><i class="fas fa-check mr-1"></i>Approve</button>`}
+                ${inv.status==='Approved'||inv.status==='Paid'||inv.status==='Rejected' ? '' : `<button class="px-3 py-1.5 text-sm rounded-lg bg-red-50 text-red-700 hover:bg-red-100" onclick="reject('${inv.id}')"><i class="fas fa-times mr-1"></i>Reject</button>`}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+      tbody.innerHTML = rows || `<tr><td colspan="8" class="px-4 py-8 text-center text-gray-500">No invoices found for the selected filters.</td></tr>`;
+
+      // KPIs
+      const f = filteredInvoicesRaw();
+  const pending = f.filter(x=>['Draft','Submitted','Pending Validation','Needs Match','On Hold'].includes(x.status));
+      const exceptions = f.filter(x=>['Needs Match','On Hold','Rejected'].includes(x.status));
+      const approved = f.filter(x=>x.status==='Approved');
+      const paid = f.filter(x=>x.status==='Paid');
+      const valueInProcess = pending.reduce((s,inv)=> s + inv.subtotal + (inv.taxes||[]).reduce((a,t)=>a+(t.amount||0),0) + (inv.freight||0) + (inv.other||0), 0);
+      const avgTime = Math.round((approved.concat(paid).reduce((s,inv)=> s + daysBetween(inv.received, inv.paidOn || new Date()),0) / Math.max(1, approved.length+paid.length)) * 10)/10;
+      $('kpiPending').textContent = pending.length;
+      $('kpiExceptions').textContent = exceptions.length;
+      $('kpiApproved').textContent = approved.length;
+      $('kpiPaid').textContent = paid.length;
+      $('kpiAvgTime').textContent = isFinite(avgTime) ? avgTime : '-';
+      $('kpiValue').textContent = Rs(valueInProcess);
+    }
+
+    function evaluateMatch(inv){
+      // Simple 3-way match rules: price variance <=2% ok, qtyInv <= qtyGRN ok
+      let issues = [];
+      inv.lines.forEach(l => {
+        const priceVar = Math.abs(l.priceInv - l.pricePO) / (l.pricePO||1);
+        if (priceVar > 0.02) issues.push(`Price variance ${Math.round(priceVar*100)}% on ${l.sku}`);
+        if ((l.qtyGRN||0) < (l.qtyInv||0)) issues.push(`GRN short for ${l.sku} (GRN ${l.qtyGRN||0} < Inv ${l.qtyInv||0})`);
+      });
+      if (inv.status==='Rejected') return {status:'Rejected', color:'text-red-700', bg:'bg-red-100', icon:'fa-times-circle', note: inv.comments?.slice(-1)[0]?.text };
+      if (inv.status==='Paid') return {status:'Matched', color:'text-blue-700', bg:'bg-blue-100', icon:'fa-receipt', note:'Paid' };
+      if (issues.length===0) return {status:'Matched', color:'text-green-700', bg:'bg-green-100', icon:'fa-check-circle', note:''};
+      if (inv.lines.every(l => (l.qtyGRN||0)===0)) return {status:'GRN Missing', color:'text-yellow-700', bg:'bg-yellow-100', icon:'fa-truck-loading', note:'Awaiting receipt'};
+      return {status:'Mismatch', color:'text-orange-700', bg:'bg-orange-100', icon:'fa-exclamation-triangle', note:issues[0]};
+    }
+
+    function matchPill(mi){
+      return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold ${mi.bg} ${mi.color}"><i class="fas ${mi.icon}"></i> ${mi.status}</span>`;
+    }
+
+    // Filters
+    function filteredInvoicesRaw(){
+      const s = ($('search').value || '').toLowerCase();
+      const st = $('fStatus').value;
+      const sup = $('fSupplier').value;
+      const from = $('fFrom').value ? new Date($('fFrom').value) : null;
+      const to = $('fTo').value ? new Date($('fTo').value) : null;
+      return invoices.filter(inv => {
+        const hay = `${inv.id}|${inv.po}|${inv.supplier}`.toLowerCase();
+        if (s && !hay.includes(s)) return false;
+        if (st && inv.status !== st) return false;
+        if (sup && inv.supplier !== sup) return false;
+        if (from && new Date(inv.received) < from) return false;
+        if (to && new Date(inv.received) > to) return false;
+        return true;
+      });
+    }
+    function filteredInvoices(){ return filteredInvoicesRaw(); }
+
+    // Actions
+  function approve(id){ const inv = invoices.find(x=>x.id===id); if(!inv) return; if(['Approved','Paid','Rejected'].includes(inv.status)) return showToast('No action allowed for finalised invoices','warning'); inv.status='Approved'; inv.approvers.push({role:'Finance Head', user:'Amit Singh', status:'completed', date:new Date().toLocaleString('en-IN')}); showToast(`${id} approved successfully`,'success'); render(); }
+  function reject(id){ const reason = prompt('Enter rejection reason:','Mismatch / Budget exceed'); if(!reason) return; const inv = invoices.find(x=>x.id===id); if(!inv) return; inv.status='Rejected'; inv.comments=inv.comments||[]; inv.comments.push({user:'You', text:`Rejected – ${reason}`, time:new Date().toLocaleString('en-IN')}); showToast(`${id} rejected with reason: ${reason}`,'error'); render(); }
+  function bulkApprove(){ const list = filteredInvoices().filter(i=>['Submitted','Pending Validation','Needs Match'].includes(i.status) && evaluateMatch(i).status==='Matched'); if(list.length===0) return showToast('No eligible invoices found for bulk approval','warning'); list.forEach(i=> i.status='Approved'); showToast(`Bulk approved ${list.length} invoice(s)`,'success'); render(); }
+  function exportCSV(){ showToast('Exported current view to CSV (stub)','info'); }
+  function refreshData(){ showToast('Data refreshed','info'); render(); }
+
+    // Modal helpers
+    let currentId = null;
+  function openModal(){ $('modal').classList.remove('hidden'); }
+  function closeModal(){ $('modal').classList.add('hidden'); currentId=null; showToast('Closed invoice details','info'); }
+
+  function openInvoice(id){
+      const inv = invoices.find(x=>x.id===id); if(!inv) return;
+      currentId = id;
+      const totalTax = (inv.taxes||[]).reduce((s,t)=>s+(t.amount||0),0);
+      const grand = inv.subtotal + totalTax + (inv.freight||0) + (inv.other||0);
+      const mi = evaluateMatch(inv);
+      $('modalTitle').textContent = `${inv.id} • ${inv.supplier}`;
+      const tlHtml = inv.approvers.map(a=>{
+        const cls = a.status==='completed' ? 'completed' : a.status==='rejected' ? 'rejected' : a.status==='hold' ? 'hold' : 'current';
+        return `<div class="timeline-item ${cls}">
+          <div class="font-medium text-gray-900">${a.role} • ${a.user}</div>
+          <div class="text-xs text-gray-600">${a.status}${a.date?` • ${a.date}`:''}</div>
+        </div>`;
+      }).join('');
+  const linesHtml = inv.lines.map(l=>`<tr class="border-t"><td class="px-3 py-2">${l.sku}</td><td class="px-3 py-2">${l.desc}</td><td class="px-3 py-2 text-center">${l.qtyPO}</td><td class="px-3 py-2 text-center">${l.qtyGRN??'-'}</td><td class="px-3 py-2 text-center">${l.qtyInv}</td><td class="px-3 py-2 text-right amount">${Rs(l.pricePO)}</td><td class="px-3 py-2 text-right amount">${Rs(l.priceInv)}</td><td class="px-3 py-2 text-right font-semibold amount">${Rs((l.qtyInv||0)*(l.priceInv||0))}</td></tr>`).join('');
+      const taxHtml = (inv.taxes||[]).map(t=>`<div class="flex justify-between"><div>${t.type} ${t.rate}%</div><div>${Rs(t.amount)}</div></div>`).join('');
+      const attHtml = (inv.attachments||[]).map(a=>`<div class="flex items-center gap-2 text-sm text-blue-700"><i class="far fa-file"></i><span>${a.name}</span></div>`).join('')||'<div class="text-sm text-gray-500">No attachments</div>';
+      const cmtHtml = (inv.comments||[]).map(c=>`<div class="text-sm"><span class="font-medium">${c.user}</span>: ${c.text} <span class="text-xs text-gray-500">• ${c.time}</span></div>`).join('')||'<div class="text-sm text-gray-500">No comments</div>';
+
+      $('modalBody').innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div class="lg:col-span-2 space-y-4">
+            <div class="card p-4">
+              <div class="flex items-start justify-between">
+                <div>
+                  <div class="text-sm text-gray-500">Invoice</div>
+                  <div class="text-xl font-bold text-gray-900">${inv.id}</div>
+                  <div class="text-sm text-gray-600 mt-1">PO: <span class="font-medium">${inv.po}</span> • Dept: ${inv.department}</div>
+                </div>
+                <div class="text-right">
+                  <div>${matchPill(mi)}</div>
+                  <div class="mt-2"><span class="badge status-${inv.status.toLowerCase().replace(/\s/g,'-')}">${inv.status}</span></div>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm text-gray-700 mt-4">
+                <div><span class="text-gray-500">Supplier</span><div class="font-medium">${inv.supplier}</div></div>
+                <div><span class="text-gray-500">Supplier Code</span><div>${inv.supplierCode}</div></div>
+                <div><span class="text-gray-500">Terms</span><div>${inv.terms}</div></div>
+                <div><span class="text-gray-500">Invoice Date</span><div>${fmtDate(inv.invoiceDate)}</div></div>
+                <div><span class="text-gray-500">Received</span><div>${fmtDate(inv.received)}</div></div>
+                <div><span class="text-gray-500">Due</span><div>${fmtDate(inv.due)}</div></div>
+                ${inv.paidOn?`<div><span class="text-gray-500">Paid On</span><div class="text-green-700 font-medium">${fmtDate(inv.paidOn)}</div></div>`:''}
+                <div><span class="text-gray-500">Currency</span><div>${inv.currency||'INR'}</div></div>
+              </div>
+            </div>
+
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-3">3-way Match Summary</div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="p-3 rounded-lg bg-blue-50 border border-blue-100">
+                  <div class="text-xs text-blue-700">PO vs Invoice Price</div>
+                  ${inv.lines.some(l=> Math.abs(l.priceInv-l.pricePO)/Math.max(1,l.pricePO) > .02) ? '<div class="text-sm font-semibold text-orange-700">Variance > 2%</div>' : '<div class="text-sm font-semibold text-green-700">OK</div>'}
+                </div>
+                <div class="p-3 rounded-lg bg-blue-50 border border-blue-100">
+                  <div class="text-xs text-blue-700">GRN vs Invoice Quantity</div>
+                  ${inv.lines.every(l=> (l.qtyGRN||0) >= (l.qtyInv||0)) ? '<div class="text-sm font-semibold text-green-700">OK</div>' : '<div class="text-sm font-semibold text-yellow-700">Short GRN</div>'}
+                </div>
+                <div class="p-3 rounded-lg bg-blue-50 border border-blue-100">
+                  <div class="text-xs text-blue-700">Tax Presence</div>
+                  ${(inv.taxes||[]).length>0 ? '<div class="text-sm font-semibold text-green-700">OK</div>' : '<div class="text-sm font-semibold text-red-700">Missing</div>'}
+                </div>
+              </div>
+            </div>
+
+            <div class="card p-4 overflow-x-auto">
+              <div class="font-semibold text-gray-900 mb-3">Invoice Lines</div>
+              <table class="w-full text-sm">
+                <thead class="bg-gray-50">
+                  <tr><th class="px-3 py-2 text-left">SKU</th><th class="px-3 py-2 text-left">Description</th><th class="px-3 py-2 text-center">PO Qty</th><th class="px-3 py-2 text-center">GRN Qty</th><th class="px-3 py-2 text-center">Inv Qty</th><th class="px-3 py-2 text-right">PO Price</th><th class="px-3 py-2 text-right">Inv Price</th><th class="px-3 py-2 text-right">Line Total</th></tr>
+                </thead>
+                <tbody>
+                  ${linesHtml}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-2">Totals</div>
+              <div class="space-y-1 text-sm">
+                <div class="flex justify-between"><div>Subtotal</div><div class="amount">${Rs(inv.subtotal)}</div></div>
+                ${taxHtml}
+                ${inv.freight?`<div class=\"flex justify-between\"><div>Freight</div><div class=\"amount\">${Rs(inv.freight)}</div></div>`:''}
+                ${inv.other?`<div class=\"flex justify-between\"><div>Other</div><div class=\"amount\">${Rs(inv.other)}</div></div>`:''}
+                <hr/>
+                <div class="flex justify-between font-semibold"><div>Grand Total</div><div class="amount">${Rs(grand)}</div></div>
+              </div>
+            </div>
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-2">Approvals</div>
+              <div class="space-y-2">${tlHtml}</div>
+            </div>
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-2">Attachments</div>
+              <div class="space-y-1">${attHtml}</div>
+            </div>
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-2">Comments</div>
+              <div class="space-y-1">${cmtHtml}</div>
+              <div class="mt-3 flex gap-2"><input id="cmt" class="flex-1 px-3 py-2 rounded-lg border" placeholder="Add a comment..."/><button class="px-3 py-2 bg-gray-50 border rounded-lg hover:bg-gray-100" onclick="addComment()"><i class="fas fa-paper-plane"></i></button></div>
+            </div>
+          </div>
+        </div>`;
+
+      // Toggle action buttons based on status
+      $('btnApprove').disabled = ['Approved','Rejected','Paid'].includes(inv.status);
+      $('btnHold').disabled = inv.status==='Paid' || inv.status==='Rejected';
+      $('btnReject').disabled = ['Rejected','Paid'].includes(inv.status);
+      openModal();
+  showToast(`Opened ${inv.id} • ${inv.status}`,'info');
+    }
+
+  function addComment(){ const txt = $('cmt'); if(!txt.value.trim()) return; const inv = invoices.find(x=>x.id===currentId); inv.comments = inv.comments||[]; inv.comments.push({user:'You', text:txt.value.trim(), time:new Date().toLocaleString('en-IN')}); txt.value=''; showToast('Comment added','success'); openInvoice(currentId); render(); }
+
+  function approveCurrent(){ if(!currentId) return; approve(currentId); closeModal(); }
+  function holdCurrent(){ if(!currentId) return; const inv = invoices.find(x=>x.id===currentId); inv.status='On Hold'; inv.approvers.push({role:'Finance Head', user:'Amit Singh', status:'hold', date:new Date().toLocaleString('en-IN')}); showToast(`${currentId} moved to On Hold`,'warning'); openInvoice(currentId); render(); }
+  function rejectCurrent(){ if(!currentId) return; reject(currentId); closeModal(); }
+
+    function createInvoice(){
+      showToast('Capture Invoice: open scan/upload (stub)','info');
+    }
+
+    // Filtering helpers
+  function applyFilters(){ render(); const st=$('fStatus').value||'All'; const sup=$('fSupplier').value||'All suppliers'; showToast(`Filters applied • Status: ${st} • Supplier: ${sup}`,'info'); }
+  function resetFilters(){ $('search').value=''; $('fStatus').value=''; $('fSupplier').value=''; $('fFrom').value=''; $('fTo').value=''; render(); showToast('Filters cleared','info'); }
+
+    // Date quick presets
+  function setDatePreset(p){
+      const today = new Date();
+      const ymd = (d)=> d.toISOString().slice(0,10);
+      if(p==='today'){
+        $('fFrom').value = ymd(today);
+        $('fTo').value = ymd(today);
+    showToast('Date preset: Today','info');
+      } else if(p==='last7'){
+        const from = new Date(today); from.setDate(today.getDate()-6);
+        $('fFrom').value = ymd(from);
+        $('fTo').value = ymd(today);
+    showToast('Date preset: Last 7 days','info');
+      } else if(p==='month'){
+        const from = new Date(today.getFullYear(), today.getMonth(), 1);
+        $('fFrom').value = ymd(from);
+        $('fTo').value = ymd(today);
+    showToast('Date preset: This month','info');
+      } else {
+        $('fFrom').value=''; $('fTo').value='';
+    showToast('Date filters cleared','info');
+      }
+      render();
+    }
+
+    // Accessibility & UX
+    document.addEventListener('keydown', (e) => {
+      if(e.key==='Escape') closeModal();
+      if(e.altKey && (e.key==='b' || e.key==='B')) navBack();
+    });
+
+    // Init
+    document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.reveal').forEach((el,i) => setTimeout(()=>el.classList.add('show'), 60*i));
+      populateSuppliers();
+      render();
+    });
+  </script>
+</body>
+</html>

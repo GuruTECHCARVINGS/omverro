@@ -1,0 +1,199 @@
+
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <title>Email Center</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+ </head>
+ <body class="bg-white p-6 sm:p-10">
+  <div class="max-w-5xl mx-auto">
+    <!-- <header
+    class="bg-gradient-to-r from-[#0B1B38] to-[#142D5B] flex items-center justify-between px-6 sm:px-10 py-5 shadow-md relative"
+  >
+    <div class="flex items-center space-x-6">
+      <img
+        alt="Mitsubishi Electric red logo with three diamond shapes"
+        class="w-28 h-28 object-contain"
+        height="112"
+        src="https://media.licdn.com/dms/image/v2/D560BAQGXc0zxzyvurA/company-logo_200_200/company-logo_200_200/0/1737107658724/techcarvings_consultancy_pvt_ltd_logo?e=2147483647&v=beta&t=q75AmCilrus_--oITKIAATFgioUt-0t29OJVhWNv2kw"
+        width="112"
+        style=""
+      />
+      <h1
+        class="text-white text-center sm:text-3xl font-extrabold tracking-tight gradient-text select-none"
+      >
+        SUPPLIER RFQ PORTAL
+      </h1>
+    </div>
+   <div class="relative">
+  <button
+    id="profileBtn"
+    aria-label="User profile menu button"
+    tabindex="0"
+    role="button"
+    class="w-14 h-14 bg-[#4B5E85] rounded-full flex items-center justify-center hover:bg-[#3a4a6a] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ff4d4d] transition-colors"
+    aria-haspopup="true"
+    aria-expanded="false"
+    type="button"
+  >
+    <!-- Use Font Awesome 5 SVG or ensure the CDN is loaded in your <head> -->
+    <!-- <i class="fas fa-user-circle text-[#B9C6E6] text-4xl"></i>
+  </button>
+  <div
+    id="profileMenu"
+    class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-20"
+    role="menu"
+    aria-orientation="vertical"
+    aria-labelledby="profileBtn"
+    tabindex="-1"
+  >
+    <a
+      href="#"
+      class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+      role="menuitem"
+      tabindex="-1"
+      id="profile-option"
+      >My Profile</a
+    >
+    <a
+      href="#"
+      class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+      role="menuitem"
+      tabindex="-1"
+      id="settings-option"
+      >Settings</a
+    >
+    <a
+      href="#"
+      class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+      role="menuitem"
+      tabindex="-1"
+      id="notifications-option"
+      >Notifications</a
+    >
+    <a
+      href="#"
+      class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+      role="menuitem"
+      tabindex="-1"
+      id="help-option"
+      >Help</a
+    >
+    <button
+      id="logoutBtn"
+      class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100"
+      role="menuitem"
+      tabindex="-1"
+    >
+      Logout
+    </button>
+  </div>
+</div> -->
+  </header> 
+   <h1 class="text-3xl font-extrabold text-slate-900 mb-6">
+    Email Center
+   </h1>
+   <div class="flex flex-col md:flex-row md:space-x-8">
+    <!-- Left Side: Message List -->
+    <section class="md:w-1/2">
+     <select aria-label="Filter messages" class="mb-4 w-full max-w-xs border border-slate-300 rounded-md py-2 px-3 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400">
+      <option>All Messages</option>
+     </select>
+     <ul id="messageList" class="space-y-4 text-slate-900 text-sm leading-relaxed">
+      <li class="bg-blue-100 rounded-md p-3 grid grid-cols-3 gap-x-4 text-slate-900 items-center">
+       <span class="font-semibold text-xs text-left">Today, 10:15 AM</span>
+       <span class="font-semibold text-xs text-center col-span-1"></span>
+       <span class="font-semibold text-xs text-right"></span>
+       <p class="col-span-3 mt-1 text-center">Sure, the requested specifications are acceptable.</p>
+      </li>
+      <li class="grid grid-cols-3 gap-x-4 items-center">
+       <span class="font-semibold text-left">Dohul Sharma</span>
+       <span class="text-xs text-center">Yesterday, 03:27 PM</span>
+       <span class="text-xs text-right">21 Apr</span>
+       <p class="col-span-3 mt-1 text-center">Do you have an/ questions regarding RFQ-30025?</p>
+      </li>
+      <li class="grid grid-cols-3 gap-x-4 items-center">
+       <span class="font-semibold text-left">David Lee</span>
+       <span class="text-xs text-center"></span>
+       <span class="text-xs text-right">18 Apr</span>
+       <p class="col-span-3 mt-1 text-center">The payment terms for the RFQ are net 30 days</p>
+      </li>
+      <li class="grid grid-cols-3 gap-x-4 items-center">
+       <span class="font-semibold text-left">Procurement Team</span>
+       <span class="text-xs text-center"></span>
+       <span class="text-xs text-right"></span>
+       <p class="col-span-3 mt-1 text-center">Please review the atiached documents for RFQ-300564</p>
+      </li>
+     </ul>
+    </section>
+    <!-- Right Side: Editable Message Form -->
+    <section id="rightSection" class="mt-6 md:mt-0 md:w-1/2 border border-slate-300 rounded-md p-4 text-slate-900 text-sm font-semibold leading-relaxed">
+      <form id="rightMessageForm" class="space-y-2">
+        <input
+          id="rightReceiverEmail"
+          type="email"
+          required
+          placeholder="Receiver Email"
+          class="w-full border border-slate-300 rounded-md py-2 px-3 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+        />
+        <textarea
+          id="rightMessageInput"
+          required
+          rows="3"
+          placeholder="Type your message..."
+          class="w-full border border-slate-300 rounded-md py-2 px-3 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 resize-none"
+        ></textarea>
+        <button
+          type="submit"
+          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-semibold text-sm"
+        >
+          Send
+        </button>
+      </form>
+    </section>
+   </div>
+  </div>
+ <script>
+  // Toggle profile menu visibility
+  const profileBtn = document.getElementById("profileBtn");
+  const profileMenu = document.getElementById("profileMenu");
+
+  profileBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isExpanded = profileBtn.getAttribute("aria-expanded") === "true";
+    profileBtn.setAttribute("aria-expanded", !isExpanded);
+    profileMenu.classList.toggle("hidden");
+  });
+
+  // Close menu when clicking outside
+  document.addEventListener("click", (event) => {
+    if (
+      !profileBtn.contains(event.target) &&
+      !profileMenu.contains(event.target)
+    ) {
+      profileMenu.classList.add("hidden");
+      profileBtn.setAttribute("aria-expanded", "false");
+    }
+  });
+
+  // Keyboard accessibility for menu
+  profileBtn.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      profileMenu.classList.add("hidden");
+      profileBtn.setAttribute("aria-expanded", "false");
+      profileBtn.focus();
+    }
+  });
+</script>
+ </body>
+</html>

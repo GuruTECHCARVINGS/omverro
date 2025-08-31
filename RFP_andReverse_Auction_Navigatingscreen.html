@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Buyer Portal – Sourcing (RFP & Reverse Auction)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: linear-gradient(120deg,#f3f6fd 0%,#e9eafc 100%); color:#111827 }
+    .card { box-shadow: 0 8px 28px rgba(59,130,246,.08); border:1px solid #E5E7EB; border-radius:1rem; background:#fff; overflow: hidden }
+    .badge { font-size:.7rem; font-weight:700; padding:.2rem .5rem; border-radius:999px; border:1px solid; white-space:nowrap }
+    .badge.rfp { background:#EEF2FF; color:#4F46E5; border-color:#C7D2FE }
+    .badge.auction { background:#FEF3C7; color:#92400E; border-color:#FDE68A }
+    .badge.rfq { background:#ECFDF5; color:#047857; border-color:#A7F3D0 }
+    .badge.draft { background:#E5E7EB; color:#374151; border-color:#D1D5DB }
+    .badge.pending { background:#DBEAFE; color:#1D4ED8; border-color:#BFDBFE }
+    .badge.published { background:#F0F9FF; color:#0369A1; border-color:#BAE6FD }
+    .badge.open { background:#DCFCE7; color:#166534; border-color:#BBF7D0 }
+    .badge.live { background:#F5F3FF; color:#7C3AED; border-color:#E9D5FF }
+    .badge.closed { background:#F3F4F6; color:#374151; border-color:#E5E7EB }
+    .badge.awarded { background:#ECFEFF; color:#0891B2; border-color:#BAE6FD }
+    .badge.cancelled { background:#FEE2E2; color:#991B1B; border-color:#FCA5A5 }
+    .num { white-space: nowrap; font-variant-numeric: tabular-nums; font-feature-settings: 'tnum' 1; }
+    .reveal { opacity:0; transform: translateY(8px); transition: .5s }
+    .reveal.show { opacity:1; transform: none }
+    .att-item { display:flex; align-items:center; justify-content:space-between; gap:.75rem; padding:.4rem .6rem; border-radius:.5rem; border:1px solid #E5E7EB }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button onclick="navBack()" class="h-10 w-10 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100" title="Back to Buyer Dashboard"><i class="fas fa-arrow-left"></i></button>
+        <div>
+          <h1 class="text-lg sm:text-xl font-bold text-gray-900">Sourcing – RFP & Reverse Auction</h1>
+          <p class="text-xs text-gray-500 -mt-0.5">Create • Invite • Evaluate • Award</p>
+        </div>
+      </div>
+      <div class="hidden md:flex items-center gap-3">
+        <div class="relative">
+          <input id="q" type="search" placeholder="Search ID/Title/Supplier..." class="w-72 pl-10 pr-3 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none"/>
+          <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+        </div>
+        <button class="h-10 px-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700" onclick="exportCSV()"><i class="fas fa-file-export mr-1"></i>Export</button>
+        <button class="h-10 px-3 rounded-lg bg-gray-50 border hover:bg-gray-100" onclick="refreshData()"><i class="fas fa-sync-alt"></i></button>
+        <div class="flex items-center gap-2">
+          <label for="roleSelect" class="text-xs text-gray-500">Role</label>
+          <select id="roleSelect" class="px-2 py-1.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600" title="Switch role (demo)" onchange="setRole(this.value)"></select>
+        </div>
+        <button id="notifBtn" class="relative h-10 w-10 rounded-lg bg-pink-50 text-pink-700 hover:bg-pink-100" title="Notifications" onclick="toggleNotifPanel()">
+          <i class="far fa-bell"></i>
+          <span id="notifCount" class="hidden absolute -top-1 -right-1 bg-red-600 text-white text-xs font-bold rounded-full px-1.5 py-0.5">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- KPIs -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+      <div class="card p-5 reveal">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-gray-500">Open RFPs</div>
+            <div id="kpiOpenRfp" class="text-2xl font-extrabold text-indigo-700">--</div>
+            <div class="text-xs text-indigo-600">Published/Open</div>
+          </div>
+          <div class="p-3 bg-indigo-100 rounded-full"><i class="fas fa-file-alt text-indigo-700"></i></div>
+        </div>
+      </div>
+      <div class="card p-5 reveal">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-gray-500">Live Auctions</div>
+            <div id="kpiLiveAuctions" class="text-2xl font-extrabold text-purple-700">--</div>
+            <div class="text-xs text-purple-600">In progress</div>
+          </div>
+          <div class="p-3 bg-purple-100 rounded-full"><i class="fas fa-gavel text-purple-700"></i></div>
+        </div>
+      </div>
+      <div class="card p-5 reveal">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-gray-500">Suppliers Invited</div>
+            <div id="kpiSuppliers" class="text-2xl font-extrabold text-blue-700">--</div>
+            <div class="text-xs text-blue-600">Distinct across events</div>
+          </div>
+          <div class="p-3 bg-blue-100 rounded-full"><i class="fas fa-users text-blue-700"></i></div>
+        </div>
+      </div>
+      <div class="card p-5 reveal">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-gray-500">Projected Savings</div>
+            <div id="kpiSavings" class="num text-2xl font-extrabold text-green-700">--</div>
+            <div class="text-xs text-green-600">Baseline vs current</div>
+          </div>
+          <div class="p-3 bg-green-100 rounded-full"><i class="fas fa-piggy-bank text-green-700"></i></div>
+        </div>
+      </div>
+      <div class="card p-5 reveal">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-gray-500">Pending Approvals</div>
+            <div id="kpiPending" class="text-2xl font-extrabold text-amber-600">--</div>
+            <div class="text-xs text-amber-600">RFPs/Auctions</div>
+          </div>
+          <div class="p-3 bg-amber-100 rounded-full"><i class="fas fa-hourglass-half text-amber-600"></i></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="card p-5 mb-6 reveal">
+      <div class="grid grid-cols-1 md:grid-cols-8 gap-4">
+        <div class="md:col-span-2">
+          <label class="text-xs text-gray-500">Search</label>
+          <div class="relative">
+            <input id="fSearch" type="text" placeholder="ID/Title/Supplier" class="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600"/>
+            <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+          </div>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Type</label>
+          <select id="fType" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600">
+            <option value="">All</option>
+            <option>RFP</option>
+            <option>RFQ</option>
+            <option>Auction</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Status</label>
+          <select id="fStatus" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600">
+            <option value="">All</option>
+            <option>Draft</option>
+            <option>Pending Approval</option>
+            <option>Published</option>
+            <option>Open</option>
+            <option>Live</option>
+            <option>Closed</option>
+            <option>Awarded</option>
+            <option>Cancelled</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Category</label>
+          <select id="fCat" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600"><option value="">All</option></select>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Buyer</label>
+          <select id="fBuyer" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600"><option value="">All</option></select>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Supplier</label>
+          <select id="fSupplier" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600"><option value="">All</option></select>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">From</label>
+          <input id="fFrom" type="date" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600"/>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">To</label>
+          <input id="fTo" type="date" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600"/>
+        </div>
+      </div>
+      <div class="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-600">
+        Quick dates:
+        <button class="px-2.5 py-1 rounded border hover:bg-gray-50" onclick="setDatePreset('today')">Today</button>
+        <button class="px-2.5 py-1 rounded border hover:bg-gray-50" onclick="setDatePreset('last7')">Last 7</button>
+        <button class="px-2.5 py-1 rounded border hover:bg-gray-50" onclick="setDatePreset('month')">This Month</button>
+        <button class="px-2.5 py-1 rounded border hover:bg-gray-50" onclick="setDatePreset('clear')">Clear</button>
+        <span class="mx-1">|</span>
+        <button class="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700" onclick="applyFilters()"><i class="fas fa-filter mr-1"></i>Apply</button>
+        <button class="px-3 py-1.5 bg-gray-50 border rounded-lg hover:bg-gray-100" onclick="resetFilters()"><i class="fas fa-undo mr-1"></i>Reset</button>
+      </div>
+      <div class="mt-3 md:hidden flex items-center gap-2">
+        <label for="roleSelectMobile" class="text-xs text-gray-500">Role</label>
+        <select id="roleSelectMobile" class="px-2 py-1.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600" onchange="setRole(this.value)"></select>
+      </div>
+    </section>
+
+    <!-- Toolbar -->
+    <section class="flex flex-col md:flex-row items-center justify-between gap-3 mb-3">
+      <div class="text-sm text-gray-600">Manage RFPs, RFQs, and Reverse Auctions from one place.</div>
+      <div class="flex gap-2">
+        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" onclick="openCreateRFP()"><i class="fas fa-plus mr-1"></i>Create RFP</button>
+  <button id="btnLaunchAuction" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700" onclick="openLaunchAuction()" title="Launch Reverse Auction"><i class="fas fa-gavel mr-1"></i>Launch Auction</button>
+        <button class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700" onclick="exportCSV()"><i class="fas fa-file-export mr-1"></i>Export</button>
+        <button class="px-4 py-2 bg-gray-50 border rounded-lg hover:bg-gray-100" onclick="refreshData()"><i class="fas fa-sync-alt"></i></button>
+      </div>
+    </section>
+
+    <!-- Table -->
+    <section class="card overflow-hidden reveal">
+      <div class="overflow-x-auto">
+        <table class="min-w-full">
+          <thead class="bg-gray-50 text-gray-600 text-xs uppercase">
+            <tr>
+              <th class="px-4 py-3 text-left min-w-[12rem]">ID • Type</th>
+              <th class="px-4 py-3 text-left min-w-[14rem]">Title • Category</th>
+              <th class="px-4 py-3 text-left min-w-[12rem]">Buyer</th>
+              <th class="px-4 py-3 text-left min-w-[14rem]">Suppliers</th>
+              <th class="px-4 py-3 text-left min-w-[12rem]">Start • End</th>
+              <th class="px-4 py-3 text-right min-w-[10rem]">Baseline/Start</th>
+              <th class="px-4 py-3 text-right min-w-[10rem]">Current/Best</th>
+              <th class="px-4 py-3 text-left min-w-[8rem]">Status</th>
+              <th class="px-4 py-3 text-left min-w-[12rem]">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tbody" class="text-sm"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal -->
+  <div id="modal" class="fixed inset-0 bg-black/30 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl w-full max-w-6xl shadow-2xl">
+      <div class="flex items-center justify-between px-5 py-4 border-b">
+        <h3 id="modalTitle" class="text-lg font-semibold text-gray-900">Event</h3>
+        <button class="h-10 w-10 rounded-lg bg-gray-50 hover:bg-gray-100" onclick="closeModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div id="modalBody" class="p-5 max-h-[70vh] overflow-y-auto"></div>
+      <div id="modalFooter" class="px-5 py-4 border-t flex items-center justify-end gap-2"></div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed top-4 right-4 hidden text-white px-4 py-2 rounded-lg shadow-lg"></div>
+
+  <!-- Notifications Panel -->
+  <div id="notifPanel" class="hidden fixed top-20 right-6 w-96 max-h-[70vh] overflow-y-auto bg-white border border-gray-200 rounded-xl shadow-2xl z-50">
+    <div class="px-4 py-3 border-b flex items-center justify-between">
+      <div class="font-semibold text-gray-900 flex items-center gap-2"><i class="far fa-bell text-pink-600"></i>Notifications</div>
+      <button class="h-9 w-9 rounded-lg bg-gray-50 hover:bg-gray-100" onclick="toggleNotifPanel()"><i class="fas fa-times"></i></button>
+    </div>
+    <ul id="notifList" class="px-4 py-2 text-sm"></ul>
+  </div>
+
+  <script>
+    // Utils
+    const $ = (id) => document.getElementById(id);
+    const Rs = (n) => new Intl.NumberFormat('en-IN', { style:'currency', currency:'INR', maximumFractionDigits: 0 }).format(n||0);
+    const showToast = (m, t='info') => { const el = $('toast'); const colors = {success:'bg-green-600', info:'bg-blue-600', warning:'bg-yellow-600', error:'bg-red-600'}; el.className = `fixed top-4 right-4 text-white px-4 py-2 rounded-lg shadow-lg ${colors[t]||colors.info}`; el.textContent = m; el.classList.remove('hidden'); setTimeout(()=> el.classList.add('hidden'), 2200); };
+    function navBack(){ window.location.href = 'BuyerDashboard.html'; }
+
+    // Roles & permissions (demo)
+    const ROLES = ['Buyer','Sourcing Manager','CPO'];
+    let currentRole = localStorage.getItem('sourcingRole') || 'Buyer';
+    function setRole(r){ currentRole = ROLES.includes(r)?r:'Buyer'; localStorage.setItem('sourcingRole', currentRole); updateRoleUI(); showToast(`Role: ${currentRole}`,'info'); }
+    function can(action){
+      switch(action){
+        case 'launch':
+        case 'award':
+          return ['Sourcing Manager','CPO'].includes(currentRole);
+        default:
+          return true;
+      }
+    }
+    function updateRoleUI(){
+      const sel = $('roleSelect');
+      if(sel){ sel.innerHTML = ROLES.map(r=>`<option ${r===currentRole?'selected':''}>${r}</option>`).join(''); }
+      const selM = $('roleSelectMobile');
+      if(selM){ selM.innerHTML = ROLES.map(r=>`<option ${r===currentRole?'selected':''}>${r}</option>`).join(''); }
+      const btn = $('btnLaunchAuction');
+      if(btn){ const ok = can('launch'); btn.disabled = !ok; btn.classList.toggle('opacity-50', !ok); btn.classList.toggle('cursor-not-allowed', !ok); btn.title = ok? 'Launch Reverse Auction' : 'Only Sourcing Manager/CPO can launch'; }
+      renderNotifBadge();
+    }
+
+    // Auth (demo) — gate critical actions like launching auctions
+    const AUTH_USERS = {
+      smgr: { password: 'smgr@123', role: 'Sourcing Manager', name: 'Sourcing Manager' },
+      cpo: { password: 'cpo@123', role: 'CPO', name: 'Chief Procurement Officer' }
+    };
+    const AUTH_KEY = 'sourcingAuth';
+    function getAuth(){ try { return JSON.parse(localStorage.getItem(AUTH_KEY)||'null'); } catch { return null; } }
+    function setAuth(a){ localStorage.setItem(AUTH_KEY, JSON.stringify(a)); }
+    function clearAuth(){ localStorage.removeItem(AUTH_KEY); }
+    function isAuth(action){
+      const a = getAuth(); if(!a) return false;
+      if(a.expiresAt && Date.now() > a.expiresAt) { clearAuth(); return false; }
+      switch(action){
+        case 'launch':
+          return ['Sourcing Manager','CPO'].includes(a.role);
+        default:
+          return true;
+      }
+    }
+    function requireAuth(action, onSuccess){
+      if(isAuth(action)){
+        const a = getAuth();
+        if(a?.role && a.role!==currentRole){ currentRole = a.role; localStorage.setItem('sourcingRole', currentRole); updateRoleUI(); }
+        onSuccess?.();
+        return;
+      }
+      openAuthModal(action, onSuccess);
+    }
+    function openAuthModal(action, onSuccess){
+      $('modalTitle').textContent = 'Authenticate to Launch Auction';
+      $('modalBody').innerHTML = `
+        <div class="card p-4">
+          <div class="text-sm text-gray-600 mb-3">Only authorized users can perform this action.</div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <label class="block">User ID
+              <input id="auth_user" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., smgr or cpo"/>
+            </label>
+            <label class="block">Password
+              <input id="auth_pass" type="password" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="••••••"/>
+            </label>
+          </div>
+          <div class="text-xs text-gray-500 mt-2">Demo creds: smgr/smgr@123 or cpo/cpo@123</div>
+        </div>`;
+      $('modalFooter').innerHTML = `<button class="px-4 py-2 bg-gray-50 border rounded-lg hover:bg-gray-100" onclick="closeModal()">Cancel</button><button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" onclick="submitAuth('${action}')"><i class='fas fa-unlock mr-1'></i>Authenticate</button>`;
+      openModal();
+      // Focus user field
+      setTimeout(()=> $('auth_user')?.focus(), 50);
+      // Store callback for after auth
+      window.__onAuthSuccess = typeof onSuccess==='function' ? onSuccess : null;
+    }
+    function submitAuth(action){
+      const id = ($('auth_user')?.value||'').trim();
+      const pw = ($('auth_pass')?.value||'').trim();
+      if(!id || !pw){ showToast('Enter user ID and password','warning'); return; }
+      const u = AUTH_USERS[id];
+      if(!u || u.password !== pw){ showToast('Invalid ID or password','error'); return; }
+      const allowed = action!== 'launch' ? true : ['Sourcing Manager','CPO'].includes(u.role);
+      if(!allowed){ showToast('Not permitted for this action','error'); return; }
+      const expiresAt = Date.now() + 30*60*1000; // 30 minutes
+      setAuth({ userId: id, role: u.role, name: u.name, expiresAt });
+      currentRole = u.role; localStorage.setItem('sourcingRole', currentRole); updateRoleUI();
+      closeModal();
+      showToast('Authenticated','success');
+      const cb = window.__onAuthSuccess; window.__onAuthSuccess = null; cb?.();
+    }
+
+    // Supplier performance dataset (demo)
+    const perfMap = new Map(Object.entries({
+      'Alpha Industries': { score: 86, onTime: 94, quality: 92 },
+      'Beta Solutions': { score: 78, onTime: 88, quality: 85 },
+      'Zenith Supplies': { score: 82, onTime: 91, quality: 88 },
+      'Global Tech': { score: 90, onTime: 96, quality: 93 },
+      'SteelOne': { score: 74, onTime: 82, quality: 80 },
+      'MetalCorp': { score: 81, onTime: 89, quality: 86 },
+      'Nova Labs': { score: 84, onTime: 90, quality: 89 }
+    }));
+    function getPerf(s){ if(!perfMap.has(s)){ const r=()=>Math.floor(75+Math.random()*20); perfMap.set(s,{ score: r(), onTime: r(), quality: r() }); } return perfMap.get(s); }
+
+    // Notifications
+    const notifications = [];
+    function pushNotification(n){ notifications.unshift({ ...n, at: n.at||new Date() }); renderNotifBadge(); if($('notifPanel') && !$('notifPanel').classList.contains('hidden')) renderNotifPanel(); }
+    function renderNotifBadge(){ const c = $('notifCount'); if(!c) return; const n = notifications.length; c.textContent = String(n); c.classList.toggle('hidden', n===0); }
+    function toggleNotifPanel(){ const p=$('notifPanel'); if(!p) return; if(p.classList.contains('hidden')) renderNotifPanel(); p.classList.toggle('hidden'); }
+    function renderNotifPanel(){
+      const html = notifications.map(n=>`
+        <li class="py-2 border-t">
+          <div class="font-semibold ${n.type==='Winner'?'text-green-700':(n.type==='Feedback'?'text-gray-800':'text-blue-700')}">${n.title||n.type}</div>
+          <div class="text-sm text-gray-600">${n.message}</div>
+          <div class="text-xs text-gray-400 mt-1">${new Date(n.at).toLocaleString('en-IN')}</div>
+          ${n.suggestions?`<ul class='mt-1 text-xs text-gray-500 list-disc pl-5'>${n.suggestions.map(s=>`<li>${s}</li>`).join('')}</ul>`:''}
+        </li>`).join('') || '<li class="py-4 text-sm text-gray-500">No notifications</li>';
+      const ul = $('notifList'); if(ul) ul.innerHTML = html;
+    }
+
+    // Dataset
+    const events = [
+      { id:'RFP-2025-001', type:'RFP', title:'Laptops Procurement', category:'IT Hardware', buyer:'Amit Singh', suppliers:['Alpha Industries','Global Tech','Nova Labs'], start:'2025-08-05', end:'2025-08-20', baseline: 12000000, current: 11200000, status:'Open', attachments:[{name:'Specs.pdf', size: 240112}], comments:['Tech specs finalized'], criteria:[{name:'Price', weight:60},{name:'Delivery', weight:20},{name:'Warranty', weight:20}] },
+      { id:'RFQ-2025-015', type:'RFQ', title:'Office Chairs', category:'Office Supplies', buyer:'Neha Gupta', suppliers:['Zenith Supplies','Beta Solutions'], start:'2025-08-12', end:'2025-08-19', baseline: 1800000, current: 1750000, status:'Published', attachments:[], comments:[], criteria:[{name:'Price', weight:70},{name:'Lead Time', weight:30}] },
+      { id:'AUC-2025-007', type:'Auction', title:'Corrugated Boxes', category:'Packaging', buyer:'Rahul Verma', suppliers:['Alpha Industries','Zenith Supplies','Beta Solutions','Global Tech'], start:'2025-08-24T10:00:00', end:'2025-08-26T11:30:00', startPrice: 48, reservePrice: 41, decrement: 0.5, current: 45, baseline: 50, status:'Live', bids:[{by:'Alpha Industries', price:47.5, at:'2025-08-24T10:05:00'},{by:'Beta Solutions', price:47.0, at:'2025-08-24T10:12:00'},{by:'Zenith Supplies', price:46.5, at:'2025-08-24T10:20:00'}], attachments:[{name:'Box_specs.pdf', size: 120000}], comments:['Auction launched'] },
+      { id:'RFP-2025-002', type:'RFP', title:'Cloud Services', category:'IT Services', buyer:'Meera Iyer', suppliers:['Global Tech','Nova Labs'], start:'2025-07-15', end:'2025-08-10', baseline: 9000000, current: 9000000, status:'Pending Approval', attachments:[{name:'SOW.docx', size: 89123}], comments:['Awaiting CFO approval'], criteria:[{name:'Price', weight:50},{name:'Security', weight:30},{name:'Scalability', weight:20}] },
+  { id:'AUC-2025-010', type:'Auction', title:'Steel Rods', category:'Raw Material', buyer:'Sanjay Mehta', suppliers:['SteelOne','MetalCorp','Alpha Industries'], start:'2025-07-01T14:00:00', end:'2025-07-01T16:00:00', startPrice: 62000, reservePrice: 60000, decrement: 200, current: 59800, baseline: 63500, status:'Closed', bids:[{by:'SteelOne', price:61000, at:'2025-07-01T14:12:00'},{by:'MetalCorp', price:60500, at:'2025-07-01T14:45:00'},{by:'SteelOne', price:60000, at:'2025-07-01T15:20:00'}], attachments:[], comments:['Closed, below reserve'], winner:'SteelOne' },
+
+  // ——— Added dataset to cover all categories and test cases ———
+  { id:'RFP-2025-003', type:'RFP', title:'Facilities Management FY26', category:'Facilities', buyer:'Amit Singh', suppliers:['Sunrise Facilities','Alpha Industries','Zenith Supplies'], start:'2025-08-01', end:'2025-09-15', baseline: 15000000, current: 15000000, status:'Published', attachments:[{name:'Scope.pdf', size: 222000}], comments:['Site list finalized'], criteria:[{name:'Price',weight:50},{name:'SLA',weight:30},{name:'Experience',weight:20}] },
+  { id:'RFQ-2025-020', type:'RFQ', title:'Cleaning Supplies Q4', category:'Cleaning & Janitorial', buyer:'Neha Gupta', suppliers:['Zenith Supplies','EcoChem','Beta Solutions'], start:'2025-08-18', end:'2025-08-30', baseline: 1200000, current: 0, status:'Open', attachments:[], comments:[], criteria:[{name:'Price',weight:80},{name:'Lead Time',weight:20}] },
+  { id:'AUC-2025-012', type:'Auction', title:'Diesel Fuel (per 1000L)', category:'Utilities', buyer:'Rahul Verma', suppliers:['MetalCorp','Prime Logistics','Alpha Industries'], start:'2025-08-26T11:00:00', end:'2025-08-26T13:00:00', startPrice: 890, reservePrice: 820, decrement: 5, current: 870, baseline: 900, status:'Live', bids:[{by:'Prime Logistics', price:885, at:'2025-08-26T11:05:00'},{by:'MetalCorp', price:880, at:'2025-08-26T11:12:00'},{by:'Prime Logistics', price:875, at:'2025-08-26T11:20:00'}], attachments:[], comments:['Live'] },
+  { id:'RFP-2025-004', type:'RFP', title:'Marketing Agency Retainer', category:'Marketing', buyer:'Meera Iyer', suppliers:['BlueOcean Marketing','ConsultX'], start:'2025-08-10', end:'2025-09-05', baseline: 4000000, current: 4000000, status:'Pending Approval', attachments:[{name:'Brief.pdf', size: 91000}], comments:['Awaiting CMO signoff'], criteria:[{name:'Creative',weight:40},{name:'Price',weight:40},{name:'Team',weight:20}] },
+  { id:'AUC-2025-013', type:'Auction', title:'Copper Wire 10mm', category:'Metals', buyer:'Sanjay Mehta', suppliers:['SteelOne','MetalCorp','Alpha Industries'], start:'2025-06-15T10:00:00', end:'2025-06-15T12:00:00', startPrice: 720, reservePrice: 680, decrement: 10, current: 675, baseline: 740, status:'Awarded', bids:[{by:'MetalCorp', price:710, at:'2025-06-15T10:20:00'},{by:'SteelOne', price:700, at:'2025-06-15T10:45:00'},{by:'SteelOne', price:680, at:'2025-06-15T11:30:00'},{by:'Alpha Industries', price:675, at:'2025-06-15T11:50:00'}], attachments:[], comments:['Awarded to Alpha'], winner:'Alpha Industries' },
+  { id:'RFQ-2025-021', type:'RFQ', title:'Safety Helmets', category:'Safety Equipment', buyer:'Amit Singh', suppliers:['SafeWear','Zenith Supplies','Beta Solutions'], start:'2025-08-05', end:'2025-08-25', baseline: 600000, current: 590000, status:'Published', attachments:[], comments:['Samples received'], criteria:[{name:'Price',weight:70},{name:'Certification',weight:30}] },
+  { id:'RFP-2025-005', type:'RFP', title:'ERP Software Licenses', category:'Software Licenses', buyer:'Neha Gupta', suppliers:['SoftSphere','Global Tech'], start:'2025-08-20', end:'2025-09-20', baseline: 18000000, current: 0, status:'Draft', attachments:[], comments:['Drafting license metrics'], criteria:[] },
+  { id:'AUC-2025-014', type:'Auction', title:'Air Freight Rates APAC', category:'Logistics', buyer:'Rahul Verma', suppliers:['Prime Logistics','Alpha Industries','MetalCorp'], start:'2025-08-26T10:30:00', end:'2025-08-26T12:00:00', startPrice: 12.5, reservePrice: 10.8, decrement: 0.1, current: 11.2, baseline: 12.8, status:'Live', bids:[{by:'Prime Logistics', price:12.2, at:'2025-08-26T10:40:00'},{by:'Alpha Industries', price:12.0, at:'2025-08-26T10:52:00'},{by:'MetalCorp', price:11.6, at:'2025-08-26T11:10:00'},{by:'Prime Logistics', price:11.2, at:'2025-08-26T11:22:00'}], attachments:[{name:'LANE_LIST.xlsx', size: 54000}], comments:['High competition'] },
+  { id:'RFP-2025-006', type:'RFP', title:'Consulting – Process Improvement', category:'Consulting', buyer:'Meera Iyer', suppliers:['ConsultX','Nova Labs'], start:'2025-07-20', end:'2025-08-25', baseline: 2500000, current: 2400000, status:'Open', attachments:[], comments:['Workshops scheduled'], criteria:[{name:'Approach',weight:40},{name:'Price',weight:40},{name:'Experience',weight:20}] },
+  { id:'RFQ-2025-022', type:'RFQ', title:'Lab Chemicals', category:'Lab Supplies', buyer:'Neha Gupta', suppliers:['LabWorks','EcoChem'], start:'2025-07-01', end:'2025-07-15', baseline: 900000, current: 880000, status:'Closed', attachments:[], comments:['Delivered'], criteria:[{name:'Purity',weight:40},{name:'Price',weight:60}] },
+  { id:'AUC-2025-015', type:'Auction', title:'Structural Steel', category:'Construction', buyer:'Sanjay Mehta', suppliers:['SteelOne','Alpha Industries','MetalCorp'], start:'2025-08-10T11:00:00', end:'2025-08-10T12:30:00', startPrice: 66500, reservePrice: 64000, decrement: 200, current: 64200, baseline: 67000, status:'Closed', bids:[{by:'SteelOne', price:66000, at:'2025-08-10T11:10:00'},{by:'MetalCorp', price:65000, at:'2025-08-10T11:40:00'},{by:'SteelOne', price:64200, at:'2025-08-10T12:10:00'}], attachments:[], comments:['Closed near reserve'] },
+  { id:'RFP-2025-007', type:'RFP', title:'Office Renovation', category:'Construction', buyer:'Amit Singh', suppliers:['BuildRight','Alpha Industries'], start:'2025-06-01', end:'2025-07-01', baseline: 12000000, current: 0, status:'Cancelled', attachments:[], comments:['Budget freeze'], criteria:[{name:'Price',weight:60},{name:'Timeline',weight:40}] },
+  { id:'RFQ-2025-023', type:'RFQ', title:'Corporate Travel Booking', category:'Travel', buyer:'Rahul Verma', suppliers:['Aero Travel','Prime Logistics'], start:'2025-08-01', end:'2025-08-31', baseline: 1100000, current: 0, status:'Published', attachments:[], comments:[], criteria:[{name:'Fees',weight:50},{name:'Service',weight:50}] },
+  { id:'AUC-2025-016', type:'Auction', title:'Bearings (MRO)', category:'MRO', buyer:'Sanjay Mehta', suppliers:['MRO Hub','Alpha Industries','Zenith Supplies'], start:'2025-08-26T10:00:00', end:'2025-08-26T10:45:00', startPrice: 980, reservePrice: 920, decrement: 10, current: 940, baseline: 1000, status:'Live', bids:[{by:'MRO Hub', price:970, at:'2025-08-26T10:05:00'},{by:'Zenith Supplies', price:960, at:'2025-08-26T10:10:00'},{by:'MRO Hub', price:950, at:'2025-08-26T10:20:00'},{by:'Alpha Industries', price:940, at:'2025-08-26T10:28:00'}], attachments:[], comments:['Live bids flowing'] },
+  { id:'RFP-2025-008', type:'RFP', title:'Data Center Colocation', category:'IT Services', buyer:'Neha Gupta', suppliers:['Global Tech','SoftSphere'], start:'2025-05-01', end:'2025-06-01', baseline: 22000000, current: 21000000, status:'Awarded', attachments:[{name:'RFP.pdf', size: 180000}], comments:['Contract signed'], criteria:[{name:'Price',weight:50},{name:'Uptime',weight:30},{name:'Scalability',weight:20}], winner:'Global Tech' },
+  { id:'AUC-2025-017', type:'Auction', title:'Printing Paper A4', category:'Office Supplies', buyer:'Amit Singh', suppliers:['Zenith Supplies','Beta Solutions','Alpha Industries'], start:'2025-08-26T11:45:00', end:'2025-08-26T12:05:00', startPrice: 192, reservePrice: 175, decrement: 1, current: 182, baseline: 195, status:'Live', bids:[{by:'Beta Solutions', price:190, at:'2025-08-26T11:46:00'},{by:'Zenith Supplies', price:186, at:'2025-08-26T11:55:10'}], attachments:[], comments:['Short window'] },
+  { id:'RFQ-2025-024', type:'RFQ', title:'PPE Kits', category:'Safety Equipment', buyer:'Amit Singh', suppliers:['SafeWear'], start:'2025-08-15', end:'2025-08-28', baseline: 800000, current: 0, status:'Open', attachments:[], comments:['Single supplier RFQ'], criteria:[{name:'Price',weight:60},{name:'Compliance',weight:40}] },
+  { id:'RFP-2025-009', type:'RFP', title:'Cafeteria Services', category:'Facilities', buyer:'Rahul Verma', suppliers:['Sunrise Facilities','Alpha Industries','Zenith Supplies'], start:'2025-08-05', end:'2025-09-01', baseline: 5000000, current: 0, status:'Open', attachments:[], comments:[], criteria:[{name:'Menu',weight:30},{name:'Price',weight:50},{name:'Hygiene',weight:20}] },
+  { id:'AUC-2025-018', type:'Auction', title:'Aluminum Sheets', category:'Metals', buyer:'Sanjay Mehta', suppliers:['MetalCorp','Alpha Industries'], start:'2025-07-20T10:00:00', end:'2025-07-20T10:45:00', startPrice: 325, reservePrice: 300, decrement: 5, current: 300, baseline: 330, status:'Awarded', bids:[{by:'MetalCorp', price:315, at:'2025-07-20T10:10:00'},{by:'Alpha Industries', price:310, at:'2025-07-20T10:25:00'},{by:'MetalCorp', price:300, at:'2025-07-20T10:40:00'}], attachments:[], comments:['Hit reserve'], winner:'MetalCorp' }
+    ];
+
+    function badgeType(t){ return `<span class="badge ${t==='Auction'?'auction':(t==='RFQ'?'rfq':'rfp')}">${t}</span>`; }
+    function badgeStatus(st){ const m={Draft:'draft','Pending Approval':'pending',Published:'published',Open:'open',Live:'live',Closed:'closed',Awarded:'awarded',Cancelled:'cancelled'}; return `<span class="badge ${m[st]||'draft'}">${st}</span>`; }
+
+    function populateFilters(){
+      const cats = Array.from(new Set(events.map(e=>e.category))).sort();
+      const buyers = Array.from(new Set(events.map(e=>e.buyer))).sort();
+      const suppliers = Array.from(new Set(events.flatMap(e=>e.suppliers||[]))).sort();
+      $('fCat').innerHTML = '<option value="">All</option>' + cats.map(c=>`<option>${c}</option>`).join('');
+      $('fBuyer').innerHTML = '<option value="">All</option>' + buyers.map(b=>`<option>${b}</option>`).join('');
+      $('fSupplier').innerHTML = '<option value="">All</option>' + suppliers.map(s=>`<option>${s}</option>`).join('');
+    }
+
+    function filteredRaw(){
+      const s = ($('fSearch').value||'').toLowerCase();
+      const tp=$('fType').value, st=$('fStatus').value, cat=$('fCat').value, buyer=$('fBuyer').value, sup=$('fSupplier').value, f=$('fFrom').value, t=$('fTo').value;
+      return events.filter(e=>{
+        const hay = `${e.id}|${e.title}|${e.buyer}|${(e.suppliers||[]).join('|')}|${e.category}`.toLowerCase();
+        if (s && !hay.includes(s)) return false;
+        if (tp && e.type!==tp) return false;
+        if (st && e.status!==st) return false;
+        if (cat && e.category!==cat) return false;
+        if (buyer && e.buyer!==buyer) return false;
+        if (sup && !(e.suppliers||[]).includes(sup)) return false;
+        const sd = new Date(e.start); const ed = new Date(e.end);
+        if (f && sd < new Date(f)) return false;
+        if (t && ed > new Date(t)) return false;
+        return true;
+      });
+    }
+
+    function render(){
+      const list = filteredRaw();
+      const tbody = $('tbody');
+      tbody.innerHTML = list.map(x=>{
+        const sup = (x.suppliers||[]).slice(0,2).join(', ') + ((x.suppliers||[]).length>2?` +${(x.suppliers||[]).length-2}`:'');
+        const base = x.type==='Auction' ? (x.startPrice??x.baseline) : (x.baseline||0);
+        const cur = x.type==='Auction' ? (x.current||0) : (x.current||0);
+        const curDisplay = x.type==='Auction'?Rs(cur):Rs(x.current||0);
+        return `
+          <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+            <td class="px-4 py-3 align-top min-w-[12rem]"><div class="font-semibold">${x.id}</div><div class="mt-1">${badgeType(x.type)}</div></td>
+            <td class="px-4 py-3 align-top min-w-[14rem]"><div>${x.title}</div><div class="text-xs text-gray-500">${x.category}</div></td>
+            <td class="px-4 py-3 align-top min-w-[12rem]">${x.buyer}</td>
+            <td class="px-4 py-3 align-top min-w-[14rem]">${sup||'-'}</td>
+            <td class="px-4 py-3 align-top min-w-[12rem]"><div>${new Date(x.start).toLocaleString('en-IN')}</div><div class="text-xs text-gray-500">${new Date(x.end).toLocaleString('en-IN')}</div></td>
+            <td class="px-4 py-3 text-right align-top min-w-[10rem]"><div class="num">${x.type==='Auction'?`${Rs(x.baseline||0)} / ${Rs(x.startPrice||0)}`:Rs(base)}</div></td>
+            <td class="px-4 py-3 text-right align-top min-w-[10rem]"><div class="num">${curDisplay}</div></td>
+            <td class="px-4 py-3 align-top min-w-[8rem]">${badgeStatus(x.status)}</td>
+            <td class="px-4 py-3 align-top min-w-[12rem]">
+              <div class="flex flex-wrap items-center gap-2">
+                <button class="px-3 py-1.5 text-sm rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100" onclick="openItem('${x.id}')"><i class="fas fa-eye mr-1"></i>View</button>
+                ${x.type==='Auction' && can('launch')?`<button class=\"px-3 py-1.5 text-sm rounded-lg bg-purple-50 text-purple-700 hover:bg-purple-100\" onclick=\"simulateBid('${x.id}')\"><i class=\"fas fa-bolt mr-1\"></i>Simulate</button>`:''}
+                ${x.type==='Auction'?`<button class="px-3 py-1.5 text-sm rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100" onclick="openAuctionRoom('${x.id}')"><i class="fas fa-door-open mr-1"></i>Enter Room</button>`:''}
+              </div>
+            </td>
+          </tr>`;
+      }).join('') || `<tr><td colspan="9" class="px-4 py-8 text-center text-gray-500">No events found for the selected filters.</td></tr>`;
+
+      // KPIs
+      const openRfps = list.filter(e=>e.type==='RFP' && ['Published','Open'].includes(e.status)).length;
+      const liveAucs = list.filter(e=>e.type==='Auction' && e.status==='Live').length;
+      const supDistinct = new Set(list.flatMap(e=>e.suppliers||[])).size;
+      const savings = list.filter(e=>e.type==='Auction' && ['Live','Closed','Awarded'].includes(e.status)).reduce((s,e)=> s + Math.max(0,(e.baseline||0) - (e.current||e.startPrice||0))*1000, 0);
+      const pending = list.filter(e=>e.status==='Pending Approval').length;
+      $('kpiOpenRfp').textContent = String(openRfps);
+      $('kpiLiveAuctions').textContent = String(liveAucs);
+      $('kpiSuppliers').textContent = String(supDistinct);
+      $('kpiSavings').textContent = Rs(Math.round(savings));
+      $('kpiPending').textContent = String(pending);
+    }
+
+    function openItem(id){
+      const x = events.find(e=>e.id===id) || filteredRaw()[0]; if(!x) return;
+      if(x.type==='Auction') return openAuction(x);
+      return openRfpRfq(x);
+    }
+
+    function openRfpRfq(x){
+      const att = (x.attachments||[]).map(a=>`<div class='att-item text-sm'><div class='flex items-center gap-2'><i class='fas fa-paperclip text-gray-500'></i><span>${a.name}</span></div><button class='px-2 py-1 text-xs rounded border hover:bg-gray-50' onclick=\"downloadAttachment('${x.id}','${a.name}')\"><i class='fas fa-download mr-1'></i>Download</button></div>`).join('') || '<div class="text-sm text-gray-500">No attachments</div>';
+      const crit = (x.criteria||[]).map(c=>`<li class='flex items-center justify-between text-sm border-t py-1'><span>${c.name}</span><span class='text-gray-500'>${c.weight}%</span></li>`).join('') || '<li class="text-sm text-gray-500">No criteria</li>';
+      $('modalTitle').textContent = `${x.id} • ${x.title}`;
+      $('modalBody').innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div class="lg:col-span-2 space-y-4">
+            <div class="card p-4">
+              <div class="flex items-start justify-between">
+                <div>
+                  <div class="text-sm text-gray-500">${x.type}</div>
+                  <div class="text-xl font-bold text-gray-900">${x.title}</div>
+                  <div class="text-sm text-gray-600 mt-1">Buyer: <span class="font-medium">${x.buyer}</span> • Category: ${x.category} • Period: ${new Date(x.start).toLocaleDateString('en-IN')} → ${new Date(x.end).toLocaleDateString('en-IN')}</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm text-gray-500 mb-1">Status</div>
+                  ${badgeStatus(x.status)}
+                </div>
+              </div>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-gray-700 mt-4">
+                <div><span class="text-gray-500">Baseline</span><div class="num">${Rs(x.baseline||0)}</div></div>
+                <div><span class="text-gray-500">Current</span><div class="num">${Rs(x.current||0)}</div></div>
+                <div><span class="text-gray-500">Suppliers</span><div>${(x.suppliers||[]).length}</div></div>
+                <div><span class="text-gray-500">Attachments</span><div>${(x.attachments||[]).length}</div></div>
+              </div>
+            </div>
+
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-2">Evaluation Criteria</div>
+              <ul>${crit}</ul>
+            </div>
+
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-2">Attachments</div>
+              <div>${att}</div>
+            </div>
+
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-2">Comments</div>
+              <ul>${(x.comments||[]).map(cm=>`<li class='text-sm text-gray-700 border-t py-1'>${cm}</li>`).join('') || '<li class="text-sm text-gray-500">No comments</li>'}</ul>
+              <div class="mt-3 flex gap-2">
+                <input id="newComment" class="flex-1 px-3 py-2 border rounded-lg" placeholder="Add a comment"/>
+                <button class="px-3 py-2 bg-gray-50 border rounded-lg hover:bg-gray-100" onclick="addComment('${x.id}')"><i class="fas fa-plus mr-1"></i>Add</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-2">Quick Actions</div>
+              <div class="flex flex-wrap gap-2">
+                <button class="px-3 py-2 bg-green-50 text-green-700 rounded-lg border hover:bg-green-100" onclick="approveItem('${x.id}')"><i class="fas fa-check mr-1"></i>Approve</button>
+                <button class="px-3 py-2 bg-blue-50 text-blue-700 rounded-lg border hover:bg-blue-100" onclick="publishItem('${x.id}')"><i class="fas fa-bullhorn mr-1"></i>Publish</button>
+                <button class="px-3 py-2 bg-purple-50 text-purple-700 rounded-lg border hover:bg-purple-100" onclick="inviteSuppliers('${x.id}')"><i class="fas fa-user-plus mr-1"></i>Invite</button>
+                <button class="px-3 py-2 bg-gray-50 text-gray-700 rounded-lg border hover:bg-gray-100" onclick="closeItem('${x.id}')"><i class="fas fa-door-closed mr-1"></i>Close</button>
+                <button class="px-3 py-2 bg-emerald-50 text-emerald-700 rounded-lg border hover:bg-emerald-100" onclick="awardItem('${x.id}')"><i class="fas fa-award mr-1"></i>Award</button>
+              </div>
+            </div>
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-2">Notes</div>
+              <div class="text-sm text-gray-600">Define clear evaluation criteria and ensure supplier SLAs are part of the RFP terms.</div>
+            </div>
+          </div>
+        </div>`;
+
+      const footer = $('modalFooter');
+      footer.innerHTML = `<button class="px-4 py-2 bg-gray-50 border rounded-lg hover:bg-gray-100" onclick="closeModal()">Close</button>`;
+      openModal();
+    }
+
+    function openAuction(x){
+      const canManage = can('launch');
+      const canDoAward = can('award');
+      const att = (x.attachments||[]).map(a=>`<div class='att-item text-sm'><div class='flex items-center gap-2'><i class='fas fa-paperclip text-gray-500'></i><span>${a.name}</span></div><button class='px-2 py-1 text-xs rounded border hover:bg-gray-50' onclick=\"downloadAttachment('${x.id}','${a.name}')\"><i class='fas fa-download mr-1'></i>Download</button></div>`).join('') || '<div class="text-sm text-gray-500">No attachments</div>';
+      const bids = (x.bids||[]).slice().reverse().map(b=>`<tr class='border-t'><td class='px-3 py-1'>${new Date(b.at).toLocaleString('en-IN')}</td><td class='px-3 py-1'>${b.by}</td><td class='px-3 py-1 text-right num'>${Rs(b.price*1000)}</td></tr>`).join('') || '<tr><td colspan=3 class="text-sm text-gray-500 px-3 py-2">No bids yet</td></tr>';
+      const leader = (x.bids||[]).reduce((best,b)=> (best==null || b.price<best.price)?b:best, null);
+      const leaderText = leader ? `${leader.by} is leading at ${Rs(leader.price*1000)}` : 'No bids yet';
+      $('modalTitle').textContent = `${x.id} • ${x.title}`;
+      $('modalBody').innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div class="lg:col-span-2 space-y-4">
+            <div class="card p-4">
+              <div class="flex items-start justify-between">
+                <div>
+                  <div class="text-sm text-gray-500">Reverse Auction</div>
+                  <div class="text-xl font-bold text-gray-900">${x.title}</div>
+                  <div class="text-sm text-gray-600 mt-1">Buyer: <span class="font-medium">${x.buyer}</span> • Category: ${x.category} • Window: ${new Date(x.start).toLocaleString('en-IN')} → ${new Date(x.end).toLocaleString('en-IN')}</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm text-gray-500 mb-1">Status</div>
+                  ${badgeStatus(x.status)}
+                </div>
+              </div>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-gray-700 mt-4">
+                <div><span class="text-gray-500">Baseline</span><div class="num">${Rs((x.baseline||0)*1000)}</div></div>
+                <div><span class="text-gray-500">Start</span><div class="num">${Rs((x.startPrice||0)*1000)}</div></div>
+                <div><span class="text-gray-500">Current</span><div class="num">${Rs((x.current||0)*1000)}</div></div>
+                <div><span class="text-gray-500">Reserve</span><div class="num">${Rs((x.reservePrice||0)*1000)}</div></div>
+              </div>
+            </div>
+
+            <div class="card p-4 overflow-x-auto">
+              <div class="font-semibold text-gray-900 mb-2">Bids Log</div>
+              <table class="w-full text-sm">
+                <thead class="bg-gray-50"><tr><th class="px-3 py-2 text-left">Time</th><th class="px-3 py-2 text-left">Supplier</th><th class="px-3 py-2 text-right">Bid</th></tr></thead>
+                <tbody>${bids}</tbody>
+              </table>
+            </div>
+
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-2">Attachments</div>
+              <div>${att}</div>
+            </div>
+
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-2">Comments</div>
+              <ul>${(x.comments||[]).map(cm=>`<li class='text-sm text-gray-700 border-t py-1'>${cm}</li>`).join('') || '<li class="text-sm text-gray-500">No comments</li>'}</ul>
+              <div class="mt-3 flex gap-2">
+                <input id="newComment" class="flex-1 px-3 py-2 border rounded-lg" placeholder="Add a comment"/>
+                <button class="px-3 py-2 bg-gray-50 border rounded-lg hover:bg-gray-100" onclick="addComment('${x.id}')"><i class="fas fa-plus mr-1"></i>Add</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-2">Leaderboard</div>
+              <div class="text-sm ${leader?'':'text-gray-500'}">${leaderText}</div>
+              <div class="text-xs text-gray-500 mt-1">Decrement step: ${x.decrement}</div>
+              <div class="text-xs text-gray-500">Reserve: ${Rs((x.reservePrice||0)*1000)}</div>
+            </div>
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-2">Quick Actions</div>
+              <div class="flex flex-wrap gap-2">
+                ${canManage?`<button class="px-3 py-2 bg-purple-50 text-purple-700 rounded-lg border hover:bg-purple-100" onclick="simulateBid('${x.id}')"><i class="fas fa-bolt mr-1"></i>Simulate Bid</button>`:''}
+                ${canManage?`<button class="px-3 py-2 bg-gray-50 text-gray-700 rounded-lg border hover:bg-gray-100" onclick="closeItem('${x.id}')"><i class="fas fa-door-closed mr-1"></i>Close</button>`:''}
+                ${canDoAward?`<button class="px-3 py-2 bg-emerald-50 text-emerald-700 rounded-lg border hover:bg-emerald-100" onclick="awardItem('${x.id}')"><i class="fas fa-award mr-1"></i>Award</button>`:''}
+                <button class="px-3 py-2 bg-emerald-50 text-emerald-700 rounded-lg border hover:bg-emerald-100" onclick="openAuctionRoom('${x.id}')"><i class="fas fa-door-open mr-1"></i>Enter Live Room</button>
+              </div>
+            </div>
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-2">Notes</div>
+              <div class="text-sm text-gray-600">Auctions allow last-minute extensions and automatic rank updates. This demo simulates bid updates.</div>
+            </div>
+          </div>
+        </div>`;
+
+      const footer = $('modalFooter');
+      footer.innerHTML = `<button class="px-4 py-2 bg-gray-50 border rounded-lg hover:bg-gray-100" onclick="closeModal()">Close</button>`;
+      openModal();
+    }
+
+    // Actions
+  function approveItem(id){ if(currentRole==='Vendor'){ showToast('Vendors cannot approve','error'); return; } const x=events.find(e=>e.id===id); if(!x) return; x.status='Published'; showToast(`${x.id} approved/published`,'success'); render(); if(!$('modal').classList.contains('hidden')) openItem(id); }
+  function publishItem(id){ if(currentRole==='Vendor'){ showToast('Vendors cannot publish','error'); return; } const x=events.find(e=>e.id===id); if(!x) return; x.status = x.type==='RFP' ? 'Open' : 'Published'; showToast(`${x.id} ${x.status.toLowerCase()}`,'success'); render(); if(!$('modal').classList.contains('hidden')) openItem(id); }
+  function closeItem(id){ if(currentRole==='Vendor'){ showToast('Vendors cannot close events','error'); return; } const x=events.find(e=>e.id===id); if(!x) return; x.status='Closed'; showToast(`${x.id} closed`,'info'); render(); if(!$('modal').classList.contains('hidden')) openItem(id); }
+    function awardItem(id){ return awardFlow(id); }
+    function awardFlow(id){
+      const x = events.find(e=>e.id===id); if(!x) return;
+      if(!can('award')){ showToast('Only Sourcing Manager/CPO can award','error'); return; }
+      const suppliers = (x.suppliers||[]);
+      if(!suppliers.length){ showToast('No suppliers to evaluate','warning'); return; }
+      // Build price map
+      const priceMap = {};
+      if(x.type==='Auction'){
+        (x.bids||[]).forEach(b=>{ priceMap[b.by] = Math.min(priceMap[b.by]??Infinity, b.price); });
+      } else {
+        if(!x.quotes){
+          const base = (x.current||x.baseline||1000000);
+          x.quotes = suppliers.reduce((o,s)=>{ const factor = 0.9 + Math.random()*0.12; o[s] = Math.round(base*factor); return o; }, {});
+        }
+        Object.assign(priceMap, x.quotes);
+      }
+      const amountFor = (s)=> x.type==='Auction' ? (isFinite(priceMap[s])? Math.round(priceMap[s]*1000): Infinity) : (priceMap[s]||Infinity);
+      const minAmount = Math.min(...suppliers.map(amountFor).filter(v=>isFinite(v)));
+      const candidates = suppliers.map(s=>{
+        const perf = getPerf(s);
+        const amt = amountFor(s);
+        const priceScore = isFinite(amt) && minAmount>0 ? Math.min(100, Math.max(0, (minAmount/amt)*100)) : 0;
+        const composite = Math.round(0.7*priceScore + 0.3*perf.score);
+        return { supplier:s, amount: amt, perf, priceScore: Math.round(priceScore), composite };
+      }).sort((a,b)=> b.composite - a.composite);
+
+      // Render award panel in modal
+      $('modalTitle').textContent = `Evaluate & Award • ${x.id}`;
+      $('modalBody').innerHTML = `
+        <div class="space-y-4">
+          <div class="card p-4">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="text-sm text-gray-500">${x.type}</div>
+                <div class="text-xl font-bold text-gray-900">${x.title}</div>
+                <div class="text-sm text-gray-600 mt-1">Select the best supplier based on price and performance.</div>
+              </div>
+              <div>${badgeStatus(x.status)}</div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-gray-700 mt-4">
+              <div><span class="text-gray-500">Suppliers</span><div>${suppliers.length}</div></div>
+              <div><span class="text-gray-500">Best Price</span><div class="num">${isFinite(minAmount)?Rs(minAmount):'-'}</div></div>
+              <div><span class="text-gray-500">Baseline</span><div class="num">${x.type==='Auction'?Rs((x.baseline||0)*1000):Rs(x.baseline||0)}</div></div>
+              <div><span class="text-gray-500">Current</span><div class="num">${x.type==='Auction'?Rs((x.current||0)*1000):Rs(x.current||0)}</div></div>
+            </div>
+          </div>
+          <div class="card p-4 overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead class="bg-gray-50"><tr><th class="px-3 py-2 text-left">Supplier</th><th class="px-3 py-2 text-right">Best Price</th><th class="px-3 py-2 text-right">Price Score</th><th class="px-3 py-2 text-right">Perf Score</th><th class="px-3 py-2 text-right">On-time</th><th class="px-3 py-2 text-right">Quality</th><th class="px-3 py-2 text-right">Composite</th><th class="px-3 py-2 text-left">Choose</th></tr></thead>
+              <tbody>
+                ${candidates.map((c,i)=>`<tr class="border-t ${i===0?'bg-emerald-50/40':''}">
+                  <td class="px-3 py-2 font-medium">${c.supplier} ${i===0?'<span class=\'ml-2 text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded\'>Recommended</span>':''}</td>
+                  <td class="px-3 py-2 text-right num">${isFinite(c.amount)?Rs(c.amount):'-'}</td>
+                  <td class="px-3 py-2 text-right">${c.priceScore}</td>
+                  <td class="px-3 py-2 text-right">${c.perf.score}</td>
+                  <td class="px-3 py-2 text-right">${c.perf.onTime}%</td>
+                  <td class="px-3 py-2 text-right">${c.perf.quality}%</td>
+                  <td class="px-3 py-2 text-right font-semibold">${c.composite}</td>
+                  <td class="px-3 py-2"><input type="radio" name="awardPick" value="${c.supplier}" ${i===0?'checked':''}></td>
+                </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>`;
+      $('modalFooter').innerHTML = `<button class="px-4 py-2 bg-gray-50 border rounded-lg hover:bg-gray-100" onclick="closeModal()">Cancel</button><button class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700" onclick="confirmAward('${x.id}')"><i class='fas fa-award mr-1'></i>Confirm Award</button>`;
+      openModal();
+    }
+    function confirmAward(id){
+      const x = events.find(e=>e.id===id); if(!x) return;
+      if(!can('award')){ showToast('Not permitted','error'); return; }
+      const picked = (document.querySelector('input[name="awardPick"]:checked')?.value)||'';
+      if(!picked){ showToast('Pick a supplier','warning'); return; }
+      // Determine winner price
+      let winAmt = 0; if(x.type==='Auction'){ const bestPerK = Math.min(...(x.bids||[]).filter(b=>b.by===picked).map(b=>b.price)); winAmt = isFinite(bestPerK)? Math.round(bestPerK*1000) : Math.round((x.current||x.startPrice||0)*1000); x.current = isFinite(bestPerK)? bestPerK : x.current; } else { const q = x.quotes?.[picked] || Math.round((x.current||x.baseline||0)); winAmt = q; x.current = q; }
+  x.winner = picked; x.status = 'Awarded';
+      // Notifications
+      pushNotification({ type:'Winner', title:`Winner • ${x.id}`, message:`${picked} awarded for ${x.title} at ${Rs(winAmt)}.` });
+  // Email the winner (mock via mailto)
+  sendWinnerEmail(x, picked, winAmt);
+      const losers = (x.suppliers||[]).filter(s=>s!==picked);
+      const winPerK = x.type==='Auction' ? (x.current||0) : (winAmt/1000);
+      losers.forEach(l=>{
+        const perf = getPerf(l);
+        let loserAmt = 0;
+        if(x.type==='Auction'){
+          const best = Math.min(...(x.bids||[]).filter(b=>b.by===l).map(b=>b.price)); loserAmt = isFinite(best)? Math.round(best*1000) : Math.round((x.baseline||x.current||0));
+        } else {
+          loserAmt = x.quotes?.[l] || Math.round((x.current||x.baseline||0)* (1+Math.random()*0.05));
+        }
+        const diffPct = isFinite(loserAmt) && loserAmt>0 ? Math.max(0, ((loserAmt - winAmt)/loserAmt)*100) : 0;
+        const sugg = [];
+        if(diffPct>5) sugg.push(`Consider reducing your price by ~${diffPct.toFixed(1)}%`);
+        if(perf.score<80) sugg.push('Improve on-time delivery and quality performance to 85+');
+        if(sugg.length===0) sugg.push('Enhance value: warranty, lead time, service levels');
+        pushNotification({ type:'Feedback', title:`Not Selected • ${x.id}`, message:`${l} was not selected for ${x.title}.`, suggestions: sugg });
+      });
+      showToast(`${x.id} awarded to ${picked}. Notifications sent.`,'success');
+      render();
+      if(!$('modal').classList.contains('hidden')) openItem(id);
+    }
+    function sendWinnerEmail(eventObj, supplier, amount){
+      // Compose a mailto link; in real app call backend email service
+      const subject = encodeURIComponent(`Award Notification: ${eventObj.id} - ${eventObj.title}`);
+      const lines = [
+        `Dear ${supplier},`,
+        '',
+        `We are pleased to inform you that your bid has been selected for ${eventObj.title}.`,
+        `Event ID: ${eventObj.id}`,
+        `Awarded Amount: ${Rs(amount)}`,
+        `Buyer: ${eventObj.buyer}`,
+        '',
+        'Our team will share the Purchase Order and next steps shortly.',
+        '',
+        'Regards,',
+        'Buyer Procurement Team'
+      ].join('\n');
+      const body = encodeURIComponent(lines);
+      // If we had supplier emails, we would map supplier->email; using generic placeholder here
+      const to = `${supplier.replace(/\s+/g,'.').toLowerCase()}@example.com`;
+      const href = `mailto:${to}?subject=${subject}&body=${body}`;
+      try{ window.location.href = href; }catch{/* ignore */}
+      showToast(`Email prepared to ${supplier} confirming award`,'success');
+    }
+  function inviteSuppliers(id){ if(currentRole==='Vendor'){ showToast('Vendors cannot invite suppliers','error'); return; } const x=events.find(e=>e.id===id); if(!x) return; const inp=prompt('Add suppliers (comma separated):','NewCo, SupplyHub'); if(inp===null) return; const arr=inp.split(',').map(s=>s.trim()).filter(Boolean); x.suppliers = Array.from(new Set([...(x.suppliers||[]), ...arr])); showToast(`${arr.length} supplier(s) invited`,'success'); render(); if(!$('modal').classList.contains('hidden')) openItem(id); }
+
+    function simulateBid(id){
+      if(!can('launch')){ showToast('Only buyer-side roles can simulate bids','error'); return; }
+      const x = events.find(e=>e.id===id); if(!x || x.type!=='Auction') return;
+      if(x.status!=='Live') return showToast('Auction is not live','warning');
+      const bidders = x.suppliers||[]; if(!bidders.length) return showToast('No suppliers','warning');
+      const leader = (x.bids||[]).reduce((best,b)=> (best==null || b.price<best.price)?b:best, null);
+      const lastPrice = leader?leader.price:x.startPrice;
+      const newPrice = Math.max((x.reservePrice||0), (lastPrice - (x.decrement||1)));
+      const who = bidders[Math.floor(Math.random()*bidders.length)];
+      const bid = { by: who, price: newPrice, at: new Date().toISOString() };
+      x.bids = x.bids||[]; x.bids.push(bid); x.current = newPrice;
+      showToast(`New bid ${Rs(newPrice*1000)} by ${who}`,'info');
+      render(); if(!$('modal').classList.contains('hidden')) openItem(id);
+    }
+
+    function addComment(id){ const x=events.find(e=>e.id===id); if(!x) return; const v = (document.getElementById('newComment')?.value||'').trim(); if(!v) return showToast('Enter a comment','warning'); x.comments=x.comments||[]; x.comments.push(v); showToast('Comment added','success'); if(!$('modal').classList.contains('hidden')) openItem(id); }
+
+  function openCreateRFP(){
+      if(currentRole==='Vendor'){ showToast('Vendors cannot create RFPs','error'); return; }
+      $('modalTitle').textContent = 'Create RFP';
+      $('modalBody').innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="card p-4">
+            <div class="text-sm text-gray-700">Basic Info</div>
+            <div class="mt-3 space-y-3 text-sm">
+              <label class="block">Title <span class="text-red-500">*</span>
+                <input id="cb_title" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., IT Laptops FY26"/>
+              </label>
+              <label class="block">Category <span class="text-red-500">*</span>
+                <input id="cb_cat" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., IT Hardware"/>
+              </label>
+              <label class="block">Buyer <span class="text-red-500">*</span>
+                <input id="cb_buyer" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., Amit Singh"/>
+              </label>
+              <label class="block">Start • End <span class="text-red-500">*</span>
+                <div class="grid grid-cols-2 gap-2 mt-1">
+                  <input id="cb_start" type="date" class="px-3 py-2 border rounded-lg"/>
+                  <input id="cb_end" type="date" class="px-3 py-2 border rounded-lg"/>
+                </div>
+              </label>
+            </div>
+          </div>
+          <div class="card p-4">
+            <div class="text-sm text-gray-700">Details</div>
+            <div class="mt-3 space-y-3 text-sm">
+              <label class="block">Baseline Budget (INR)
+                <input id="cb_base" type="number" min="0" step="1000" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., 12000000"/>
+              </label>
+              <label class="block">Suppliers (comma separated)
+                <input id="cb_sups" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., Alpha,Beta,Zenith"/>
+              </label>
+              <label class="block">Attachments
+                <input id="cb_files" type="file" multiple class="mt-1 w-full px-3 py-1.5 border rounded-lg bg-gray-50"/>
+                <div class="text-xs text-gray-500 mt-1">Attach scope/specifications (stored locally for demo).</div>
+              </label>
+            </div>
+          </div>
+        </div>`;
+  $('modalFooter').innerHTML = `<button class="px-4 py-2 bg-gray-50 border rounded-lg hover:bg-gray-100" onclick="closeModal()">Cancel</button><button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" onclick="createRFP()"><i class='fas fa-save mr-1'></i>Create</button>`;
+      openModal();
+    }
+
+    function createRFP(){
+      if(currentRole==='Vendor'){ showToast('Vendors cannot create RFPs','error'); return; }
+      const title=$('cb_title').value.trim(), cat=$('cb_cat').value.trim(), buyer=$('cb_buyer').value.trim(), s=$('cb_start').value.trim(), e=$('cb_end').value.trim();
+      const base=Number(($('cb_base').value||'').trim()); const sups=($('cb_sups').value||'').split(',').map(x=>x.trim()).filter(Boolean);
+      const files = Array.from($('cb_files')?.files||[]); const attachments = files.map(f=>({name:f.name,size:f.size}));
+      if(!title||!cat||!buyer||!s||!e) return showToast('Fill Title, Category, Buyer, Start and End','error');
+      const id = `RFP-${new Date().getFullYear()}-${String(Math.floor(Math.random()*900)+100).padStart(3,'0')}`;
+      events.unshift({ id, type:'RFP', title, category:cat, buyer, suppliers:sups, start:s, end:e, baseline: Math.round(base)||0, current: Math.round(base)||0, status:'Pending Approval', attachments, comments:[], criteria:[{name:'Price',weight:60},{name:'Delivery',weight:20},{name:'Warranty',weight:20}] });
+      showToast(`${id} created`,'success'); populateFilters(); render(); closeModal();
+    }
+
+    function openLaunchAuction(){
+      // Wrapper that requires authentication, then shows the launch modal
+      requireAuth('launch', () => showLaunchAuctionModal());
+    }
+    function showLaunchAuctionModal(){
+      if(!can('launch')){ showToast('Only Sourcing Manager/CPO can launch','error'); return; }
+      $('modalTitle').textContent = 'Launch Reverse Auction';
+      $('modalBody').innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="card p-4">
+            <div class="text-sm text-gray-700">Basic Info</div>
+            <div class="mt-3 space-y-3 text-sm">
+              <label class="block">Title <span class="text-red-500">*</span>
+                <input id="ac_title" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., Corrugated Boxes"/>
+              </label>
+              <label class="block">Category <span class="text-red-500">*</span>
+                <input id="ac_cat" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., Packaging"/>
+              </label>
+              <label class="block">Buyer <span class="text-red-500">*</span>
+                <input id="ac_buyer" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., Rahul Verma"/>
+              </label>
+              <label class="block">Start • End <span class="text-red-500">*</span>
+                <div class="grid grid-cols-2 gap-2 mt-1">
+                  <input id="ac_start" type="datetime-local" class="px-3 py-2 border rounded-lg"/>
+                  <input id="ac_end" type="datetime-local" class="px-3 py-2 border rounded-lg"/>
+                </div>
+              </label>
+            </div>
+          </div>
+          <div class="card p-4">
+            <div class="text-sm text-gray-700">Auction Settings</div>
+            <div class="mt-3 space-y-3 text-sm">
+              <label class="block">Baseline (per 1000 units)
+                <input id="ac_base" type="number" min="0" step="1" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., 50"/>
+              </label>
+              <label class="block">Start Price (per 1000 units) <span class="text-red-500">*</span>
+                <input id="ac_startp" type="number" min="1" step="0.1" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., 48"/>
+              </label>
+              <label class="block">Reserve Price (per 1000 units)
+                <input id="ac_reserve" type="number" min="0" step="0.1" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., 41"/>
+              </label>
+              <label class="block">Decrement Step <span class="text-red-500">*</span>
+                <input id="ac_step" type="number" min="0.1" step="0.1" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., 0.5"/>
+              </label>
+              <label class="block">Suppliers (comma separated)
+                <input id="ac_sups" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., Alpha, Beta, Zenith"/>
+              </label>
+              <label class="block">Attachments
+                <input id="ac_files" type="file" multiple class="mt-1 w-full px-3 py-1.5 border rounded-lg bg-gray-50"/>
+              </label>
+            </div>
+          </div>
+        </div>`;
+  $('modalFooter').innerHTML = `<button class="px-4 py-2 bg-gray-50 border rounded-lg hover:bg-gray-100" onclick="closeModal()">Cancel</button><button class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700" onclick="launchAuction()"><i class='fas fa-gavel mr-1'></i>Launch</button>`;
+      openModal();
+    }
+
+    function launchAuction(){
+      if(!can('launch') || !isAuth('launch')){ showToast('Not permitted','error'); return; }
+      const title=$('ac_title').value.trim(), cat=$('ac_cat').value.trim(), buyer=$('ac_buyer').value.trim(), s=$('ac_start').value.trim(), e=$('ac_end').value.trim();
+      const base=Number(($('ac_base').value||'').trim()); const startp=Number(($('ac_startp').value||'').trim()); const reserve=Number(($('ac_reserve').value||'').trim()); const step=Number(($('ac_step').value||'').trim());
+      const sups=($('ac_sups').value||'').split(',').map(x=>x.trim()).filter(Boolean);
+      const files = Array.from($('ac_files')?.files||[]); const attachments = files.map(f=>({name:f.name,size:f.size}));
+      if(!title||!cat||!buyer||!s||!e||!isFinite(startp)||startp<=0||!isFinite(step)||step<=0) return showToast('Fill required fields and valid prices','error');
+      const id = `AUC-${new Date().getFullYear()}-${String(Math.floor(Math.random()*900)+100).padStart(3,'0')}`;
+      events.unshift({ id, type:'Auction', title, category:cat, buyer, suppliers:sups, start:s, end:e, startPrice:startp, reservePrice: isFinite(reserve)?reserve:0, decrement:step, current:startp, baseline: isFinite(base)?base:startp, status:'Live', bids:[], attachments, comments:['Auction launched'] });
+      showToast(`${id} launched`,'success'); populateFilters(); render(); closeModal();
+      // Enter live room immediately
+      setTimeout(()=> openAuctionRoom(id), 200);
+    }
+
+    // ===== Live Auction Room =====
+    const liveRooms = {}; // id -> { timerId, running: bool }
+    function ensureFutureEnd(x){
+      const now = Date.now(); const end = new Date(x.end).getTime();
+      if((end - now) <= 0 && x.status==='Live'){ const newEnd = now + 10*60*1000; x.end = new Date(newEnd).toISOString(); }
+    }
+    function remainingSec(x){ return Math.max(0, Math.floor((new Date(x.end).getTime() - Date.now())/1000)); }
+    function openAuctionRoom(id){
+      const x = events.find(e=>e.id===id); if(!x) return;
+      ensureFutureEnd(x);
+  const isVendor = currentRole === 'Vendor';
+  const vendorSelf = window.vendorIdentity || '';
+      $('modalTitle').textContent = `Auction Room • ${x.id}`;
+      $('modalBody').innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div class="lg:col-span-2 space-y-4">
+            <div class="card p-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="text-sm text-gray-500">Reverse Auction</div>
+                  <div class="text-xl font-bold text-gray-900">${x.title}</div>
+                  <div class="text-sm text-gray-600 mt-1">Buyer: <span class="font-medium">${x.buyer}</span> • ${x.category}</div>
+                </div>
+                <div class="text-right">
+                  ${badgeStatus(x.status)}
+                </div>
+              </div>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-gray-700 mt-4">
+                <div><span class="text-gray-500">Start</span><div class="num">${Rs((x.startPrice||0)*1000)}</div></div>
+                <div><span class="text-gray-500">Current</span><div id="roomCurrent" class="num">${Rs((x.current||0)*1000)}</div></div>
+                <div><span class="text-gray-500">Reserve</span><div class="num">${Rs((x.reservePrice||0)*1000)}</div></div>
+                <div><span class="text-gray-500">Decrement</span><div class="num">${x.decrement}</div></div>
+              </div>
+            </div>
+
+      <div class="card p-4">
+              <div class="flex items-center justify-between">
+        <div class="font-semibold text-gray-900">Live Leaderboard</div>
+        <div class="text-xs text-gray-500">${isVendor?'Vendor view (anonymized)':'Auto-refreshing'}</div>
+              </div>
+              <div id="roomLeader"></div>
+            </div>
+
+            <div class="card p-4 overflow-x-auto">
+              <div class="font-semibold text-gray-900 mb-2">Bids Log</div>
+              <table class="w-full text-sm">
+                <thead class="bg-gray-50"><tr><th class="px-3 py-2 text-left">Time</th><th class="px-3 py-2 text-left">Supplier</th><th class="px-3 py-2 text-right">Bid</th></tr></thead>
+                <tbody id="roomBidsTbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900">Time Remaining</div>
+              <div id="roomTimer" class="text-3xl font-extrabold mt-1">--:--</div>
+              <div class="w-full bg-gray-100 h-2 rounded mt-2 overflow-hidden"><div id="roomProgress" class="h-2 bg-emerald-500" style="width:0%"></div></div>
+              <div class="text-xs text-gray-500 mt-2">Ends at: ${new Date(x.end).toLocaleString('en-IN')}</div>
+            </div>
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-2">Actions</div>
+              <div class="flex flex-wrap gap-2">
+                ${currentRole==='Vendor'?'' : `<button class="px-3 py-2 bg-purple-50 text-purple-700 rounded-lg border hover:bg-purple-100" onclick="simulateBid('${x.id}')"><i class="fas fa-bolt mr-1"></i>Simulate Bid</button>`}
+                ${currentRole==='Vendor'?'' : `<button id="btnPause" class="px-3 py-2 bg-gray-50 text-gray-700 rounded-lg border hover:bg-gray-100" onclick="togglePauseAuction('${x.id}')"><i class="fas fa-pause mr-1"></i>Pause</button>`}
+                ${currentRole==='Vendor'?'' : `<button class="px-3 py-2 bg-blue-50 text-blue-700 rounded-lg border hover:bg-blue-100" onclick="extendAuction('${x.id}', 30)"><i class="fas fa-clock mr-1"></i>+30s</button>`}
+                ${currentRole==='Vendor'?'' : `<button class="px-3 py-2 bg-emerald-50 text-emerald-700 rounded-lg border hover:bg-emerald-100" onclick="awardItem('${x.id}')"><i class="fas fa-award mr-1"></i>Award Now</button>`}
+              </div>
+              ${currentRole==='Vendor'?`<div class="text-xs text-amber-600 mt-2">Vendor view: management actions are hidden. You can only view your own bid and anonymized ranks.</div>`:(!can('launch')?`<div class="text-xs text-red-600 mt-2">Only Sourcing Manager/CPO can pause/extend/award.</div>`:'')}
+            </div>
+            ${isVendor?`<div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-2">Your Identity</div>
+              <div class="text-sm text-gray-600">Select your supplier name to view your own bid values.</div>
+              <select id="vendorIdentity" class="mt-2 w-full px-3 py-2 border rounded-lg">${(x.suppliers||[]).map(s=>`<option ${vendorSelf===s?'selected':''}>${s}</option>`).join('')}</select>
+              <div class="text-xs text-gray-500 mt-2">This does not allow placing bids; it only controls what you can view.</div>
+            </div>`:''}
+          </div>
+        </div>`;
+      $('modalFooter').innerHTML = `<button class="px-4 py-2 bg-gray-50 border rounded-lg hover:bg-gray-100" onclick="closeModal(); stopAuctionLoop('${x.id}')">Close</button>`;
+      openModal();
+      renderAuctionRoom(id);
+      startAuctionLoop(id);
+      if(isVendor){
+        const sel = $('vendorIdentity');
+        if(sel){ sel.addEventListener('change', (e)=>{ window.vendorIdentity = e.target.value; renderAuctionRoom(id); }); }
+      }
+    }
+  function renderAuctionRoom(id){
+      const x = events.find(e=>e.id===id); if(!x) return;
+      const isVendor = currentRole === 'Vendor';
+      const me = window.vendorIdentity || '';
+      // Timer
+      const rem = remainingSec(x);
+      const mm = Math.floor(rem/60); const ss = String(rem%60).padStart(2,'0');
+      const timer = $('roomTimer'); if(timer) timer.textContent = `${mm}:${ss}`;
+      const total = Math.max(1, Math.floor((new Date(x.end)-new Date(x.start))/1000));
+      const prog = 100 - Math.round((rem/total)*100);
+      const bar = $('roomProgress'); if(bar) bar.style.width = `${Math.min(100, Math.max(0, prog))}%`;
+      // Current
+  const cur = $('roomCurrent'); if(cur) cur.textContent = isVendor ? '-' : Rs((x.current||0)*1000);
+      // Leaderboard
+      const perSupplier = {};
+      (x.bids||[]).forEach(b=>{ perSupplier[b.by] = Math.min(perSupplier[b.by]??Infinity, b.price); });
+      const rows = (x.suppliers||[]).map(s=>{
+        const best = perSupplier[s]; const perf = getPerf(s); const price = isFinite(best)?best:Infinity;
+        const isMe = isVendor && me===s;
+        return { supplier: isVendor ? (isMe?s:'Anonymous') : s, price, text: (isVendor ? (isMe && isFinite(best)?Rs(best*1000):'-') : (isFinite(best)?Rs(best*1000):'-')), perf: perf.score, rankKey: isFinite(price)?price:Infinity, originalSupplier: s };
+      }).sort((a,b)=> a.rankKey - b.rankKey);
+      const leaderHtml = `
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50"><tr><th class="px-3 py-2 text-left">Supplier</th><th class="px-3 py-2 text-right">Best Bid</th><th class="px-3 py-2 text-right">Perf</th><th class="px-3 py-2 text-left">Rank</th></tr></thead>
+          <tbody>
+            ${rows.map((r,i)=>{
+              const showPerf = !isVendor || (isVendor && me===r.originalSupplier);
+              return `<tr class="border-t ${i===0?'bg-emerald-50/40':''}"><td class="px-3 py-2">${r.supplier}</td><td class="px-3 py-2 text-right num">${r.text}</td><td class="px-3 py-2 text-right">${showPerf?r.perf:'-'}</td><td class="px-3 py-2">${isFinite(r.rankKey)?i+1:'-'}</td></tr>`;
+            }).join('')}
+          </tbody>
+        </table>`;
+      const leadEl = $('roomLeader'); if(leadEl) leadEl.innerHTML = leaderHtml;
+      // Bids log
+      const bidRows = (x.bids||[]).slice().reverse().map(b=>{
+        if(!isVendor){
+          return `<tr class='border-t'><td class='px-3 py-1'>${new Date(b.at).toLocaleTimeString('en-IN')}</td><td class='px-3 py-1'>${b.by}</td><td class='px-3 py-1 text-right num'>${Rs(b.price*1000)}</td></tr>`;
+        }
+        const isMe = me && b.by===me;
+        return `<tr class='border-t'><td class='px-3 py-1'>${new Date(b.at).toLocaleTimeString('en-IN')}</td><td class='px-3 py-1'>${isMe?b.by:'Anonymous'}</td><td class='px-3 py-1 text-right num'>${isMe?Rs(b.price*1000):'-'}</td></tr>`;
+      }).join('');
+      const tb = $('roomBidsTbody'); if(tb) tb.innerHTML = bidRows || `<tr><td colspan="3" class="text-sm text-gray-500 px-3 py-2">No bids yet</td></tr>`;
+      // Button states
+      const paused = liveRooms[id]?.paused; const btn = $('btnPause'); if(btn){ btn.innerHTML = paused?'<i class="fas fa-play mr-1"></i>Resume':'<i class="fas fa-pause mr-1"></i>Pause'; }
+    }
+    function startAuctionLoop(id){
+      const x = events.find(e=>e.id===id); if(!x || x.type!=='Auction') return;
+      if(liveRooms[id]?.timerId) return; // already running
+      liveRooms[id] = { paused:false, timerId: null };
+      const tick = ()=>{
+        const e = events.find(ev=>ev.id===id); if(!e) return stopAuctionLoop(id);
+        const left = remainingSec(e);
+        if(left<=0){
+          stopAuctionLoop(id);
+          if(e.status==='Live'){ e.status='Closed'; showToast(`${e.id} ended`,'info'); pushNotification({ type:'Info', title:`Auction Ended • ${e.id}`, message:`${e.title} ended. Review and award.` }); }
+          renderAuctionRoom(id); render();
+          return;
+        }
+        // Maybe generate a bid if not paused
+        if(!liveRooms[id].paused && Math.random() < 0.6){
+          const bidders = e.suppliers||[]; if(bidders.length){
+            const leader = (e.bids||[]).reduce((best,b)=> (best==null || b.price<best.price)?b:best, null);
+            const lastPrice = leader?leader.price:e.startPrice;
+            const stepMult = 1 + Math.floor(Math.random()*2); // 1-2 steps
+            let newPrice = Math.max((e.reservePrice||0), (lastPrice - (e.decrement||1)*stepMult));
+            if(newPrice === lastPrice) newPrice = Math.max(e.reservePrice||0, lastPrice - (e.decrement||1));
+            const notLeader = bidders.filter(s=>!leader || s!==leader.by);
+            const who = (notLeader.length?notLeader:bidders)[Math.floor(Math.random()* (notLeader.length?notLeader.length:bidders.length))];
+            const bid = { by: who, price: newPrice, at: new Date().toISOString() };
+            e.bids = e.bids||[]; e.bids.push(bid); e.current = newPrice;
+            // Anti-sniping: extend if bid in last 15s
+            if(left <= 15){ e.end = new Date(Date.now() + 30*1000).toISOString(); showToast('Auto-extended by 30s due to last-minute bid','info'); }
+          }
+        }
+        renderAuctionRoom(id);
+      };
+      // Start interval
+      liveRooms[id].timerId = setInterval(tick, 1500);
+      tick();
+    }
+    function stopAuctionLoop(id){ const r = liveRooms[id]; if(r?.timerId){ clearInterval(r.timerId); } delete liveRooms[id]; }
+  function togglePauseAuction(id){ if(!can('launch')){ showToast('Not permitted','error'); return; } if(!liveRooms[id]) return; liveRooms[id].paused = !liveRooms[id].paused; showToast(liveRooms[id].paused?'Auction paused':'Auction resumed','info'); renderAuctionRoom(id); }
+    function extendAuction(id, sec){ if(!can('launch')){ showToast('Not permitted','error'); return; } const e = events.find(ev=>ev.id===id); if(!e) return; e.end = new Date(new Date(e.end).getTime() + (sec||30)*1000).toISOString(); showToast(`Extended by ${sec||30}s`,'success'); renderAuctionRoom(id); }
+
+    function downloadAttachment(id, name){ showToast(`Downloading ${name} from ${id}`,'info'); }
+
+    function applyFilters(){ render(); showToast('Filters applied','info'); }
+    function resetFilters(){ $('fSearch').value=''; $('fType').value=''; $('fStatus').value=''; $('fCat').value=''; $('fBuyer').value=''; $('fSupplier').value=''; $('fFrom').value=''; $('fTo').value=''; render(); showToast('Filters reset','info'); }
+    function setDatePreset(p){ const from=$('fFrom'), to=$('fTo'); const d=new Date(); if(p==='today'){ const t=d.toISOString().slice(0,10); from.value=t; to.value=t; } else if(p==='last7'){ const d7=new Date(d); d7.setDate(d.getDate()-7); from.value=d7.toISOString().slice(0,10); to.value=d.toISOString().slice(0,10); } else if(p==='month'){ const s=new Date(d.getFullYear(), d.getMonth(), 1); from.value=s.toISOString().slice(0,10); to.value=d.toISOString().slice(0,10); } else { from.value=''; to.value=''; } render(); showToast('Preset applied','info'); }
+    function exportCSV(){
+      const list = filteredRaw();
+      const headers = ['ID','Type','Title','Category','Buyer','#Suppliers','Start','End','Baseline/Start','Current/Best','Status'];
+      const rows = list.map(e=>[
+        e.id,
+        e.type,
+        e.title,
+        e.category,
+        e.buyer,
+        (e.suppliers||[]).length,
+        new Date(e.start).toLocaleString('en-IN'),
+        new Date(e.end).toLocaleString('en-IN'),
+        e.type==='Auction' ? `${e.baseline||0}|${e.startPrice||0}` : (e.baseline||0),
+        (e.type==='Auction' && currentRole==='Vendor') ? '-' : (e.type==='Auction' ? (e.current||0) : (e.current||0)),
+        e.status
+      ]);
+      const csv = [headers, ...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `sourcing_export_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.csv`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      showToast('Exported current view to CSV','success');
+    }
+    function refreshData(){ showToast('Data refreshed','info'); render(); }
+
+    function openModal(){ $('modal').classList.remove('hidden'); }
+    function closeModal(){ $('modal').classList.add('hidden'); }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.reveal').forEach((el,i) => setTimeout(()=>el.classList.add('show'), 60*i));
+      populateFilters();
+      render();
+  updateRoleUI();
+    });
+  </script>
+</body>
+</html>

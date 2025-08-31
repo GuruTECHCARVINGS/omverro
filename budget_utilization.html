@@ -1,0 +1,783 @@
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Utilization - Buyer Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .budget-card:hover { transform: translateY(-2px); transition: all 0.3s ease; }
+        .progress-bar { transition: width 0.5s ease-in-out; }
+        .chart-container { position: relative; height: 300px; }
+        .animate-pulse-slow { animation: pulse 3s infinite; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .alert-high { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); }
+        .alert-medium { background: linear-gradient(135deg, #ffa726 0%, #fb8c00 100%); }
+        .alert-low { background: linear-gradient(135deg, #66bb6a 0%, #43a047 100%); }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <button onclick="navigateToBuyerDashboard()" class="mr-4 p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200" title="Back to Buyer Dashboard">
+                        <i class="fas fa-arrow-left text-gray-600"></i>
+                    </button>
+                    <h1 class="text-xl font-semibold text-gray-900">Budget Utilization</h1>
+                    <span class="ml-3 px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full">Q3 • Marketing High</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-500">August 2025</span>
+                    <button onclick="exportBudgetReport()" class="p-2 hover:bg-gray-100 rounded-lg" title="Export Report">
+                        <i class="fas fa-download text-gray-600"></i>
+                    </button>
+                    <button onclick="openBudgetSettings()" class="p-2 hover:bg-gray-100 rounded-lg" title="Budget Settings">
+                        <i class="fas fa-cog text-gray-600"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Breadcrumb Navigation -->
+        <nav class="flex mb-6" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li class="inline-flex items-center">
+                    <button onclick="navigateToBuyerDashboard()" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors duration-200">
+                        <i class="fas fa-home w-4 h-4 mr-2"></i>
+                        Buyer Dashboard
+                    </button>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <i class="fas fa-chevron-right w-4 h-4 text-gray-400 mx-1"></i>
+                        <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">Budget Utilization</span>
+                    </div>
+                </li>
+            </ol>
+        </nav>
+
+        <!-- Key Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <!-- Overall Utilization -->
+            <div class="bg-white rounded-xl shadow-sm p-6 budget-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Overall Utilization</p>
+                        <p class="text-3xl font-bold text-orange-600">72%</p>
+                        <p class="text-sm text-gray-500">₹36M / ₹50M</p>
+                    </div>
+                    <div class="p-3 bg-orange-100 rounded-full">
+                        <i class="fas fa-chart-pie text-orange-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="flex items-center">
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-orange-500 h-2 rounded-full progress-bar" style="width: 72%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Available Budget -->
+            <div class="bg-white rounded-xl shadow-sm p-6 budget-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Available Budget</p>
+                        <p class="text-3xl font-bold text-green-600">₹14M</p>
+                        <p class="text-sm text-green-500">+2.5% vs Q2</p>
+                    </div>
+                    <div class="p-3 bg-green-100 rounded-full">
+                        <i class="fas fa-wallet text-green-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Budget Variance -->
+            <div class="bg-white rounded-xl shadow-sm p-6 budget-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Budget Variance</p>
+                        <p class="text-3xl font-bold text-blue-600">+8.2%</p>
+                        <p class="text-sm text-blue-500">Above planned</p>
+                    </div>
+                    <div class="p-3 bg-blue-100 rounded-full">
+                        <i class="fas fa-chart-line text-blue-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Projects -->
+            <div class="bg-white rounded-xl shadow-sm p-6 budget-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Active Projects</p>
+                        <p class="text-3xl font-bold text-purple-600">24</p>
+                        <p class="text-sm text-purple-500">8 need review</p>
+                    </div>
+                    <div class="p-3 bg-purple-100 rounded-full">
+                        <i class="fas fa-project-diagram text-purple-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Department Budget Breakdown -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Budget by Department -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">Budget by Department</h3>
+                    <select class="text-sm border border-gray-300 rounded-lg px-3 py-1">
+                        <option>Q3 2025</option>
+                        <option>Q2 2025</option>
+                        <option>Q1 2025</option>
+                    </select>
+                </div>
+                
+                <div class="space-y-4">
+                    <!-- Marketing -->
+                    <div class="dept-budget-item" data-dept="marketing">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-red-500 rounded-full mr-3"></div>
+                                <span class="font-medium text-gray-900">Marketing</span>
+                                <span class="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">High Usage</span>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold text-gray-900">₹15.2M / ₹18M</p>
+                                <p class="text-sm text-red-600">84.4%</p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-red-500 h-2 rounded-full progress-bar" style="width: 84.4%"></div>
+                        </div>
+                    </div>
+
+                    <!-- IT -->
+                    <div class="dept-budget-item" data-dept="it">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+                                <span class="font-medium text-gray-900">IT & Technology</span>
+                                <span class="ml-2 px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">Medium Usage</span>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold text-gray-900">₹8.5M / ₹12M</p>
+                                <p class="text-sm text-orange-600">70.8%</p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full progress-bar" style="width: 70.8%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Operations -->
+                    <div class="dept-budget-item" data-dept="operations">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                                <span class="font-medium text-gray-900">Operations</span>
+                                <span class="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Optimal</span>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold text-gray-900">₹6.8M / ₹10M</p>
+                                <p class="text-sm text-green-600">68%</p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-green-500 h-2 rounded-full progress-bar" style="width: 68%"></div>
+                        </div>
+                    </div>
+
+                    <!-- HR -->
+                    <div class="dept-budget-item" data-dept="hr">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-purple-500 rounded-full mr-3"></div>
+                                <span class="font-medium text-gray-900">Human Resources</span>
+                                <span class="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Low Usage</span>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold text-gray-900">₹3.2M / ₹6M</p>
+                                <p class="text-sm text-green-600">53.3%</p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-purple-500 h-2 rounded-full progress-bar" style="width: 53.3%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Finance -->
+                    <div class="dept-budget-item" data-dept="finance">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-yellow-500 rounded-full mr-3"></div>
+                                <span class="font-medium text-gray-900">Finance & Admin</span>
+                                <span class="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Under Budget</span>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold text-gray-900">₹2.3M / ₹4M</p>
+                                <p class="text-sm text-green-600">57.5%</p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-yellow-500 h-2 rounded-full progress-bar" style="width: 57.5%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monthly Trend -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">Monthly Utilization Trend</h3>
+                    <div class="flex space-x-2">
+                        <button class="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium">Spent</button>
+                        <button class="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-sm">Budget</button>
+                    </div>
+                </div>
+                
+                <!-- Chart Area -->
+                <div class="relative h-64 mb-6">
+                    <!-- Y-axis labels -->
+                    <div class="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-gray-500">
+                        <span>₹20M</span>
+                        <span>₹15M</span>
+                        <span>₹10M</span>
+                        <span>₹5M</span>
+                        <span>₹0</span>
+                    </div>
+                    
+                    <!-- Chart grid -->
+                    <div class="absolute inset-0 ml-8">
+                        <div class="h-full relative">
+                            <!-- Grid lines -->
+                            <div class="absolute top-0 w-full h-px bg-gray-200"></div>
+                            <div class="absolute top-1/4 w-full h-px bg-gray-200"></div>
+                            <div class="absolute top-2/4 w-full h-px bg-gray-200"></div>
+                            <div class="absolute top-3/4 w-full h-px bg-gray-200"></div>
+                            <div class="absolute bottom-0 w-full h-px bg-gray-300"></div>
+                            
+                            <!-- Chart bars -->
+                            <div class="flex items-end justify-around h-full pb-2">
+                                <!-- July -->
+                                <div class="flex flex-col items-center w-20">
+                                    <div class="relative w-12 bg-blue-500 rounded-t-lg transition-all duration-1000" 
+                                         style="height: 120px;" 
+                                         title="July: ₹10M (60% utilized)">
+                                        <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs font-medium text-gray-700">₹10M</div>
+                                    </div>
+                                    <div class="mt-2 text-center">
+                                        <div class="text-xs text-gray-500 font-medium">Jul</div>
+                                        <div class="text-xs text-green-600">60%</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- August -->
+                                <div class="flex flex-col items-center w-20">
+                                    <div class="relative w-12 bg-orange-500 rounded-t-lg transition-all duration-1000" 
+                                         style="height: 156px;" 
+                                         title="August: ₹13M (78% utilized)">
+                                        <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs font-medium text-gray-700">₹13M</div>
+                                    </div>
+                                    <div class="mt-2 text-center">
+                                        <div class="text-xs text-gray-500 font-medium">Aug</div>
+                                        <div class="text-xs text-orange-600">78%</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- September -->
+                                <div class="flex flex-col items-center w-20">
+                                    <div class="relative w-12 bg-red-500 rounded-t-lg transition-all duration-1000 animate-pulse-slow" 
+                                         style="height: 156px;" 
+                                         title="September: ₹13M (92% utilized)">
+                                        <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs font-medium text-gray-700">₹13M</div>
+                                    </div>
+                                    <div class="mt-2 text-center">
+                                        <div class="text-xs text-gray-500 font-medium">Sep</div>
+                                        <div class="text-xs text-red-600">92%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Summary Stats -->
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="text-center p-3 bg-blue-50 rounded-lg">
+                        <p class="text-sm text-gray-600 font-medium">July 2025</p>
+                        <p class="text-lg font-bold text-blue-600">₹10M</p>
+                        <p class="text-xs text-green-600">60% utilized • On track</p>
+                    </div>
+                    <div class="text-center p-3 bg-orange-50 rounded-lg">
+                        <p class="text-sm text-gray-600 font-medium">August 2025</p>
+                        <p class="text-lg font-bold text-orange-600">₹13M</p>
+                        <p class="text-xs text-orange-600">78% utilized • Increasing</p>
+                    </div>
+                    <div class="text-center p-3 bg-red-50 rounded-lg border border-red-200">
+                        <p class="text-sm text-gray-600 font-medium">September 2025</p>
+                        <p class="text-lg font-bold text-red-600">₹13M</p>
+                        <p class="text-xs text-red-600">92% utilized • Critical</p>
+                    </div>
+                </div>
+                
+                <!-- Trend Analysis -->
+                <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-chart-line text-yellow-600 mr-2"></i>
+                        <span class="text-sm font-medium text-yellow-800">Trend Analysis:</span>
+                    </div>
+                    <p class="text-sm text-yellow-700 mt-1">
+                        Budget utilization increased by 32% from July to September. Current trajectory suggests 
+                        potential overspend of ₹3-4M if trend continues into Q4.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Budget Alerts & Top Expenses -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Budget Alerts -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">Budget Alerts</h3>
+                    <span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">3 Critical</span>
+                </div>
+                
+                <div class="space-y-4">
+                    <!-- Critical Alert -->
+                    <div class="alert-high rounded-lg p-4 text-white">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i class="fas fa-exclamation-triangle mr-3"></i>
+                                <div>
+                                    <p class="font-semibold">Marketing Budget Critical</p>
+                                    <p class="text-sm opacity-90">84% utilized with 1 month remaining</p>
+                                </div>
+                            </div>
+                            <button onclick="viewAlert('marketing-critical')" class="px-3 py-1 bg-white bg-opacity-20 rounded text-sm hover:bg-opacity-30">
+                                View
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Warning Alert -->
+                    <div class="alert-medium rounded-lg p-4 text-white">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i class="fas fa-exclamation-circle mr-3"></i>
+                                <div>
+                                    <p class="font-semibold">IT Budget Warning</p>
+                                    <p class="text-sm opacity-90">Approaching 75% threshold</p>
+                                </div>
+                            </div>
+                            <button onclick="viewAlert('it-warning')" class="px-3 py-1 bg-white bg-opacity-20 rounded text-sm hover:bg-opacity-30">
+                                View
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Info Alert -->
+                    <div class="alert-low rounded-lg p-4 text-white">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i class="fas fa-info-circle mr-3"></i>
+                                <div>
+                                    <p class="font-semibold">HR Budget Optimal</p>
+                                    <p class="text-sm opacity-90">Healthy utilization at 53%</p>
+                                </div>
+                            </div>
+                            <button onclick="viewAlert('hr-optimal')" class="px-3 py-1 bg-white bg-opacity-20 rounded text-sm hover:bg-opacity-30">
+                                View
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Expenses -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">Top Expenses This Quarter</h3>
+                    <button onclick="viewAllExpenses()" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                        View All
+                    </button>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="expense-item p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer" onclick="viewExpense('digital-marketing')">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-bullhorn text-red-600"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900">Digital Marketing Campaign</p>
+                                    <p class="text-sm text-gray-600">Marketing • Aug 2025</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold text-gray-900">₹8.5M</p>
+                                <p class="text-sm text-red-600">High Impact</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="expense-item p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer" onclick="viewExpense('cloud-infrastructure')">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-cloud text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900">Cloud Infrastructure</p>
+                                    <p class="text-sm text-gray-600">IT • Q3 2025</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold text-gray-900">₹4.2M</p>
+                                <p class="text-sm text-orange-600">Recurring</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="expense-item p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer" onclick="viewExpense('office-equipment')">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-desktop text-green-600"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900">Office Equipment Upgrade</p>
+                                    <p class="text-sm text-gray-600">Operations • Jul 2025</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold text-gray-900">₹3.8M</p>
+                                <p class="text-sm text-green-600">One-time</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="expense-item p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer" onclick="viewExpense('training-development')">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-graduation-cap text-purple-600"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900">Training & Development</p>
+                                    <p class="text-sm text-gray-600">HR • Q3 2025</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold text-gray-900">₹2.1M</p>
+                                <p class="text-sm text-blue-600">Strategic</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Budget Allocation & Recommendations -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Budget Reallocation Suggestions -->
+            <div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-6">Reallocation Recommendations</h3>
+                
+                <div class="space-y-4">
+                    <div class="recommendation-item p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div class="flex items-start">
+                            <div class="p-2 bg-blue-100 rounded mr-3">
+                                <i class="fas fa-lightbulb text-blue-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-900">Reallocate from HR to Marketing</p>
+                                <p class="text-sm text-gray-600 mt-1">HR has ₹2.8M unused. Marketing needs additional ₹2M for Q4 campaigns.</p>
+                                <div class="flex items-center mt-3 space-x-3">
+                                    <span class="text-sm text-gray-600">Impact:</span>
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">+15% ROI</span>
+                                    <button onclick="applyRecommendation('hr-to-marketing')" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                        Apply
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="recommendation-item p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <div class="flex items-start">
+                            <div class="p-2 bg-yellow-100 rounded mr-3">
+                                <i class="fas fa-exclamation-triangle text-yellow-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-900">Reduce Marketing Spend Rate</p>
+                                <p class="text-sm text-gray-600 mt-1">Current spend rate will exceed budget by 12%. Consider optimizing campaign costs.</p>
+                                <div class="flex items-center mt-3 space-x-3">
+                                    <span class="text-sm text-gray-600">Savings:</span>
+                                    <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">₹2.2M</span>
+                                    <button onclick="viewDetails('marketing-optimization')" class="text-yellow-600 hover:text-yellow-800 text-sm font-medium">
+                                        Details
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="recommendation-item p-4 bg-green-50 border border-green-200 rounded-lg">
+                        <div class="flex items-start">
+                            <div class="p-2 bg-green-100 rounded mr-3">
+                                <i class="fas fa-chart-line text-green-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-900">Increase IT Infrastructure Budget</p>
+                                <p class="text-sm text-gray-600 mt-1">Growing cloud costs require 20% increase for Q4. Early allocation recommended.</p>
+                                <div class="flex items-center mt-3 space-x-3">
+                                    <span class="text-sm text-gray-600">Required:</span>
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">+₹2.4M</span>
+                                    <button onclick="requestBudgetIncrease('it-infrastructure')" class="text-green-600 hover:text-green-800 text-sm font-medium">
+                                        Request
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-6">Quick Actions</h3>
+                
+                <div class="space-y-3">
+                    <button onclick="generateReport()" class="w-full flex items-center justify-between p-3 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-700">
+                        <div class="flex items-center">
+                            <i class="fas fa-file-alt mr-3"></i>
+                            <span>Generate Report</span>
+                        </div>
+                        <i class="fas fa-chevron-right text-sm"></i>
+                    </button>
+
+                    <button onclick="requestBudgetAdjustment()" class="w-full flex items-center justify-between p-3 bg-orange-50 hover:bg-orange-100 rounded-lg text-orange-700">
+                        <div class="flex items-center">
+                            <i class="fas fa-edit mr-3"></i>
+                            <span>Request Adjustment</span>
+                        </div>
+                        <i class="fas fa-chevron-right text-sm"></i>
+                    </button>
+
+                    <button onclick="viewForecast()" class="w-full flex items-center justify-between p-3 bg-green-50 hover:bg-green-100 rounded-lg text-green-700">
+                        <div class="flex items-center">
+                            <i class="fas fa-chart-bar mr-3"></i>
+                            <span>View Forecast</span>
+                        </div>
+                        <i class="fas fa-chevron-right text-sm"></i>
+                    </button>
+
+                    <button onclick="setUpAlerts()" class="w-full flex items-center justify-between p-3 bg-purple-50 hover:bg-purple-100 rounded-lg text-purple-700">
+                        <div class="flex items-center">
+                            <i class="fas fa-bell mr-3"></i>
+                            <span>Setup Alerts</span>
+                        </div>
+                        <i class="fas fa-chevron-right text-sm"></i>
+                    </button>
+
+                    <button onclick="exportData()" class="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg text-gray-700">
+                        <div class="flex items-center">
+                            <i class="fas fa-download mr-3"></i>
+                            <span>Export Data</span>
+                        </div>
+                        <i class="fas fa-chevron-right text-sm"></i>
+                    </button>
+                </div>
+
+                <!-- Emergency Actions -->
+                <div class="mt-6 pt-4 border-t border-gray-200">
+                    <h4 class="text-sm font-medium text-gray-700 mb-3">Emergency Actions</h4>
+                    <button onclick="freezeBudget('marketing')" class="w-full flex items-center justify-center p-2 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg text-red-700 text-sm">
+                        <i class="fas fa-pause mr-2"></i>
+                        Freeze Marketing Budget
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Interactive Functions
+        function viewAlert(alertId) {
+            alert(`Viewing details for alert: ${alertId}`);
+            // Implementation for viewing alert details
+        }
+
+        function viewExpense(expenseId) {
+            alert(`Viewing expense details: ${expenseId}`);
+            // Implementation for viewing expense details
+        }
+
+        function viewAllExpenses() {
+            alert('Opening detailed expense report...');
+            // Implementation for comprehensive expense view
+        }
+
+        function applyRecommendation(recommendationId) {
+            if (confirm(`Apply recommendation: ${recommendationId}?`)) {
+                alert('Recommendation applied successfully!');
+                // Implementation for applying budget reallocation
+            }
+        }
+
+        function requestBudgetIncrease(category) {
+            alert(`Requesting budget increase for ${category}`);
+            // Implementation for budget increase request
+        }
+
+        function generateReport() {
+            alert('Generating budget utilization report...');
+            // Implementation for report generation
+        }
+
+        function requestBudgetAdjustment() {
+            alert('Opening budget adjustment request form...');
+            // Implementation for budget adjustment
+        }
+
+        function viewForecast() {
+            alert('Opening budget forecast analysis...');
+            // Implementation for forecast view
+        }
+
+        function setUpAlerts() {
+            alert('Opening alert configuration...');
+            // Implementation for alert setup
+        }
+
+        function exportData() {
+            alert('Exporting budget data...');
+            // Implementation for data export
+        }
+
+        function freezeBudget(department) {
+            if (confirm(`Freeze ${department} budget? This is an emergency action.`)) {
+                alert(`${department} budget has been frozen.`);
+                // Implementation for emergency budget freeze
+            }
+        }
+
+        // Navigation Functions
+        function navigateToBuyerDashboard() {
+            try {
+                // Show loading notification
+                showNotification('Returning to Buyer Dashboard...', 'info');
+                
+                // Navigate to buyer dashboard after brief delay
+                setTimeout(() => {
+                    window.location.href = 'BuyerDashboard.html';
+                }, 500);
+            } catch (error) {
+                console.error('Navigation error:', error);
+                // Fallback navigation methods
+                try {
+                    window.history.back();
+                } catch (fallbackError) {
+                    alert('Unable to navigate back. Please use browser back button.');
+                }
+            }
+        }
+
+        function exportBudgetReport() {
+            showNotification('Generating budget utilization report...', 'info');
+            setTimeout(() => {
+                showNotification('Report exported successfully!', 'success');
+            }, 2000);
+        }
+
+        function openBudgetSettings() {
+            showNotification('Opening budget management settings...', 'info');
+            // In real implementation, open settings modal or navigate to settings page
+        }
+
+        // Utility Functions
+        function showNotification(message, type = 'info') {
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                warning: 'bg-yellow-500',
+                info: 'bg-blue-500'
+            };
+            
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-opacity duration-300`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Initialize tooltips and animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                // Alt+B to navigate back to buyer dashboard
+                if (e.altKey && e.key === 'b') {
+                    e.preventDefault();
+                    navigateToBuyerDashboard();
+                }
+                // Ctrl+E to export report
+                if (e.ctrlKey && e.key === 'e') {
+                    e.preventDefault();
+                    exportBudgetReport();
+                }
+            });
+
+            // Animate progress bars on load
+            setTimeout(() => {
+                document.querySelectorAll('.progress-bar').forEach(bar => {
+                    bar.style.transition = 'width 1s ease-in-out';
+                });
+            }, 500);
+
+            // Add hover effects to cards
+            document.querySelectorAll('.budget-card').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.classList.add('shadow-lg');
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.classList.remove('shadow-lg');
+                });
+            });
+
+            // Initialize tooltips
+            const tooltipElements = document.querySelectorAll('[title]');
+            tooltipElements.forEach(element => {
+                element.addEventListener('mouseenter', function() {
+                    this.setAttribute('data-original-title', this.getAttribute('title'));
+                });
+            });
+        });
+
+        // Real-time budget updates (simulated)
+        function updateBudgetMetrics() {
+            // Simulate real-time updates
+            console.log('Budget metrics updated');
+        }
+
+        // Update every 30 seconds
+        setInterval(updateBudgetMetrics, 30000);
+    </script>
+</body>
+</html>

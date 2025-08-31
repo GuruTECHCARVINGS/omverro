@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending Approvals - TechCarvings Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .priority-urgent { background: #fecaca; color: #dc2626; border-left: 4px solid #dc2626; }
+        .priority-high { background: #fed7aa; color: #ea580c; border-left: 4px solid #ea580c; }
+        .priority-medium { background: #fef3c7; color: #d97706; border-left: 4px solid #d97706; }
+        .approval-card {
+            border-left: 4px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .approval-card:hover {
+            border-left: 4px solid #3b82f6;
+            background: #f8fafc;
+        }
+        .pulse-dot {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <button onclick="history.back()" class="mr-4 p-2 text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h1 class="text-2xl font-bold text-gray-900">Pending Approvals</h1>
+                    <span class="ml-3 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                        <span class="pulse-dot w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                        3 Need Action Today
+                    </span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center">
+                        <i class="fas fa-check-double mr-2"></i>
+                        Approve All
+                    </button>
+                    <button class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center">
+                        <i class="fas fa-download mr-2"></i>
+                        Export
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Summary Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-sm p-6 card-hover">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Urgent Actions</p>
+                        <p class="text-2xl font-bold text-red-600">3</p>
+                        <p class="text-sm text-red-500">Due today</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-6 card-hover">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Avg Response Time</p>
+                        <p class="text-2xl font-bold text-gray-900">2.4h</p>
+                        <p class="text-sm text-green-600">Within SLA</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-6 card-hover">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-file-invoice-dollar text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Total Value</p>
+                        <p class="text-2xl font-bold text-gray-900">₹98.5L</p>
+                        <p class="text-sm text-gray-500">Pending approval</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-6 card-hover">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-chart-line text-green-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Approval Rate</p>
+                        <p class="text-2xl font-bold text-gray-900">94%</p>
+                        <p class="text-sm text-green-600">This month</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+            <div class="flex flex-col sm:flex-row gap-4">
+                <div class="flex-1">
+                    <input type="text" id="searchInput" placeholder="Search by request ID, requester, or description..." 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <select id="typeFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">All Types</option>
+                    <option value="purchase-requisition">Purchase Requisition</option>
+                    <option value="vendor-registration">Vendor Registration</option>
+                    <option value="budget-approval">Budget Approval</option>
+                    <option value="contract-approval">Contract Approval</option>
+                </select>
+                <select id="priorityFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">All Priority</option>
+                    <option value="urgent">Urgent</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Pending Approvals List -->
+        <div class="space-y-4">
+            <!-- Approval Item 1 - Urgent -->
+            <div class="approval-card bg-white rounded-lg shadow-sm p-6 priority-urgent" data-type="purchase-requisition" data-priority="urgent">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-file-invoice text-red-600"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">#PR-2025-0847</h3>
+                                <p class="text-sm text-gray-600">Purchase Requisition</p>
+                            </div>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>
+                                URGENT
+                            </span>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+                            <div>
+                                <h4 class="font-medium text-gray-900 mb-2">Request Details</h4>
+                                <div class="space-y-1 text-sm text-gray-600">
+                                    <div><strong>Description:</strong> Emergency Server Equipment</div>
+                                    <div><strong>Requester:</strong> IT Department - John Smith</div>
+                                    <div><strong>Department:</strong> Information Technology</div>
+                                    <div><strong>Budget Code:</strong> IT-CAPEX-2025</div>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-900 mb-2">Financial Information</h4>
+                                <div class="space-y-1 text-sm text-gray-600">
+                                    <div><strong>Total Amount:</strong> ₹45,00,000</div>
+                                    <div><strong>Budget Available:</strong> ₹2,15,00,000</div>
+                                    <div><strong>Approval Level:</strong> Director Level</div>
+                                    <div><strong>Justification:</strong> Critical infrastructure failure</div>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-900 mb-2">Timeline & Priority</h4>
+                                <div class="space-y-1 text-sm text-gray-600">
+                                    <div><strong>Submitted:</strong> Aug 25, 2025 - 9:30 AM</div>
+                                    <div><strong>Deadline:</strong> Aug 25, 2025 - 5:00 PM</div>
+                                    <div><strong>Business Impact:</strong> Production system down</div>
+                                    <div class="text-red-600 font-medium">⏰ 7 hours remaining</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-red-50 p-3 rounded-lg mb-4">
+                            <div class="flex items-center text-red-700">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                <span class="font-medium">Business Justification:</span>
+                            </div>
+                            <p class="text-red-700 text-sm mt-1">
+                                Main production server crashed. Immediate replacement needed to avoid complete business shutdown. 
+                                Estimated revenue loss: ₹5L per day if not resolved today.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="ml-6 flex flex-col gap-2">
+                        <button onclick="viewDetails('PR-2025-0847')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm">
+                            <i class="fas fa-eye mr-1"></i>
+                            View Details
+                        </button>
+                        <button onclick="approveRequest('PR-2025-0847')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">
+                            <i class="fas fa-check mr-1"></i>
+                            Approve
+                        </button>
+                        <button onclick="rejectRequest('PR-2025-0847')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">
+                            <i class="fas fa-times mr-1"></i>
+                            Reject
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Approval Item 2 - High Priority -->
+            <div class="approval-card bg-white rounded-lg shadow-sm p-6 priority-high" data-type="vendor-registration" data-priority="high">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-user-plus text-orange-600"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">#VR-2025-0234</h3>
+                                <p class="text-sm text-gray-600">Vendor Registration</p>
+                            </div>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                HIGH PRIORITY
+                            </span>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+                            <div>
+                                <h4 class="font-medium text-gray-900 mb-2">Vendor Details</h4>
+                                <div class="space-y-1 text-sm text-gray-600">
+                                    <div><strong>Company:</strong> Advanced Manufacturing Solutions</div>
+                                    <div><strong>Category:</strong> Industrial Equipment Supplier</div>
+                                    <div><strong>Location:</strong> Chennai, Tamil Nadu</div>
+                                    <div><strong>GST Number:</strong> GST33AAACN1234F1ZV</div>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-900 mb-2">Financial Information</h4>
+                                <div class="space-y-1 text-sm text-gray-600">
+                                    <div><strong>Annual Revenue:</strong> ₹50 Crores</div>
+                                    <div><strong>Credit Rating:</strong> AA-</div>
+                                    <div><strong>Payment Terms:</strong> Net 30 days</div>
+                                    <div><strong>Security Deposit:</strong> ₹10,00,000</div>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-900 mb-2">Compliance Status</h4>
+                                <div class="space-y-1 text-sm text-gray-600">
+                                    <div><strong>ISO Certification:</strong> ✅ ISO 9001:2015</div>
+                                    <div><strong>Environmental:</strong> ✅ ISO 14001</div>
+                                    <div><strong>Safety Standards:</strong> ✅ OHSAS 18001</div>
+                                    <div><strong>Due Diligence:</strong> ⏳ In Progress</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-orange-50 p-3 rounded-lg mb-4">
+                            <div class="flex items-center text-orange-700">
+                                <i class="fas fa-clock mr-2"></i>
+                                <span class="font-medium">Timeline:</span>
+                            </div>
+                            <p class="text-orange-700 text-sm mt-1">
+                                Required for upcoming RFQ process. Approval needed by Aug 26, 2025 to meet project timeline.
+                                Background verification completed successfully.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="ml-6 flex flex-col gap-2">
+                        <button onclick="viewDetails('VR-2025-0234')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm">
+                            <i class="fas fa-eye mr-1"></i>
+                            View Details
+                        </button>
+                        <button onclick="approveRequest('VR-2025-0234')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">
+                            <i class="fas fa-check mr-1"></i>
+                            Approve
+                        </button>
+                        <button onclick="rejectRequest('VR-2025-0234')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">
+                            <i class="fas fa-times mr-1"></i>
+                            Reject
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Approval Item 3 - Medium Priority -->
+            <div class="approval-card bg-white rounded-lg shadow-sm p-6 priority-medium" data-type="budget-approval" data-priority="medium">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-wallet text-yellow-600"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">#BA-2025-0156</h3>
+                                <p class="text-sm text-gray-600">Budget Approval</p>
+                            </div>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                MEDIUM PRIORITY
+                            </span>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+                            <div>
+                                <h4 class="font-medium text-gray-900 mb-2">Budget Request</h4>
+                                <div class="space-y-1 text-sm text-gray-600">
+                                    <div><strong>Description:</strong> Q4 Marketing Campaign</div>
+                                    <div><strong>Department:</strong> Marketing & Sales</div>
+                                    <div><strong>Requested by:</strong> Sarah Johnson (Marketing Head)</div>
+                                    <div><strong>Campaign Type:</strong> Digital Marketing & Events</div>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-900 mb-2">Financial Breakdown</h4>
+                                <div class="space-y-1 text-sm text-gray-600">
+                                    <div><strong>Total Request:</strong> ₹38,50,000</div>
+                                    <div><strong>Digital Ads:</strong> ₹25,00,000</div>
+                                    <div><strong>Events:</strong> ₹8,50,000</div>
+                                    <div><strong>Content Creation:</strong> ₹5,00,000</div>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-900 mb-2">Budget Analysis</h4>
+                                <div class="space-y-1 text-sm text-gray-600">
+                                    <div><strong>Q4 Budget Available:</strong> ₹95,00,000</div>
+                                    <div><strong>Already Allocated:</strong> ₹42,00,000</div>
+                                    <div><strong>Remaining:</strong> ₹53,00,000</div>
+                                    <div><strong>ROI Projection:</strong> 3.2x</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-yellow-50 p-3 rounded-lg mb-4">
+                            <div class="flex items-center text-yellow-700">
+                                <i class="fas fa-chart-line mr-2"></i>
+                                <span class="font-medium">Expected Outcomes:</span>
+                            </div>
+                            <p class="text-yellow-700 text-sm mt-1">
+                                Target: 25% increase in lead generation, 15% boost in brand awareness. 
+                                Campaign to run from September 15 - December 31, 2025.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="ml-6 flex flex-col gap-2">
+                        <button onclick="viewDetails('BA-2025-0156')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm">
+                            <i class="fas fa-eye mr-1"></i>
+                            View Details
+                        </button>
+                        <button onclick="approveRequest('BA-2025-0156')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">
+                            <i class="fas fa-check mr-1"></i>
+                            Approve
+                        </button>
+                        <button onclick="rejectRequest('BA-2025-0156')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">
+                            <i class="fas fa-times mr-1"></i>
+                            Reject
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions Bar -->
+        <div class="bg-white rounded-lg shadow-sm p-4 mt-6">
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-gray-600">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    All approvals require action by end of business today to meet SLA requirements
+                </div>
+                <div class="flex gap-2">
+                    <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm">
+                        <i class="fas fa-history mr-1"></i>
+                        View History
+                    </button>
+                    <button class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 text-sm">
+                        <i class="fas fa-bell mr-1"></i>
+                        Set Reminders
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Approval Modal -->
+    <div id="approvalModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <div class="flex items-center justify-between pb-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900" id="modalTitle">Approve Request</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <div class="mt-4" id="modalContent">
+                    <!-- Content populated by JavaScript -->
+                </div>
+                
+                <div class="flex items-center justify-end pt-4 border-t border-gray-200 space-x-2">
+                    <button onclick="closeModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
+                        Cancel
+                    </button>
+                    <button id="confirmAction" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                        Confirm Approval
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Details Modal -->
+    <div id="detailsModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-10 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/4 shadow-lg rounded-md bg-white max-h-screen overflow-y-auto">
+            <div class="mt-3">
+                <div class="flex items-center justify-between pb-4 border-b border-gray-200">
+                    <h3 class="text-xl font-medium text-gray-900" id="detailsModalTitle">Request Details</h3>
+                    <button onclick="closeDetailsModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <div class="mt-4" id="detailsModalContent">
+                    <!-- Content populated by JavaScript -->
+                </div>
+                
+                <div class="flex items-center justify-end pt-4 border-t border-gray-200 space-x-2">
+                    <button onclick="closeDetailsModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
+                        Close
+                    </button>
+                    <button onclick="downloadDetails()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-download mr-2"></i>Download PDF
+                    </button>
+                    <button id="detailsApproveBtn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                        <i class="fas fa-check mr-2"></i>Approve
+                    </button>
+                    <button id="detailsRejectBtn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                        <i class="fas fa-times mr-2"></i>Reject
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.approval-card');
+            
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        // Filter by type
+        document.getElementById('typeFilter').addEventListener('change', function(e) {
+            const selectedType = e.target.value;
+            const cards = document.querySelectorAll('.approval-card');
+            
+            cards.forEach(card => {
+                if (!selectedType) {
+                    card.style.display = '';
+                } else {
+                    const type = card.getAttribute('data-type');
+                    card.style.display = type === selectedType ? '' : 'none';
+                }
+            });
+        });
+
+        // Filter by priority
+        document.getElementById('priorityFilter').addEventListener('change', function(e) {
+            const selectedPriority = e.target.value;
+            const cards = document.querySelectorAll('.approval-card');
+            
+            cards.forEach(card => {
+                if (!selectedPriority) {
+                    card.style.display = '';
+                } else {
+                    const priority = card.getAttribute('data-priority');
+                    card.style.display = priority === selectedPriority ? '' : 'none';
+                }
+            });
+        });
+
+        // Sample data for detailed view
+        const pendingApprovals = {
+            'REQ-2024-001': {
+                id: 'REQ-2024-001',
+                type: 'Purchase Request',
+                title: 'Emergency Server Equipment',
+                description: 'Urgent procurement for server hardware replacement due to system failure',
+                amount: '₹45,50,000',
+                requestedBy: 'IT Department',
+                requestedByEmail: 'it.dept@company.com',
+                requestedDate: '2024-08-24',
+                priority: 'urgent',
+                status: 'Pending Approval',
+                category: 'IT Equipment',
+                vendor: 'TechCorp Solutions',
+                vendorContact: '+91 98765 43210',
+                dueDate: '2024-08-26',
+                attachments: ['server_specs.pdf', 'quotation.pdf', 'technical_requirement.docx'],
+                details: {
+                    specifications: 'Dell PowerEdge R750 Server, Intel Xeon Gold 5318Y, 64GB RAM, 2TB SSD',
+                    justification: 'Critical server failure affecting production systems. Immediate replacement required to prevent business disruption.',
+                    approvalHistory: [
+                        { step: 'Department Head', status: 'Approved', date: '2024-08-24', approver: 'John Smith' },
+                        { step: 'IT Director', status: 'Approved', date: '2024-08-24', approver: 'Sarah Wilson' },
+                        { step: 'Finance Director', status: 'Pending', date: '', approver: 'Michael Brown' }
+                    ],
+                    budgetCode: 'IT-CAPEX-2024-Q3',
+                    expectedDelivery: '2024-08-30',
+                    riskAssessment: 'High - Production systems at risk without immediate replacement'
+                }
+            },
+            'REQ-2024-002': {
+                id: 'REQ-2024-002',
+                type: 'Vendor Registration',
+                title: 'New Vendor Onboarding - Global Supplies Co.',
+                description: 'Registration approval for new vendor specializing in office supplies',
+                amount: 'N/A',
+                requestedBy: 'Procurement Team',
+                requestedByEmail: 'procurement@company.com',
+                requestedDate: '2024-08-23',
+                priority: 'high',
+                status: 'Pending Approval',
+                category: 'Vendor Management',
+                vendor: 'Global Supplies Co.',
+                vendorContact: '+91 87654 32109',
+                dueDate: '2024-08-27',
+                attachments: ['vendor_profile.pdf', 'tax_documents.pdf', 'bank_details.pdf'],
+                details: {
+                    companyDetails: 'Global Supplies Co. - Established 2015, ISO 9001 certified, specializing in office supplies and stationery',
+                    businessLicense: 'GST: 27AABCU9603R1ZM, PAN: AABCU9603R',
+                    creditRating: 'A+ (CRISIL Rating)',
+                    approvalHistory: [
+                        { step: 'Procurement Officer', status: 'Approved', date: '2024-08-23', approver: 'Lisa Chen' },
+                        { step: 'Vendor Manager', status: 'Pending', date: '', approver: 'David Kumar' }
+                    ],
+                    serviceOffering: 'Office supplies, stationery, printing materials, furniture',
+                    paymentTerms: '30 days NET',
+                    riskAssessment: 'Low - Established vendor with good track record'
+                }
+            },
+            'REQ-2024-003': {
+                id: 'REQ-2024-003',
+                type: 'Budget Approval',
+                title: 'Q3 Marketing Campaign Budget',
+                description: 'Approval for additional marketing budget for digital campaign initiatives',
+                amount: '₹38,50,000',
+                requestedBy: 'Marketing Department',
+                requestedByEmail: 'marketing@company.com',
+                requestedDate: '2024-08-22',
+                priority: 'medium',
+                status: 'Pending Approval',
+                category: 'Marketing',
+                vendor: 'Multiple Vendors',
+                vendorContact: 'Various',
+                dueDate: '2024-08-28',
+                attachments: ['campaign_proposal.pdf', 'budget_breakdown.xlsx', 'roi_analysis.pdf'],
+                details: {
+                    campaignDetails: 'Digital marketing campaign for Q3 product launch including social media, PPC, and content marketing',
+                    budgetBreakdown: 'Social Media: ₹15L, PPC: ₹12L, Content Creation: ₹8.5L, Analytics: ₹3L',
+                    expectedROI: '250% - Expected revenue generation of ₹96.25L',
+                    approvalHistory: [
+                        { step: 'Marketing Manager', status: 'Approved', date: '2024-08-22', approver: 'Emma Rodriguez' },
+                        { step: 'CMO', status: 'Pending', date: '', approver: 'Robert Taylor' }
+                    ],
+                    targetAudience: 'B2B professionals, age 25-45, decision makers in technology sector',
+                    campaignDuration: 'Q3 2024 (July - September)',
+                    riskAssessment: 'Medium - Market conditions favorable, competitive landscape stable'
+                }
+            }
+        };
+
+        function getPriorityClasses(priority) {
+            switch(priority) {
+                case 'urgent': return 'bg-red-100 text-red-800';
+                case 'high': return 'bg-orange-100 text-orange-800';
+                case 'medium': return 'bg-yellow-100 text-yellow-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        function viewDetails(requestId) {
+            const request = pendingApprovals[requestId];
+            if (!request) return;
+            
+            document.getElementById('detailsModalTitle').textContent = request.title;
+            
+            const content = document.getElementById('detailsModalContent');
+            content.innerHTML = `
+                <div class="space-y-6">
+                    <!-- Request Overview -->
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-3">Request Overview</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Request ID</label>
+                                <p class="mt-1 text-sm text-gray-900">${request.id}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Type</label>
+                                <p class="mt-1 text-sm text-gray-900">${request.type}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Category</label>
+                                <p class="mt-1 text-sm text-gray-900">${request.category}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Priority</label>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityClasses(request.priority)}">${request.priority.toUpperCase()}</span>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Requested By</label>
+                                <p class="mt-1 text-sm text-gray-900">${request.requestedBy}</p>
+                                <p class="text-xs text-gray-500">${request.requestedByEmail}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Amount</label>
+                                <p class="mt-1 text-sm text-gray-900 font-semibold ${request.amount !== 'N/A' ? 'text-green-600' : ''}">${request.amount}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Request Date</label>
+                                <p class="mt-1 text-sm text-gray-900">${new Date(request.requestedDate).toLocaleDateString('en-IN')}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Due Date</label>
+                                <p class="mt-1 text-sm text-gray-900">${new Date(request.dueDate).toLocaleDateString('en-IN')}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">Description</h4>
+                        <p class="text-gray-700">${request.description}</p>
+                    </div>
+
+                    <!-- Detailed Information -->
+                    ${request.details ? `
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-3">Detailed Information</h4>
+                        ${request.details.specifications ? `
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium text-gray-700">Specifications</label>
+                            <p class="mt-1 text-sm text-gray-900">${request.details.specifications}</p>
+                        </div>
+                        ` : ''}
+                        ${request.details.companyDetails ? `
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium text-gray-700">Company Details</label>
+                            <p class="mt-1 text-sm text-gray-900">${request.details.companyDetails}</p>
+                        </div>
+                        ` : ''}
+                        ${request.details.campaignDetails ? `
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium text-gray-700">Campaign Details</label>
+                            <p class="mt-1 text-sm text-gray-900">${request.details.campaignDetails}</p>
+                        </div>
+                        ` : ''}
+                        ${request.details.budgetBreakdown ? `
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium text-gray-700">Budget Breakdown</label>
+                            <p class="mt-1 text-sm text-gray-900">${request.details.budgetBreakdown}</p>
+                        </div>
+                        ` : ''}
+                        ${request.details.justification ? `
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium text-gray-700">Justification</label>
+                            <p class="mt-1 text-sm text-gray-900">${request.details.justification}</p>
+                        </div>
+                        ` : ''}
+                        ${request.details.expectedROI ? `
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium text-gray-700">Expected ROI</label>
+                            <p class="mt-1 text-sm text-green-600 font-semibold">${request.details.expectedROI}</p>
+                        </div>
+                        ` : ''}
+                        ${request.details.riskAssessment ? `
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Risk Assessment</label>
+                            <p class="mt-1 text-sm text-gray-900">${request.details.riskAssessment}</p>
+                        </div>
+                        ` : ''}
+                    </div>
+                    ` : ''}
+
+                    <!-- Vendor Information -->
+                    ${request.vendor !== 'Multiple Vendors' && request.vendor !== 'N/A' ? `
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">Vendor Information</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Vendor Name</label>
+                                <p class="mt-1 text-sm text-gray-900">${request.vendor}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Contact</label>
+                                <p class="mt-1 text-sm text-gray-900">${request.vendorContact}</p>
+                            </div>
+                            ${request.details?.businessLicense ? `
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700">Business License</label>
+                                <p class="mt-1 text-sm text-gray-900">${request.details.businessLicense}</p>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <!-- Approval History -->
+                    ${request.details?.approvalHistory ? `
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">Approval Workflow</h4>
+                        <div class="space-y-2">
+                            ${request.details.approvalHistory.map(step => `
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                                <div>
+                                    <p class="font-medium text-gray-900">${step.step}</p>
+                                    <p class="text-sm text-gray-600">${step.approver}</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${step.status === 'Approved' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">${step.status}</span>
+                                    ${step.date ? `<p class="text-xs text-gray-500 mt-1">${new Date(step.date).toLocaleDateString('en-IN')}</p>` : ''}
+                                </div>
+                            </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <!-- Attachments -->
+                    ${request.attachments && request.attachments.length > 0 ? `
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">Attachments</h4>
+                        <div class="space-y-2">
+                            ${request.attachments.map(attachment => `
+                            <div class="flex items-center justify-between p-2 border border-gray-200 rounded">
+                                <div class="flex items-center">
+                                    <i class="fas fa-file-${attachment.includes('.pdf') ? 'pdf text-red-500' : attachment.includes('.xlsx') ? 'excel text-green-500' : 'alt text-blue-500'} mr-2"></i>
+                                    <span class="text-sm text-gray-900">${attachment}</span>
+                                </div>
+                                <button onclick="downloadAttachment('${attachment}')" class="text-blue-600 hover:text-blue-800 text-sm">
+                                    <i class="fas fa-download mr-1"></i>Download
+                                </button>
+                            </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            // Set up action buttons
+            document.getElementById('detailsApproveBtn').onclick = () => approveFromDetails(requestId);
+            document.getElementById('detailsRejectBtn').onclick = () => rejectFromDetails(requestId);
+            
+            document.getElementById('detailsModal').classList.remove('hidden');
+        }
+
+        function approveRequest(requestId) {
+            document.getElementById('modalTitle').textContent = `Approve Request - ${requestId}`;
+            document.getElementById('modalContent').innerHTML = `
+                <div class="space-y-4">
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <h4 class="font-medium text-green-800 mb-2">Approval Confirmation</h4>
+                        <p class="text-sm text-green-700">
+                            You are about to approve request ${requestId}. Please review the details carefully before confirming.
+                        </p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Approval Comments</label>
+                        <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" 
+                                  rows="3" placeholder="Add any comments or conditions..."></textarea>
+                    </div>
+                    <div>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" checked>
+                            <span class="ml-2 text-sm text-gray-700">I have reviewed all documents and approve this request</span>
+                        </label>
+                    </div>
+                </div>
+            `;
+            document.getElementById('confirmAction').textContent = 'Confirm Approval';
+            document.getElementById('confirmAction').className = 'px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700';
+            document.getElementById('approvalModal').classList.remove('hidden');
+        }
+
+        function rejectRequest(requestId) {
+            document.getElementById('modalTitle').textContent = `Reject Request - ${requestId}`;
+            document.getElementById('modalContent').innerHTML = `
+                <div class="space-y-4">
+                    <div class="bg-red-50 p-4 rounded-lg">
+                        <h4 class="font-medium text-red-800 mb-2">Rejection Confirmation</h4>
+                        <p class="text-sm text-red-700">
+                            You are about to reject request ${requestId}. Please provide a reason for rejection.
+                        </p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Reason for Rejection *</label>
+                        <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select a reason...</option>
+                            <option value="insufficient-budget">Insufficient Budget</option>
+                            <option value="incomplete-documentation">Incomplete Documentation</option>
+                            <option value="policy-violation">Policy Violation</option>
+                            <option value="duplicate-request">Duplicate Request</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Additional Comments *</label>
+                        <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" 
+                                  rows="3" placeholder="Please provide detailed explanation..." required></textarea>
+                    </div>
+                </div>
+            `;
+            document.getElementById('confirmAction').textContent = 'Confirm Rejection';
+            document.getElementById('confirmAction').className = 'px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700';
+            document.getElementById('approvalModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('approvalModal').classList.add('hidden');
+        }
+
+        function closeDetailsModal() {
+            document.getElementById('detailsModal').classList.add('hidden');
+        }
+
+        function approveFromDetails(requestId) {
+            closeDetailsModal();
+            approveRequest(requestId);
+        }
+
+        function rejectFromDetails(requestId) {
+            closeDetailsModal();
+            rejectRequest(requestId);
+        }
+
+        function downloadDetails() {
+            alert('Downloading request details as PDF...');
+        }
+
+        function downloadAttachment(filename) {
+            alert(`Downloading ${filename}...`);
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('approvalModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Confirm action handler
+        document.getElementById('confirmAction').addEventListener('click', function() {
+            const action = this.textContent.includes('Approval') ? 'approved' : 'rejected';
+            alert(`Request has been ${action} successfully!`);
+            closeModal();
+            // Here you would typically send the data to the server
+        });
+    </script>
+</body>
+</html>

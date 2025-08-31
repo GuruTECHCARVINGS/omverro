@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payments - Vendor Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .hover-lift {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hover-lift:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .status-paid {
+      background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+      color: #166534;
+      border: 1px solid #16a34a;
+    }
+
+    .status-partial {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      color: #92400e;
+      border: 1px solid #d97706;
+    }
+
+    .status-pending {
+      background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+      color: #1e40af;
+      border: 1px solid #3b82f6;
+    }
+
+    .status-overdue {
+      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+      color: #991b1b;
+      border: 1px solid #dc2626;
+    }
+
+    .status-overdue {
+      animation: pulse 2s infinite;
+    }
+
+    .tab-active {
+      background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+      color: white;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+
+    .payment-method-bank {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .payment-method-cheque {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+
+    .payment-method-online {
+      background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+    }
+
+    .payment-method-cash {
+      background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    }
+
+    .required-field::after {
+      content: '*';
+      color: #ef4444;
+      margin-left: 4px;
+    }
+
+    .form-error {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+
+    .form-success {
+      border-color: #10b981;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.3s ease-out;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed top-4 right-4 z-50 hidden">
+    <div class="glass-card px-6 py-4 rounded-xl shadow-lg fade-in">
+      <div class="flex items-center gap-3">
+        <i id="toast-icon" class="text-lg"></i>
+        <span id="toast-message" class="font-medium"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Navigation -->
+  <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+    <div class="px-6 py-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-4">
+          <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center">
+            <i class="fas fa-credit-card text-white"></i>
+          </div>
+          <div>
+            <h1 class="font-bold text-xl text-gray-800">Payments</h1>
+            <p class="text-sm text-gray-500">Track payments received against your invoices</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-6">
+          <div class="flex items-center gap-3">
+            <span class="text-sm text-gray-600">This Month:</span>
+            <span class="text-sm font-medium text-green-600">₹2,45,000</span>
+          </div>
+          <button onclick="exportPayments()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all flex items-center gap-2">
+            <i class="fas fa-download"></i>
+            Export
+          </button>
+          <button onclick="sendPaymentReminder()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-all flex items-center gap-2">
+            <i class="fas fa-bell"></i>
+            Reminders
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="p-6 custom-scrollbar overflow-y-auto">
+    <!-- Payment Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="glass-card p-6 rounded-2xl hover-lift">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+            <i class="fas fa-rupee-sign text-green-600 text-lg"></i>
+          </div>
+          <div class="text-green-600 text-sm font-medium flex items-center">
+            <i class="fas fa-arrow-up mr-1"></i>+15%
+          </div>
+        </div>
+        <p class="text-gray-600 text-sm font-medium">Total Received</p>
+        <p class="text-2xl font-bold text-gray-900">₹8,45,000</p>
+        <p class="text-xs text-gray-500 mt-1">This month</p>
+      </div>
+
+      <div class="glass-card p-6 rounded-2xl hover-lift">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+            <i class="fas fa-clock text-blue-600 text-lg"></i>
+          </div>
+          <div class="text-blue-600 text-sm font-medium flex items-center">
+            <i class="fas fa-arrow-down mr-1"></i>-5%
+          </div>
+        </div>
+        <p class="text-gray-600 text-sm font-medium">Pending Payments</p>
+        <p class="text-2xl font-bold text-gray-900">₹1,25,000</p>
+        <p class="text-xs text-gray-500 mt-1">12 invoices</p>
+      </div>
+
+      <div class="glass-card p-6 rounded-2xl hover-lift">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+            <i class="fas fa-exclamation-triangle text-red-600 text-lg"></i>
+          </div>
+          <div class="text-red-600 text-sm font-medium flex items-center">
+            <i class="fas fa-arrow-up mr-1"></i>+8%
+          </div>
+        </div>
+        <p class="text-gray-600 text-sm font-medium">Overdue Amount</p>
+        <p class="text-2xl font-bold text-gray-900">₹45,000</p>
+        <p class="text-xs text-gray-500 mt-1">5 invoices</p>
+      </div>
+
+      <div class="glass-card p-6 rounded-2xl hover-lift">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+            <i class="fas fa-calendar-check text-purple-600 text-lg"></i>
+          </div>
+          <div class="text-purple-600 text-sm font-medium flex items-center">
+            <i class="fas fa-arrow-up mr-1"></i>+3%
+          </div>
+        </div>
+        <p class="text-gray-600 text-sm font-medium">Avg Payment Time</p>
+        <p class="text-2xl font-bold text-gray-900">18 days</p>
+        <p class="text-xs text-gray-500 mt-1">From invoice date</p>
+      </div>
+    </div>
+
+    <!-- Payment Tabs -->
+    <div class="glass-card rounded-2xl mb-8">
+      <div class="border-b border-gray-200">
+        <div class="flex flex-wrap">
+          <button class="tab-btn tab-active px-6 py-4 text-sm font-medium border-b-2 border-indigo-500" onclick="switchTab('received')">
+            <i class="fas fa-check-circle mr-2"></i>Payments Received
+          </button>
+          <button class="tab-btn px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700" onclick="switchTab('outstanding')">
+            <i class="fas fa-clock mr-2"></i>Outstanding
+          </button>
+          <button class="tab-btn px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700" onclick="switchTab('analytics')">
+            <i class="fas fa-chart-line mr-2"></i>Analytics
+          </button>
+          <button class="tab-btn px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700" onclick="switchTab('methods')">
+            <i class="fas fa-credit-card mr-2"></i>Payment Methods
+          </button>
+          <button class="tab-btn px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700" onclick="switchTab('reconciliation')">
+            <i class="fas fa-balance-scale mr-2"></i>Reconciliation
+          </button>
+        </div>
+      </div>
+
+      <div class="p-6">
+        <!-- Payments Received Tab -->
+        <div id="received-tab" class="tab-content">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-semibold text-gray-800">Payment History</h2>
+            <div class="flex gap-3">
+              <select id="paymentFilter" onchange="filterPayments()" class="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <option value="all">All Payments</option>
+                <option value="paid">Fully Paid</option>
+                <option value="partial">Partial Payments</option>
+                <option value="pending">Pending</option>
+                <option value="overdue">Overdue</option>
+              </select>
+              <input
+                type="date"
+                id="dateFilter"
+                class="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                onchange="filterByDate()"
+              >
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <!-- Payment 1 -->
+            <div class="glass-card p-6 rounded-xl hover-lift">
+              <div class="flex justify-between items-start mb-4">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <h3 class="text-lg font-semibold text-gray-800">Payment #PAY-2025-001</h3>
+                    <span class="status-paid px-3 py-1 rounded-full text-xs font-medium">Fully Paid</span>
+                    <span class="payment-method-bank px-3 py-1 rounded-full text-xs font-medium text-white">Bank Transfer</span>
+                  </div>
+                  <p class="text-gray-600 mb-3">Payment received for IT equipment supply</p>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-500">
+                    <div>
+                      <i class="fas fa-file-invoice mr-1"></i>
+                      <span>Invoice: #INV-2025-0456</span>
+                    </div>
+                    <div>
+                      <i class="fas fa-building mr-1"></i>
+                      <span>Buyer: TechCorp India</span>
+                    </div>
+                    <div>
+                      <i class="fas fa-calendar mr-1"></i>
+                      <span>Received: Aug 28, 2025</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-2xl font-bold text-green-600 mb-2">₹85,000</div>
+                  <div class="text-sm text-gray-500 mb-1">Invoice Amount: ₹85,000</div>
+                  <div class="text-xs text-green-600">Payment on time</div>
+                  <button class="text-blue-600 hover:text-blue-800 mt-2 text-sm" onclick="viewPaymentDetails('PAY-2025-001', 'INV-2025-0456', 'TechCorp India', '85000', 'Bank Transfer', 'Aug 28, 2025', 'TXN987654321')">
+                    <i class="fas fa-eye mr-1"></i>View Details
+                  </button>
+                </div>
+              </div>
+              <div class="border-t border-gray-200 pt-4">
+                <div class="flex items-center justify-between text-sm">
+                  <div class="flex items-center gap-4">
+                    <span><i class="fas fa-university mr-1"></i>Bank: HDFC Bank</span>
+                    <span><i class="fas fa-hashtag mr-1"></i>Ref: TXN987654321</span>
+                  </div>
+                  <div class="text-gray-600">Processed in 2 hours</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment 2 -->
+            <div class="glass-card p-6 rounded-xl hover-lift">
+              <div class="flex justify-between items-start mb-4">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <h3 class="text-lg font-semibold text-gray-800">Payment #PAY-2025-002</h3>
+                    <span class="status-partial px-3 py-1 rounded-full text-xs font-medium">Partial Payment</span>
+                    <span class="payment-method-cheque px-3 py-1 rounded-full text-xs font-medium text-white">Cheque</span>
+                  </div>
+                  <p class="text-gray-600 mb-3">Partial payment for industrial equipment</p>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-500">
+                    <div>
+                      <i class="fas fa-file-invoice mr-1"></i>
+                      <span>Invoice: #INV-2025-0389</span>
+                    </div>
+                    <div>
+                      <i class="fas fa-building mr-1"></i>
+                      <span>Buyer: Global Industries</span>
+                    </div>
+                    <div>
+                      <i class="fas fa-calendar mr-1"></i>
+                      <span>Received: Aug 25, 2025</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-2xl font-bold text-yellow-600 mb-2">₹50,000</div>
+                  <div class="text-sm text-gray-500 mb-1">Invoice Amount: ₹1,25,000</div>
+                  <div class="text-xs text-yellow-600">₹75,000 remaining</div>
+                  <button class="text-blue-600 hover:text-blue-800 mt-2 text-sm" onclick="viewPaymentDetails('PAY-2025-002', 'INV-2025-0389', 'Global Industries', '50000', 'Cheque', 'Aug 25, 2025', 'CHQ987654')">
+                    <i class="fas fa-eye mr-1"></i>View Details
+                  </button>
+                </div>
+              </div>
+              <div class="border-t border-gray-200 pt-4">
+                <div class="flex items-center justify-between text-sm">
+                  <div class="flex items-center gap-4">
+                    <span><i class="fas fa-money-check mr-1"></i>Cheque: #CHQ001234</span>
+                    <span><i class="fas fa-hashtag mr-1"></i>Ref: CHQ987654</span>
+                  </div>
+                  <div class="text-gray-600">Cleared in 3 days</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment 3 -->
+            <div class="glass-card p-6 rounded-xl hover-lift status-overdue">
+              <div class="flex justify-between items-start mb-4">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <h3 class="text-lg font-semibold text-gray-800">Payment #PAY-2025-003</h3>
+                    <span class="status-overdue px-3 py-1 rounded-full text-xs font-medium">Overdue</span>
+                    <span class="payment-method-online px-3 py-1 rounded-full text-xs font-medium text-white">Online</span>
+                  </div>
+                  <p class="text-gray-600 mb-3">Payment overdue for office supplies</p>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-500">
+                    <div>
+                      <i class="fas fa-file-invoice mr-1"></i>
+                      <span>Invoice: #INV-2025-0523</span>
+                    </div>
+                    <div>
+                      <i class="fas fa-building mr-1"></i>
+                      <span>Buyer: Corporate Solutions</span>
+                    </div>
+                    <div>
+                      <i class="fas fa-calendar mr-1"></i>
+                      <span>Due: Aug 20, 2025</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-2xl font-bold text-red-600 mb-2">₹0</div>
+                  <div class="text-sm text-gray-500 mb-1">Invoice Amount: ₹45,000</div>
+                  <div class="text-xs text-red-600">11 days overdue</div>
+                  <button class="text-blue-600 hover:text-blue-800 mt-2 text-sm" onclick="viewPaymentDetails('PAY-2025-003', 'INV-2025-0523', 'Corporate Solutions', '0', 'Overdue', 'N/A', 'N/A')">
+                    <i class="fas fa-eye mr-1"></i>View Details
+                  </button>
+                </div>
+              </div>
+              <div class="border-t border-gray-200 pt-4">
+                <div class="flex items-center justify-between text-sm">
+                  <div class="flex items-center gap-4">
+                    <span><i class="fas fa-exclamation-triangle text-red-600 mr-1"></i>Payment overdue</span>
+                    <span><i class="fas fa-envelope mr-1"></i>Reminder sent</span>
+                  </div>
+                  <div class="text-red-600">Follow-up required</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Outstanding Payments Tab -->
+        <div id="outstanding-tab" class="tab-content hidden">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-semibold text-gray-800">Outstanding Payments</h2>
+            <div class="flex gap-3">
+              <button onclick="sendBulkReminders()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-all flex items-center gap-2">
+                <i class="fas fa-bell"></i>
+                Bulk Reminders
+              </button>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <!-- Outstanding Payment 1 -->
+            <div class="glass-card p-6 rounded-xl hover-lift">
+              <div class="flex justify-between items-start mb-4">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <h3 class="text-lg font-semibold text-gray-800">Invoice #INV-2025-0523</h3>
+                    <span class="status-overdue px-3 py-1 rounded-full text-xs font-medium">Overdue</span>
+                  </div>
+                  <p class="text-gray-600 mb-3">Office supplies and stationery</p>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-500">
+                    <div>
+                      <i class="fas fa-building mr-1"></i>
+                      <span>Buyer: Corporate Solutions</span>
+                    </div>
+                    <div>
+                      <i class="fas fa-calendar mr-1"></i>
+                      <span>Invoice Date: Aug 10, 2025</span>
+                    </div>
+                    <div>
+                      <i class="fas fa-clock mr-1"></i>
+                      <span>Due Date: Aug 20, 2025</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-2xl font-bold text-red-600 mb-2">₹45,000</div>
+                  <div class="text-sm text-gray-500 mb-1">Outstanding Amount</div>
+                  <div class="text-xs text-red-600">11 days overdue</div>
+                  <div class="flex gap-2 mt-2">
+                    <button class="text-blue-600 hover:text-blue-800 text-sm" onclick="viewPaymentDetails('PAY-2025-003', 'INV-2025-0523', 'Corporate Solutions', '0', 'Overdue', 'N/A', 'N/A')">
+                      <i class="fas fa-eye mr-1"></i>View
+                    </button>
+                    <button class="text-red-600 hover:text-red-800 text-sm" onclick="sendPaymentReminder()">
+                      <i class="fas fa-bell mr-1"></i>Remind
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="border-t border-gray-200 pt-4">
+                <div class="flex items-center justify-between text-sm">
+                  <div class="flex items-center gap-4">
+                    <span><i class="fas fa-phone mr-1"></i>Contact: +91-9876543210</span>
+                    <span><i class="fas fa-envelope mr-1"></i>accounts@corporatesolutions.com</span>
+                  </div>
+                  <div class="text-gray-600">Last reminder: Aug 25, 2025</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Outstanding Payment 2 -->
+            <div class="glass-card p-6 rounded-xl hover-lift">
+              <div class="flex justify-between items-start mb-4">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <h3 class="text-lg font-semibold text-gray-800">Invoice #INV-2025-0389</h3>
+                    <span class="status-partial px-3 py-1 rounded-full text-xs font-medium">Partial Payment</span>
+                  </div>
+                  <p class="text-gray-600 mb-3">Industrial equipment and machinery</p>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-500">
+                    <div>
+                      <i class="fas fa-building mr-1"></i>
+                      <span>Buyer: Global Industries</span>
+                    </div>
+                    <div>
+                      <i class="fas fa-calendar mr-1"></i>
+                      <span>Invoice Date: Aug 5, 2025</span>
+                    </div>
+                    <div>
+                      <i class="fas fa-clock mr-1"></i>
+                      <span>Due Date: Aug 15, 2025</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-2xl font-bold text-yellow-600 mb-2">₹75,000</div>
+                  <div class="text-sm text-gray-500 mb-1">Outstanding Amount</div>
+                  <div class="text-xs text-yellow-600">₹50,000 received</div>
+                  <div class="flex gap-2 mt-2">
+                    <button class="text-blue-600 hover:text-blue-800 text-sm" onclick="viewPaymentDetails('PAY-2025-004', 'INV-2025-0389', 'Global Industries', '75000', 'Partial', 'Aug 25, 2025', 'CHQ987654')">
+                      <i class="fas fa-eye mr-1"></i>View
+                    </button>
+                    <button class="text-green-600 hover:text-green-800 text-sm">
+                      <i class="fas fa-check mr-1"></i>Mark Paid
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="border-t border-gray-200 pt-4">
+                <div class="flex items-center justify-between text-sm">
+                  <div class="flex items-center gap-4">
+                    <span><i class="fas fa-phone mr-1"></i>Contact: +91-8765432109</span>
+                    <span><i class="fas fa-envelope mr-1"></i>finance@globalindustries.com</span>
+                  </div>
+                  <div class="text-gray-600">Next follow-up: Sep 5, 2025</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div id="analytics-tab" class="tab-content hidden">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div class="glass-card p-6 rounded-xl">
+              <h3 class="text-lg font-semibold text-gray-800 mb-6">Payment Trends</h3>
+              <div class="space-y-6">
+                <div>
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">Monthly Growth</span>
+                    <span class="text-sm font-semibold text-green-600">+15%</span>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: 75%"></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">On-Time Payment Rate</span>
+                    <span class="text-sm font-semibold text-blue-600">87%</span>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill bg-blue-500" style="width: 87%"></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">Average Collection Period</span>
+                    <span class="text-sm font-semibold text-purple-600">18 days</span>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill bg-purple-500" style="width: 60%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-card p-6 rounded-xl">
+              <h3 class="text-lg font-semibold text-gray-800 mb-6">Monthly Summary</h3>
+              <div class="space-y-4">
+                <div class="flex justify-between items-center py-3 border-b border-gray-200">
+                  <span class="text-sm font-medium text-gray-800">August 2025</span>
+                  <div class="text-right">
+                    <div class="text-sm font-semibold text-green-600">₹8,45,000</div>
+                    <div class="text-xs text-gray-600">+15% from July</div>
+                  </div>
+                </div>
+                <div class="flex justify-between items-center py-3 border-b border-gray-200">
+                  <span class="text-sm font-medium text-gray-800">July 2025</span>
+                  <div class="text-right">
+                    <div class="text-sm font-semibold text-blue-600">₹7,35,000</div>
+                    <div class="text-xs text-gray-600">+8% from June</div>
+                  </div>
+                </div>
+                <div class="flex justify-between items-center py-3 border-b border-gray-200">
+                  <span class="text-sm font-medium text-gray-800">June 2025</span>
+                  <div class="text-right">
+                    <div class="text-sm font-semibold text-purple-600">₹6,80,000</div>
+                    <div class="text-xs text-gray-600">+12% from May</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-card p-6 rounded-xl">
+            <h3 class="text-lg font-semibold text-gray-800 mb-6">Payment Method Distribution</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div class="text-center">
+                <div class="w-16 h-16 payment-method-bank rounded-full flex items-center justify-center mx-auto mb-3">
+                  <i class="fas fa-university text-white text-lg"></i>
+                </div>
+                <div class="text-sm font-medium text-gray-800">Bank Transfer</div>
+                <div class="text-lg font-bold text-gray-900">65%</div>
+                <div class="text-xs text-gray-600">₹5,49,250</div>
+              </div>
+
+              <div class="text-center">
+                <div class="w-16 h-16 payment-method-cheque rounded-full flex items-center justify-center mx-auto mb-3">
+                  <i class="fas fa-money-check text-white text-lg"></i>
+                </div>
+                <div class="text-sm font-medium text-gray-800">Cheque</div>
+                <div class="text-lg font-bold text-gray-900">20%</div>
+                <div class="text-xs text-gray-600">₹1,69,000</div>
+              </div>
+
+              <div class="text-center">
+                <div class="w-16 h-16 payment-method-online rounded-full flex items-center justify-center mx-auto mb-3">
+                  <i class="fas fa-credit-card text-white text-lg"></i>
+                </div>
+                <div class="text-sm font-medium text-gray-800">Online Payment</div>
+                <div class="text-lg font-bold text-gray-900">12%</div>
+                <div class="text-xs text-gray-600">₹1,01,400</div>
+              </div>
+
+              <div class="text-center">
+                <div class="w-16 h-16 payment-method-cash rounded-full flex items-center justify-center mx-auto mb-3">
+                  <i class="fas fa-money-bill-wave text-white text-lg"></i>
+                </div>
+                <div class="text-sm font-medium text-gray-800">Cash</div>
+                <div class="text-lg font-bold text-gray-900">3%</div>
+                <div class="text-xs text-gray-600">₹25,350</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Methods Tab -->
+        <div id="methods-tab" class="tab-content hidden">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="glass-card p-6 rounded-xl">
+              <h3 class="text-lg font-semibold text-gray-800 mb-6">Payment Methods</h3>
+              <div class="space-y-6">
+                <div class="flex items-start gap-4">
+                  <div class="w-12 h-12 payment-method-bank rounded-xl flex items-center justify-center">
+                    <i class="fas fa-university text-white text-lg"></i>
+                  </div>
+                  <div class="flex-1">
+                    <div class="text-sm font-medium text-gray-800 mb-1">Bank Transfer</div>
+                    <div class="text-xs text-gray-600 mb-2">Direct bank-to-bank transfers</div>
+                    <div class="text-xs text-green-600">Processing time: 1-2 hours</div>
+                  </div>
+                </div>
+
+                <div class="flex items-start gap-4">
+                  <div class="w-12 h-12 payment-method-cheque rounded-xl flex items-center justify-center">
+                    <i class="fas fa-money-check text-white text-lg"></i>
+                  </div>
+                  <div class="flex-1">
+                    <div class="text-sm font-medium text-gray-800 mb-1">Cheque Payment</div>
+                    <div class="text-xs text-gray-600 mb-2">Physical or electronic cheques</div>
+                    <div class="text-xs text-yellow-600">Processing time: 3-5 days</div>
+                  </div>
+                </div>
+
+                <div class="flex items-start gap-4">
+                  <div class="w-12 h-12 payment-method-online rounded-xl flex items-center justify-center">
+                    <i class="fas fa-credit-card text-white text-lg"></i>
+                  </div>
+                  <div class="flex-1">
+                    <div class="text-sm font-medium text-gray-800 mb-1">Online Payment</div>
+                    <div class="text-xs text-gray-600 mb-2">Credit card, UPI, net banking</div>
+                    <div class="text-xs text-green-600">Processing time: Instant</div>
+                  </div>
+                </div>
+
+                <div class="flex items-start gap-4">
+                  <div class="w-12 h-12 payment-method-cash rounded-xl flex items-center justify-center">
+                    <i class="fas fa-money-bill-wave text-white text-lg"></i>
+                  </div>
+                  <div class="flex-1">
+                    <div class="text-sm font-medium text-gray-800 mb-1">Cash Payment</div>
+                    <div class="text-xs text-gray-600 mb-2">Cash on delivery or pickup</div>
+                    <div class="text-xs text-blue-600">Processing time: Immediate</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-card p-6 rounded-xl">
+              <h3 class="text-lg font-semibold text-gray-800 mb-6">Bank Details</h3>
+              <div class="space-y-4">
+                <div class="p-4 bg-gray-50 rounded-lg">
+                  <div class="text-sm font-medium text-gray-800 mb-2">Primary Account</div>
+                  <div class="text-xs text-gray-600 space-y-1">
+                    <div>Bank: HDFC Bank</div>
+                    <div>Account Name: Tech Solutions Pvt Ltd</div>
+                    <div>Account Number: 123456789012</div>
+                    <div>IFSC: HDFC0001234</div>
+                    <div>Branch: Mumbai Main</div>
+                  </div>
+                </div>
+
+                <div class="p-4 bg-gray-50 rounded-lg">
+                  <div class="text-sm font-medium text-gray-800 mb-2">Secondary Account</div>
+                  <div class="text-xs text-gray-600 space-y-1">
+                    <div>Bank: ICICI Bank</div>
+                    <div>Account Name: Tech Solutions Pvt Ltd</div>
+                    <div>Account Number: 987654321098</div>
+                    <div>IFSC: ICIC0009876</div>
+                    <div>Branch: Delhi Branch</div>
+                  </div>
+                </div>
+
+                <div class="p-4 bg-blue-50 rounded-lg">
+                  <div class="flex items-start gap-3">
+                    <i class="fas fa-info-circle text-blue-600 mt-1"></i>
+                    <div>
+                      <div class="text-sm font-medium text-blue-800">Payment Instructions</div>
+                      <div class="text-xs text-blue-700 mt-1">
+                        Include invoice number in payment reference<br>
+                        Processing time may vary by payment method<br>
+                        Contact us for urgent payments
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reconciliation Tab -->
+        <div id="reconciliation-tab" class="tab-content hidden">
+          <div class="mb-6">
+            <div class="flex gap-4">
+              <input
+                type="text"
+                id="reconciliationSearch"
+                placeholder="Search by invoice or payment reference..."
+                class="flex-1 px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+              <button onclick="searchReconciliation()" class="gradient-bg text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all">
+                <i class="fas fa-search"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="glass-card p-6 rounded-xl">
+              <h3 class="text-lg font-semibold text-gray-800 mb-6">Invoice vs Payment Matching</h3>
+              <div class="space-y-4">
+                <div class="p-4 border border-green-200 bg-green-50 rounded-lg">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium text-green-800">Invoice #INV-2025-0456</span>
+                    <span class="status-paid px-2 py-1 rounded text-xs font-medium">Matched</span>
+                  </div>
+                  <div class="text-xs text-green-700">
+                    Invoice: ₹85,000 | Payment: ₹85,000 | Difference: ₹0
+                  </div>
+                </div>
+
+                <div class="p-4 border border-yellow-200 bg-yellow-50 rounded-lg">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium text-yellow-800">Invoice #INV-2025-0389</span>
+                    <span class="status-partial px-2 py-1 rounded text-xs font-medium">Partial</span>
+                  </div>
+                  <div class="text-xs text-yellow-700">
+                    Invoice: ₹1,25,000 | Payment: ₹50,000 | Difference: ₹75,000
+                  </div>
+                </div>
+
+                <div class="p-4 border border-red-200 bg-red-50 rounded-lg">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium text-red-800">Invoice #INV-2025-0523</span>
+                    <span class="status-pending px-2 py-1 rounded text-xs font-medium">Unmatched</span>
+                  </div>
+                  <div class="text-xs text-red-700">
+                    Invoice: ₹45,000 | Payment: ₹0 | Difference: ₹45,000
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-card p-6 rounded-xl">
+              <h3 class="text-lg font-semibold text-gray-800 mb-6">Reconciliation Summary</h3>
+              <div class="space-y-6">
+                <div>
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">Matched Payments</span>
+                    <span class="text-sm font-semibold text-green-600">85%</span>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: 85%"></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">Partial Payments</span>
+                    <span class="text-sm font-semibold text-yellow-600">10%</span>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill bg-yellow-500" style="width: 10%"></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">Unmatched Items</span>
+                    <span class="text-sm font-semibold text-red-600">5%</span>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill bg-red-500" style="width: 5%"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                <div class="flex items-start gap-3">
+                  <i class="fas fa-lightbulb text-blue-600 mt-1"></i>
+                  <div>
+                    <div class="text-sm font-medium text-blue-800">Reconciliation Tips</div>
+                    <div class="text-xs text-blue-700 mt-1">
+                      Always include invoice numbers in payment references<br>
+                      Match payments within 24 hours of receipt<br>
+                      Contact buyers for clarification on unmatched items
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Payment Details Modal -->
+  <div id="paymentDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="glass-card rounded-2xl shadow-2xl w-full max-w-4xl max-h-screen overflow-y-auto">
+        <div class="p-6 border-b border-gray-200">
+          <div class="flex justify-between items-center">
+            <h2 class="text-2xl font-bold text-gray-800">Payment Details</h2>
+            <button onclick="closePaymentDetailsModal()" class="p-2 rounded-xl hover:bg-gray-100 transition-colors">
+              <i class="fas fa-times text-gray-600"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="p-6">
+          <!-- Payment Header -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div class="glass-card p-6 rounded-xl">
+              <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <i class="fas fa-receipt text-blue-600 text-lg"></i>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-600">Payment ID</p>
+                  <p class="text-lg font-semibold text-gray-800" id="detailPaymentId">PAY-2025-001</p>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-600">Status:</span>
+                  <span class="text-sm font-medium" id="detailStatus">Fully Paid</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-600">Method:</span>
+                  <span class="text-sm font-medium" id="detailMethod">Bank Transfer</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-card p-6 rounded-xl">
+              <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                  <i class="fas fa-rupee-sign text-green-600 text-lg"></i>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-600">Amount</p>
+                  <p class="text-2xl font-bold text-gray-800" id="detailAmount">₹85,000</p>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-600">Invoice Amount:</span>
+                  <span class="text-sm font-medium" id="detailInvoiceAmount">₹85,000</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-600">Outstanding:</span>
+                  <span class="text-sm font-medium text-green-600" id="detailOutstanding">₹0</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-card p-6 rounded-xl">
+              <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                  <i class="fas fa-calendar text-purple-600 text-lg"></i>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-600">Date</p>
+                  <p class="text-lg font-semibold text-gray-800" id="detailDate">Aug 28, 2025</p>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-600">Processed:</span>
+                  <span class="text-sm font-medium" id="detailProcessedTime">2 hours</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-600">Reference:</span>
+                  <span class="text-sm font-medium" id="detailReference">TXN987654321</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Invoice & Buyer Details -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div class="glass-card p-6 rounded-xl">
+              <h3 class="text-lg font-semibold text-gray-800 mb-4">Invoice Details</h3>
+              <div class="space-y-4">
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-600">Invoice Number:</span>
+                  <span class="text-sm font-medium" id="detailInvoiceNumber">INV-2025-0456</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-600">Invoice Date:</span>
+                  <span class="text-sm font-medium" id="detailInvoiceDate">Aug 15, 2025</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-600">Due Date:</span>
+                  <span class="text-sm font-medium" id="detailDueDate">Aug 25, 2025</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-600">Description:</span>
+                  <span class="text-sm font-medium" id="detailDescription">IT equipment supply</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-card p-6 rounded-xl">
+              <h3 class="text-lg font-semibold text-gray-800 mb-4">Buyer Information</h3>
+              <div class="space-y-4">
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-600">Buyer Name:</span>
+                  <span class="text-sm font-medium" id="detailBuyerName">TechCorp India</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-600">Contact Person:</span>
+                  <span class="text-sm font-medium" id="detailContactPerson">Rajesh Kumar</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-600">Phone:</span>
+                  <span class="text-sm font-medium" id="detailPhone">+91-9876543210</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-600">Email:</span>
+                  <span class="text-sm font-medium" id="detailEmail">accounts@techcorp.com</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Timeline -->
+          <div class="glass-card p-6 rounded-xl mb-8">
+            <h3 class="text-lg font-semibold text-gray-800 mb-6">Payment Timeline</h3>
+            <div class="space-y-4">
+              <div class="flex items-start gap-4">
+                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                  <i class="fas fa-file-invoice text-blue-600"></i>
+                </div>
+                <div class="flex-1">
+                  <div class="flex justify-between items-center mb-1">
+                    <span class="text-sm font-medium text-gray-800">Invoice Generated</span>
+                    <span class="text-xs text-gray-600" id="timelineInvoiceDate">Aug 15, 2025</span>
+                  </div>
+                  <p class="text-xs text-gray-600">Invoice #INV-2025-0456 created for ₹85,000</p>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-4">
+                <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                  <i class="fas fa-clock text-yellow-600"></i>
+                </div>
+                <div class="flex-1">
+                  <div class="flex justify-between items-center mb-1">
+                    <span class="text-sm font-medium text-gray-800">Payment Due</span>
+                    <span class="text-xs text-gray-600" id="timelineDueDate">Aug 25, 2025</span>
+                  </div>
+                  <p class="text-xs text-gray-600">Payment due date reached</p>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-4">
+                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                  <i class="fas fa-check-circle text-green-600"></i>
+                </div>
+                <div class="flex-1">
+                  <div class="flex justify-between items-center mb-1">
+                    <span class="text-sm font-medium text-gray-800">Payment Received</span>
+                    <span class="text-xs text-gray-600" id="timelinePaymentDate">Aug 28, 2025</span>
+                  </div>
+                  <p class="text-xs text-gray-600" id="timelinePaymentDetails">Bank transfer received - Reference: TXN987654321</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex justify-end gap-4 pt-6 border-t border-gray-200">
+            <button onclick="downloadReceipt()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors">
+              <i class="fas fa-download mr-2"></i>Download Receipt
+            </button>
+            <button onclick="printDetails()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors">
+              <i class="fas fa-print mr-2"></i>Print Details
+            </button>
+            <button onclick="closePaymentDetailsModal()" class="gradient-bg text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all">
+              <i class="fas fa-times mr-2"></i>Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="reminderModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="glass-card rounded-2xl shadow-2xl w-full max-w-lg max-h-screen overflow-y-auto">
+        <div class="p-6 border-b border-gray-200">
+          <div class="flex justify-between items-center">
+            <h2 class="text-2xl font-bold text-gray-800">Send Payment Reminder</h2>
+            <button onclick="closeReminderModal()" class="p-2 rounded-xl hover:bg-gray-100 transition-colors">
+              <i class="fas fa-times text-gray-600"></i>
+            </button>
+          </div>
+        </div>
+
+        <form class="p-6 space-y-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Invoice Number</label>
+            <input
+              type="text"
+              id="reminderInvoice"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="INV-2025-XXXX"
+              readonly
+            >
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Buyer</label>
+            <input
+              type="text"
+              id="reminderBuyer"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="Buyer name"
+              readonly
+            >
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Outstanding Amount</label>
+            <input
+              type="text"
+              id="reminderAmount"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="₹0.00"
+              readonly
+            >
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Reminder Type</label>
+            <select id="reminderType" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+              <option value="gentle">Gentle Reminder</option>
+              <option value="firm">Firm Reminder</option>
+              <option value="urgent">Urgent Notice</option>
+              <option value="final">Final Notice</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Custom Message (Optional)</label>
+            <textarea
+              id="reminderMessage"
+              rows="4"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="Add any additional message..."
+            ></textarea>
+          </div>
+
+          <div class="flex justify-end gap-4 pt-6 border-t border-gray-200">
+            <button type="button" onclick="closeReminderModal()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors">
+              Cancel
+            </button>
+            <button type="submit" class="gradient-bg text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all">
+              <i class="fas fa-paper-plane mr-2"></i>Send Reminder
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global variables
+    let currentTab = 'received';
+
+    // Tab switching functionality
+    function switchTab(tabName) {
+      // Hide all tabs
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.add('hidden');
+      });
+
+      // Remove active class from all tab buttons
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('tab-active');
+        btn.classList.add('text-gray-500');
+        btn.classList.remove('border-b-2', 'border-indigo-500');
+      });
+
+      // Show selected tab
+      document.getElementById(tabName + '-tab').classList.remove('hidden');
+
+      // Add active class to selected tab button
+      event.target.classList.add('tab-active');
+      event.target.classList.remove('text-gray-500');
+      event.target.classList.add('border-b-2', 'border-indigo-500');
+
+      currentTab = tabName;
+    }
+
+    // Payment functions
+    function filterPayments() {
+      const filter = document.getElementById('paymentFilter').value;
+      showToast(`Filtering payments by: ${filter}`, 'info', 'fas fa-filter text-blue-500');
+    }
+
+    function filterByDate() {
+      const date = document.getElementById('dateFilter').value;
+      if (date) {
+        showToast(`Filtering payments from: ${date}`, 'info', 'fas fa-calendar text-blue-500');
+      }
+    }
+
+    function exportPayments() {
+      showToast('Exporting payment data...', 'info', 'fas fa-download text-blue-500');
+      setTimeout(() => {
+        showToast('Payment data exported successfully!', 'success', 'fas fa-check-circle text-green-500');
+      }, 2000);
+    }
+
+    function sendPaymentReminder() {
+      // Open reminder modal with sample data
+      document.getElementById('reminderInvoice').value = 'INV-2025-0523';
+      document.getElementById('reminderBuyer').value = 'Corporate Solutions';
+      document.getElementById('reminderAmount').value = '₹45,000';
+      document.getElementById('reminderModal').classList.remove('hidden');
+      showToast('Opening payment reminder...', 'info', 'fas fa-bell text-red-500');
+    }
+
+    function closeReminderModal() {
+      document.getElementById('reminderModal').classList.add('hidden');
+    }
+
+    function sendBulkReminders() {
+      showToast('Sending bulk payment reminders...', 'info', 'fas fa-bell text-red-500');
+      setTimeout(() => {
+        showToast('Bulk reminders sent successfully!', 'success', 'fas fa-check-circle text-green-500');
+      }, 2000);
+    }
+
+    function viewPaymentDetails(paymentId, invoiceNumber, buyerName, amount, method, date, reference) {
+      // Populate modal with payment details
+      document.getElementById('detailPaymentId').textContent = paymentId;
+      document.getElementById('detailInvoiceNumber').textContent = invoiceNumber;
+      document.getElementById('detailBuyerName').textContent = buyerName;
+      document.getElementById('detailAmount').textContent = '₹' + parseInt(amount).toLocaleString('en-IN');
+      document.getElementById('detailMethod').textContent = method;
+      document.getElementById('detailDate').textContent = date;
+      document.getElementById('detailReference').textContent = reference;
+
+      // Set status based on payment details
+      let status = 'Fully Paid';
+      let statusClass = 'text-green-600';
+      if (method === 'Overdue') {
+        status = 'Overdue';
+        statusClass = 'text-red-600';
+      } else if (method === 'Partial') {
+        status = 'Partial Payment';
+        statusClass = 'text-yellow-600';
+      }
+      document.getElementById('detailStatus').textContent = status;
+      document.getElementById('detailStatus').className = `text-sm font-medium ${statusClass}`;
+
+      // Set invoice amount and outstanding
+      const invoiceAmount = paymentId === 'PAY-2025-002' ? 125000 : (paymentId === 'PAY-2025-003' ? 45000 : parseInt(amount));
+      document.getElementById('detailInvoiceAmount').textContent = '₹' + invoiceAmount.toLocaleString('en-IN');
+
+      const outstanding = Math.max(0, invoiceAmount - parseInt(amount));
+      document.getElementById('detailOutstanding').textContent = '₹' + outstanding.toLocaleString('en-IN');
+      document.getElementById('detailOutstanding').className = `text-sm font-medium ${outstanding > 0 ? 'text-red-600' : 'text-green-600'}`;
+
+      // Set processing time
+      let processingTime = '2 hours';
+      if (method === 'Cheque') processingTime = '3 days';
+      else if (method === 'Online') processingTime = 'Instant';
+      else if (method === 'Overdue') processingTime = 'N/A';
+      document.getElementById('detailProcessedTime').textContent = processingTime;
+
+      // Set additional details based on payment
+      if (paymentId === 'PAY-2025-001') {
+        document.getElementById('detailInvoiceDate').textContent = 'Aug 15, 2025';
+        document.getElementById('detailDueDate').textContent = 'Aug 25, 2025';
+        document.getElementById('detailDescription').textContent = 'IT equipment supply';
+        document.getElementById('detailContactPerson').textContent = 'Rajesh Kumar';
+        document.getElementById('detailPhone').textContent = '+91-9876543210';
+        document.getElementById('detailEmail').textContent = 'accounts@techcorp.com';
+        document.getElementById('timelineInvoiceDate').textContent = 'Aug 15, 2025';
+        document.getElementById('timelineDueDate').textContent = 'Aug 25, 2025';
+        document.getElementById('timelinePaymentDate').textContent = 'Aug 28, 2025';
+        document.getElementById('timelinePaymentDetails').textContent = 'Bank transfer received - Reference: TXN987654321';
+      } else if (paymentId === 'PAY-2025-002') {
+        document.getElementById('detailInvoiceDate').textContent = 'Aug 5, 2025';
+        document.getElementById('detailDueDate').textContent = 'Aug 15, 2025';
+        document.getElementById('detailDescription').textContent = 'Industrial equipment';
+        document.getElementById('detailContactPerson').textContent = 'Priya Sharma';
+        document.getElementById('detailPhone').textContent = '+91-8765432109';
+        document.getElementById('detailEmail').textContent = 'finance@globalindustries.com';
+        document.getElementById('timelineInvoiceDate').textContent = 'Aug 5, 2025';
+        document.getElementById('timelineDueDate').textContent = 'Aug 15, 2025';
+        document.getElementById('timelinePaymentDate').textContent = 'Aug 25, 2025';
+        document.getElementById('timelinePaymentDetails').textContent = 'Cheque payment received - Reference: CHQ987654';
+      } else if (paymentId === 'PAY-2025-003') {
+        document.getElementById('detailInvoiceDate').textContent = 'Aug 10, 2025';
+        document.getElementById('detailDueDate').textContent = 'Aug 20, 2025';
+        document.getElementById('detailDescription').textContent = 'Office supplies';
+        document.getElementById('detailContactPerson').textContent = 'Amit Singh';
+        document.getElementById('detailPhone').textContent = '+91-9876543210';
+        document.getElementById('detailEmail').textContent = 'accounts@corporatesolutions.com';
+        document.getElementById('timelineInvoiceDate').textContent = 'Aug 10, 2025';
+        document.getElementById('timelineDueDate').textContent = 'Aug 20, 2025';
+        document.getElementById('timelinePaymentDate').textContent = 'N/A';
+        document.getElementById('timelinePaymentDetails').textContent = 'Payment overdue - No payment received';
+      }
+
+      // Show modal
+      document.getElementById('paymentDetailsModal').classList.remove('hidden');
+      showToast('Loading payment details...', 'info', 'fas fa-eye text-blue-500');
+    }
+
+    function closePaymentDetailsModal() {
+      document.getElementById('paymentDetailsModal').classList.add('hidden');
+    }
+
+    function downloadReceipt() {
+      showToast('Downloading receipt...', 'info', 'fas fa-download text-blue-500');
+      setTimeout(() => {
+        showToast('Receipt downloaded successfully!', 'success', 'fas fa-check-circle text-green-500');
+      }, 2000);
+    }
+
+    function printDetails() {
+      showToast('Opening print dialog...', 'info', 'fas fa-print text-blue-500');
+      setTimeout(() => {
+        window.print();
+      }, 1000);
+    }
+
+    // Toast notification system
+    function showToast(message, type = 'info', iconClass = 'fas fa-info-circle text-blue-500') {
+      const toast = document.getElementById('toast');
+      const icon = document.getElementById('toast-icon');
+      const messageEl = document.getElementById('toast-message');
+
+      icon.className = iconClass;
+      messageEl.textContent = message;
+
+      toast.classList.remove('hidden');
+      toast.classList.add('fade-in');
+
+      setTimeout(() => {
+        toast.classList.add('hidden');
+        toast.classList.remove('fade-in');
+      }, 4000);
+    }
+
+    // Form submission for reminder
+    document.getElementById('reminderModal').querySelector('form').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const reminderType = document.getElementById('reminderType').value;
+      const message = document.getElementById('reminderMessage').value;
+
+      showToast(`${reminderType} reminder sent successfully!`, 'success', 'fas fa-check-circle text-green-500');
+      setTimeout(() => {
+        closeReminderModal();
+      }, 2000);
+    });
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      // Set default date filter to current month
+      const today = new Date();
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+      document.getElementById('dateFilter').value = firstDay.toISOString().split('T')[0];
+    });
+  </script>
+</body>
+</html>

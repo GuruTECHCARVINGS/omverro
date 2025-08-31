@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Buyer Portal – Petty Cash & Cash Advance</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: linear-gradient(120deg,#f3f6fd 0%,#e9eafc 100%); color:#111827 }
+    .card { box-shadow: 0 8px 28px rgba(59,130,246,.08); border:1px solid #E5E7EB; border-radius:1rem; background:#fff; overflow: hidden }
+    .badge { font-size:.7rem; font-weight:700; padding:.2rem .5rem; border-radius:999px; border:1px solid; white-space:nowrap }
+    .badge.draft { background:#E5E7EB; color:#4B5563; border-color:#D1D5DB }
+    .badge.submitted { background:#DBEAFE; color:#1D4ED8; border-color:#BFDBFE }
+    .badge.pending { background:#FEF3C7; color:#92400E; border-color:#FDE68A }
+    .badge.approved { background:#ECFDF5; color:#047857; border-color:#A7F3D0 }
+    .badge.paid { background:#E0E7FF; color:#4338CA; border-color:#C7D2FE }
+    .badge.settled { background:#F3E8FF; color:#7C3AED; border-color:#E9D5FF }
+    .badge.overdue { background:#FEE2E2; color:#991B1B; border-color:#FCA5A5 }
+    .badge.rejected { background:#FEE2E2; color:#991B1B; border-color:#FCA5A5 }
+    .badge.petty { background:#ECFEFF; color:#0891B2; border-color:#BAE6FD }
+    .badge.advance { background:#F1F7E8; color:#4D7C0F; border-color:#D9F99D }
+    .num { white-space: nowrap; font-variant-numeric: tabular-nums; font-feature-settings: 'tnum' 1; }
+    .reveal { opacity:0; transform: translateY(8px); transition: .5s }
+    .reveal.show { opacity:1; transform: none }
+    .att-item { display:flex; align-items:center; justify-content:space-between; gap:.75rem; padding:.4rem .6rem; border-radius:.5rem; border:1px solid #E5E7EB }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button onclick="navBack()" class="h-10 w-10 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100" title="Back to Buyer Dashboard"><i class="fas fa-arrow-left"></i></button>
+        <div>
+          <h1 class="text-lg sm:text-xl font-bold text-gray-900">Petty Cash & Cash Advance</h1>
+          <p class="text-xs text-gray-500 -mt-0.5">Request • Approve • Pay • Settle</p>
+        </div>
+      </div>
+      <div class="hidden md:flex items-center gap-3">
+        <div class="relative">
+          <input id="q" type="search" placeholder="Search Employee/ID/Purpose..." class="w-72 pl-10 pr-3 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none"/>
+          <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+        </div>
+        <button class="h-10 px-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700" onclick="exportCSV()"><i class="fas fa-file-export mr-1"></i>Export</button>
+        <button class="h-10 px-3 rounded-lg bg-gray-50 border hover:bg-gray-100" onclick="refreshData()"><i class="fas fa-sync-alt"></i></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- KPIs -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+      <div class="card p-5 reveal">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-gray-500">Outstanding Advances</div>
+            <div id="kpiOutstanding" class="num text-2xl font-extrabold text-blue-700">--</div>
+            <div class="text-xs text-blue-600">Balance to settle</div>
+          </div>
+          <div class="p-3 bg-blue-100 rounded-full"><i class="fas fa-wallet text-blue-700"></i></div>
+        </div>
+      </div>
+      <div class="card p-5 reveal">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-gray-500">Pending Approvals</div>
+            <div id="kpiPending" class="text-2xl font-extrabold text-amber-600">--</div>
+            <div class="text-xs text-amber-600">Draft/Submitted/Pending</div>
+          </div>
+          <div class="p-3 bg-amber-100 rounded-full"><i class="fas fa-hourglass-half text-amber-600"></i></div>
+        </div>
+      </div>
+      <div class="card p-5 reveal">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-gray-500">Overdue Settlements</div>
+            <div id="kpiOverdue" class="text-2xl font-extrabold text-red-600">--</div>
+            <div class="text-xs text-red-600">Past due date</div>
+          </div>
+          <div class="p-3 bg-red-100 rounded-full"><i class="fas fa-exclamation-triangle text-red-600"></i></div>
+        </div>
+      </div>
+      <div class="card p-5 reveal">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-gray-500">Petty Cash Spend</div>
+            <div id="kpiPettySpend" class="num text-2xl font-extrabold text-gray-900">--</div>
+            <div class="text-xs text-gray-600">Across filters</div>
+          </div>
+          <div class="p-3 bg-gray-100 rounded-full"><i class="fas fa-cash-register text-gray-700"></i></div>
+        </div>
+      </div>
+      <div class="card p-5 reveal">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-gray-500">Advances Paid (MTD)</div>
+            <div id="kpiPaidMTD" class="num text-2xl font-extrabold text-green-700">--</div>
+            <div class="text-xs text-green-600">This month</div>
+          </div>
+          <div class="p-3 bg-green-100 rounded-full"><i class="fas fa-rupee-sign text-green-700"></i></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="card p-5 mb-6 reveal">
+      <div class="grid grid-cols-1 md:grid-cols-7 gap-4">
+        <div class="md:col-span-2">
+          <label class="text-xs text-gray-500">Search</label>
+          <div class="relative">
+            <input id="fSearch" type="text" placeholder="ID/Employee/Purpose" class="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600"/>
+            <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+          </div>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Type</label>
+          <select id="fType" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600">
+            <option value="">All</option>
+            <option>Petty Cash</option>
+            <option>Cash Advance</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Status</label>
+          <select id="fStatus" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600">
+            <option value="">All</option>
+            <option>Draft</option>
+            <option>Submitted</option>
+            <option>Pending Approval</option>
+            <option>Approved</option>
+            <option>Paid</option>
+            <option>Settled</option>
+            <option>Overdue</option>
+            <option>Rejected</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Employee</label>
+          <select id="fEmp" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600"><option value="">All</option></select>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Department</label>
+          <select id="fDept" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600"><option value="">All</option></select>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Date From</label>
+          <input id="fFrom" type="date" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600"/>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Date To</label>
+          <input id="fTo" type="date" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600"/>
+        </div>
+      </div>
+      <div class="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-600">
+        Quick dates:
+        <button class="px-2.5 py-1 rounded border hover:bg-gray-50" onclick="setDatePreset('today')">Today</button>
+        <button class="px-2.5 py-1 rounded border hover:bg-gray-50" onclick="setDatePreset('last7')">Last 7</button>
+        <button class="px-2.5 py-1 rounded border hover:bg-gray-50" onclick="setDatePreset('month')">This Month</button>
+        <button class="px-2.5 py-1 rounded border hover:bg-gray-50" onclick="setDatePreset('clear')">Clear</button>
+        <span class="mx-1">|</span>
+        <button class="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700" onclick="applyFilters()"><i class="fas fa-filter mr-1"></i>Apply</button>
+        <button class="px-3 py-1.5 bg-gray-50 border rounded-lg hover:bg-gray-100" onclick="resetFilters()"><i class="fas fa-undo mr-1"></i>Reset</button>
+      </div>
+    </section>
+
+    <!-- Toolbar -->
+    <section class="flex flex-col md:flex-row items-center justify-between gap-3 mb-3">
+      <div class="text-sm text-gray-600">Types: <span class="badge petty">Petty Cash</span> and <span class="badge advance">Cash Advance</span> with full lifecycle.</div>
+      <div class="flex gap-2">
+        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" onclick="openCreate()"><i class="fas fa-plus mr-1"></i>Create</button>
+        <button class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700" onclick="exportCSV()"><i class="fas fa-file-export mr-1"></i>Export</button>
+        <button class="px-4 py-2 bg-gray-50 border rounded-lg hover:bg-gray-100" onclick="refreshData()"><i class="fas fa-sync-alt"></i></button>
+      </div>
+    </section>
+
+    <!-- Table -->
+    <section class="card overflow-hidden reveal">
+      <div class="overflow-x-auto">
+        <table class="min-w-full">
+          <thead class="bg-gray-50 text-gray-600 text-xs uppercase">
+            <tr>
+              <th class="px-4 py-3 text-left min-w-[12rem]">ID • Type</th>
+              <th class="px-4 py-3 text-left min-w-[12rem]">Employee • Dept</th>
+              <th class="px-4 py-3 text-left min-w-[12rem]">Purpose / Category</th>
+              <th class="px-4 py-3 text-left min-w-[10rem]">Date • Due</th>
+              <th class="px-4 py-3 text-right min-w-[10rem]">Amount</th>
+              <th class="px-4 py-3 text-right min-w-[10rem]">Paid/Settled</th>
+              <th class="px-4 py-3 text-right min-w-[10rem]">Balance</th>
+              <th class="px-4 py-3 text-left min-w-[8rem]">Status</th>
+              <th class="px-4 py-3 text-left min-w-[12rem]">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tbody" class="text-sm"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal -->
+  <div id="modal" class="fixed inset-0 bg-black/30 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl w-full max-w-5xl shadow-2xl">
+      <div class="flex items-center justify-between px-5 py-4 border-b">
+        <h3 id="modalTitle" class="text-lg font-semibold text-gray-900">Record</h3>
+        <button class="h-10 w-10 rounded-lg bg-gray-50 hover:bg-gray-100" onclick="closeModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div id="modalBody" class="p-5 max-h-[70vh] overflow-y-auto"></div>
+      <div id="modalFooter" class="px-5 py-4 border-t flex items-center justify-end gap-2"></div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed top-4 right-4 hidden text-white px-4 py-2 rounded-lg shadow-lg"></div>
+
+  <script>
+    // Utils
+    const $ = (id) => document.getElementById(id);
+    const Rs = (n) => new Intl.NumberFormat('en-IN', { style:'currency', currency:'INR', maximumFractionDigits: 0 }).format(n||0);
+    const showToast = (m, t='info') => { const el = $('toast'); const colors = {success:'bg-green-600', info:'bg-blue-600', warning:'bg-yellow-600', error:'bg-red-600'}; el.className = `fixed top-4 right-4 text-white px-4 py-2 rounded-lg shadow-lg ${colors[t]||colors.info}`; el.textContent = m; el.classList.remove('hidden'); setTimeout(()=> el.classList.add('hidden'), 2200); };
+    function navBack(){ window.location.href = 'BuyerDashboard.html'; }
+
+    // Dataset
+    const items = [
+      // Petty cash vouchers
+      { id:'PCV-2025-001', type:'Petty Cash', employee:'Amit Singh', dept:'IT', date:'2025-07-03', purpose:'Local travel to vendor', category:'Travel', amount: 2500, paid: 2500, settled: 2500, dueDate:'', status:'Paid', comments:['Taxi bill attached'], attachments:[{name:'TaxiBill.jpg', size: 120455}] },
+      { id:'PCV-2025-004', type:'Petty Cash', employee:'Neha Gupta', dept:'HR', date:'2025-07-18', purpose:'Team refreshments', category:'Meals', amount: 4200, paid: 4200, settled: 4200, dueDate:'', status:'Approved', comments:['Awaiting cash desk'], attachments:[] },
+      { id:'PCV-2025-009', type:'Petty Cash', employee:'Rahul Verma', dept:'Operations', date:'2025-08-04', purpose:'Stationery', category:'Office Supplies', amount: 1850, paid: 0, settled: 0, dueDate:'', status:'Submitted', comments:[], attachments:[{name:'Stationery_invoice.pdf', size: 85410}] },
+      // Cash advances
+      { id:'CAV-2025-010', type:'Cash Advance', employee:'Anita Rao', dept:'Marketing', date:'2025-07-05', purpose:'Event expenses - Expo', category:'Events', amount: 150000, paid: 150000, settled: 80000, dueDate:'2025-08-10', status:'Paid', comments:['Hotel booked'], attachments:[{name:'Event_plan.pdf', size: 224000}] },
+      { id:'CAV-2025-012', type:'Cash Advance', employee:'Rahul Verma', dept:'Operations', date:'2025-07-22', purpose:'Urgent logistics', category:'Logistics', amount: 90000, paid: 90000, settled: 90000, dueDate:'2025-08-15', status:'Settled', comments:['All bills submitted'], attachments:[] },
+      { id:'CAV-2025-014', type:'Cash Advance', employee:'Priya Nair', dept:'Manufacturing', date:'2025-08-01', purpose:'Machine repair visit', category:'Maintenance', amount: 65000, paid: 65000, settled: 10000, dueDate:'2025-08-20', status:'Paid', comments:['Advance provided'], attachments:[] },
+      { id:'CAV-2025-017', type:'Cash Advance', employee:'Arjun Shah', dept:'QA', date:'2025-07-10', purpose:'Field quality audit', category:'Field', amount: 50000, paid: 50000, settled: 10000, dueDate:'2025-07-25', status:'Overdue', comments:['Reminder sent'], attachments:[{name:'Audit_plan.docx', size: 34011}] },
+      { id:'CAV-2025-019', type:'Cash Advance', employee:'Meera Iyer', dept:'Finance', date:'2025-08-18', purpose:'Offsite planning', category:'Admin', amount: 40000, paid: 0, settled: 0, dueDate:'2025-09-05', status:'Pending Approval', comments:[], attachments:[] },
+      { id:'CAV-2025-020', type:'Cash Advance', employee:'Sanjay Mehta', dept:'Facilities', date:'2025-08-22', purpose:'Emergency plumbing', category:'Facilities', amount: 25000, paid: 0, settled: 0, dueDate:'2025-09-01', status:'Draft', comments:[], attachments:[] },
+      { id:'CAV-2025-021', type:'Cash Advance', employee:'Vikram Malhotra', dept:'Sales', date:'2025-08-10', purpose:'Client meet travel', category:'Travel', amount: 30000, paid: 30000, settled: 0, dueDate:'2025-08-28', status:'Approved', comments:['Ticket booked'], attachments:[] },
+      { id:'CAV-2025-022', type:'Cash Advance', employee:'Kavya Desai', dept:'R&D', date:'2025-08-05', purpose:'Prototype parts', category:'R&D', amount: 120000, paid: 0, settled: 0, dueDate:'2025-08-30', status:'Submitted', comments:[], attachments:[] },
+      { id:'CAV-2025-023', type:'Cash Advance', employee:'Harini Joshi', dept:'Engineering', date:'2025-07-28', purpose:'Onsite support', category:'Service', amount: 80000, paid: 80000, settled: 20000, dueDate:'2025-08-20', status:'Paid', comments:[], attachments:[] },
+      { id:'CAV-2025-024', type:'Cash Advance', employee:'Suraj Kulkarni', dept:'Logistics', date:'2025-08-02', purpose:'Warehouse setup', category:'Operations', amount: 100000, paid: 100000, settled: 0, dueDate:'2025-09-05', status:'Paid', comments:[], attachments:[] },
+      { id:'CAV-2025-025', type:'Cash Advance', employee:'Divya Menon', dept:'Procurement', date:'2025-08-15', purpose:'Supplier visit', category:'Travel', amount: 45000, paid: 0, settled: 0, dueDate:'2025-09-10', status:'Rejected', comments:['Duplicate request'], attachments:[] }
+    ];
+
+    function badge(st){
+      const m = {
+        'Draft':'draft','Submitted':'submitted','Pending Approval':'pending',
+        'Approved':'approved','Paid':'paid','Settled':'settled','Overdue':'overdue','Rejected':'rejected'
+      };
+      return `<span class="badge ${m[st]||'draft'}">${st}</span>`;
+    }
+
+    function typeBadge(t){ return `<span class="badge ${t==='Petty Cash'?'petty':'advance'}">${t}</span>`; }
+
+    function populateFilters(){
+      const empSet = Array.from(new Set(items.map(x=>x.employee))).sort();
+      const deptSet = Array.from(new Set(items.map(x=>x.dept))).sort();
+      $('fEmp').innerHTML = '<option value="">All</option>' + empSet.map(e=>`<option>${e}</option>`).join('');
+      $('fDept').innerHTML = '<option value="">All</option>' + deptSet.map(d=>`<option>${d}</option>`).join('');
+    }
+
+    function filteredRaw(){
+      const s = ($('fSearch').value||'').toLowerCase();
+      const tp=$('fType').value, st=$('fStatus').value, emp=$('fEmp').value, dept=$('fDept').value, f=$('fFrom').value, t=$('fTo').value;
+      return items.filter(x=>{
+        const hay = `${x.id}|${x.employee}|${x.dept}|${x.purpose}|${x.category}`.toLowerCase();
+        if (s && !hay.includes(s)) return false;
+        if (tp && x.type!==tp) return false;
+        if (st && x.status!==st) return false;
+        if (emp && x.employee!==emp) return false;
+        if (dept && x.dept!==dept) return false;
+        if (f && new Date(x.date) < new Date(f)) return false;
+        if (t && new Date(x.date) > new Date(t)) return false;
+        return true;
+      });
+    }
+
+    function render(){
+      const list = filteredRaw();
+      const tbody = $('tbody');
+      tbody.innerHTML = list.map(x=>{
+        const base = x.type==='Cash Advance' ? (x.paid||0) || x.amount : x.amount;
+        const balance = x.type==='Cash Advance' ? Math.max(0, base - (x.settled||0)) : 0;
+        return `
+          <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+            <td class="px-4 py-3 align-top min-w-[12rem]"><div class="font-semibold">${x.id}</div><div class="mt-1">${typeBadge(x.type)}</div></td>
+            <td class="px-4 py-3 align-top min-w-[12rem]"><div>${x.employee}</div><div class="text-xs text-gray-500">${x.dept}</div></td>
+            <td class="px-4 py-3 align-top min-w-[12rem]"><div>${x.purpose}</div><div class="text-xs text-gray-500">${x.category}</div></td>
+            <td class="px-4 py-3 align-top min-w-[10rem]"><div>${new Date(x.date).toLocaleDateString('en-IN')}</div><div class="text-xs text-gray-500">${x.dueDate?('Due '+new Date(x.dueDate).toLocaleDateString('en-IN')):''}</div></td>
+            <td class="px-4 py-3 text-right align-top min-w-[10rem]"><div class="num font-semibold">${Rs(x.amount)}</div></td>
+            <td class="px-4 py-3 text-right align-top min-w-[10rem]"><div class="num">${x.type==='Cash Advance'?Rs(x.paid||0)+' / '+Rs(x.settled||0):Rs(x.paid||0)}</div></td>
+            <td class="px-4 py-3 text-right align-top min-w-[10rem]"><div class="num">${x.type==='Cash Advance'?Rs(balance):'-'}</div></td>
+            <td class="px-4 py-3 align-top min-w-[8rem]">${badge(x.status)}</td>
+            <td class="px-4 py-3 align-top min-w-[12rem]">
+              <div class="flex flex-wrap items-center gap-2">
+                <button class="px-3 py-1.5 text-sm rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100" onclick="openItem('${x.id}')"><i class="fas fa-eye mr-1"></i>View</button>
+                <button class="px-3 py-1.5 text-sm rounded-lg bg-green-50 text-green-700 hover:bg-green-100" onclick="markPaid('${x.id}')"><i class="fas fa-rupee-sign mr-1"></i>Mark Paid</button>
+              </div>
+            </td>
+          </tr>`;
+      }).join('') || `<tr><td colspan="9" class="px-4 py-8 text-center text-gray-500">No records found for the selected filters.</td></tr>`;
+
+      // KPIs
+      const today = new Date();
+      const adv = list.filter(x=>x.type==='Cash Advance');
+      const outstanding = adv.reduce((s,a)=>{
+        const base = (a.paid||0) || a.amount; const bal = Math.max(0, base - (a.settled||0));
+        if(['Rejected','Settled'].includes(a.status)) return s;
+        return s+bal;
+      },0);
+      const pending = list.filter(x=>['Draft','Submitted','Pending Approval'].includes(x.status)).length;
+      const overdue = list.filter(x=>x.type==='Cash Advance' && x.dueDate && new Date(x.dueDate)<today && !['Settled','Rejected'].includes(x.status)).length;
+      const pettySpend = list.filter(x=>x.type==='Petty Cash').reduce((s,p)=>s+p.amount,0);
+      const paidMTD = adv.filter(a=>a.paid>0 && new Date(a.date).getMonth()===today.getMonth() && new Date(a.date).getFullYear()===today.getFullYear()).reduce((s,a)=>s+a.paid,0);
+      $('kpiOutstanding').textContent = Rs(outstanding);
+      $('kpiPending').textContent = String(pending);
+      $('kpiOverdue').textContent = String(overdue);
+      $('kpiPettySpend').textContent = Rs(pettySpend);
+      $('kpiPaidMTD').textContent = Rs(paidMTD);
+    }
+
+    function openItem(id){
+      const x = items.find(it=>it.id===id) || filteredRaw()[0]; if(!x) return;
+      const isAdv = x.type==='Cash Advance';
+      const base = isAdv ? (x.paid||0) || x.amount : x.amount;
+      const balance = isAdv ? Math.max(0, base - (x.settled||0)) : 0;
+      const att = (x.attachments||[]).map(a=>`<div class='att-item text-sm'><div class='flex items-center gap-2'><i class='fas fa-paperclip text-gray-500'></i><span>${a.name}</span></div><button class='px-2 py-1 text-xs rounded border hover:bg-gray-50' onclick=\"downloadAttachment('${x.id}','${a.name}')\"><i class='fas fa-download mr-1'></i>Download</button></div>`).join('') || '<div class="text-sm text-gray-500">No attachments</div>';
+
+      $('modalTitle').textContent = `${x.id} • ${x.employee}`;
+      $('modalBody').innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div class="lg:col-span-2 space-y-4">
+            <div class="card p-4">
+              <div class="flex items-start justify-between">
+                <div>
+                  <div class="text-sm text-gray-500">${x.type}</div>
+                  <div class="text-xl font-bold text-gray-900">${x.purpose}</div>
+                  <div class="text-sm text-gray-600 mt-1">Dept: <span class="font-medium">${x.dept}</span> • Category: ${x.category} • Date: ${new Date(x.date).toLocaleDateString('en-IN')}${isAdv && x.dueDate?` • Due: ${new Date(x.dueDate).toLocaleDateString('en-IN')}`:''}</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm text-gray-500 mb-1">Status</div>
+                  ${badge(x.status)}
+                </div>
+              </div>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-gray-700 mt-4">
+                <div><span class="text-gray-500">Amount</span><div class="font-semibold num">${Rs(x.amount)}</div></div>
+                <div><span class="text-gray-500">Paid</span><div class="num">${Rs(x.paid||0)}</div></div>
+                <div><span class="text-gray-500">Settled</span><div class="num">${Rs(x.settled||0)}</div></div>
+                <div><span class="text-gray-500">Balance</span><div class="font-semibold num">${isAdv?Rs(balance):'-'}</div></div>
+              </div>
+            </div>
+
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-2">Attachments</div>
+              <div>${att}</div>
+            </div>
+
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-2">Comments</div>
+              <ul>${(x.comments||[]).map(cm=>`<li class='text-sm text-gray-700 border-t py-1'>${cm}</li>`).join('') || '<li class="text-sm text-gray-500">No comments</li>'}</ul>
+              <div class="mt-3 flex gap-2">
+                <input id="newComment" class="flex-1 px-3 py-2 border rounded-lg" placeholder="Add a comment"/>
+                <button class="px-3 py-2 bg-gray-50 border rounded-lg hover:bg-gray-100" onclick="addComment('${x.id}')"><i class="fas fa-plus mr-1"></i>Add</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-2">Quick Actions</div>
+              <div class="flex flex-wrap gap-2">
+                <button class="px-3 py-2 bg-green-50 text-green-700 rounded-lg border hover:bg-green-100" onclick="approveItem('${x.id}')"><i class="fas fa-check mr-1"></i>Approve</button>
+                <button class="px-3 py-2 bg-red-50 text-red-700 rounded-lg border hover:bg-red-100" onclick="rejectItem('${x.id}')"><i class="fas fa-times mr-1"></i>Reject</button>
+                <button class="px-3 py-2 bg-blue-50 text-blue-700 rounded-lg border hover:bg-blue-100" onclick="markPaid('${x.id}')"><i class="fas fa-rupee-sign mr-1"></i>Mark Paid</button>
+                ${isAdv?`<button class="px-3 py-2 bg-purple-50 text-purple-700 rounded-lg border hover:bg-purple-100" onclick="addSettlement('${x.id}')"><i class="fas fa-hand-holding-usd mr-1"></i>Add Settlement</button>`:''}
+              </div>
+            </div>
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-2">Notes</div>
+              <div class="text-sm text-gray-600">Advances should be settled within due dates. Petty cash vouchers require receipts before payment.</div>
+            </div>
+          </div>
+        </div>`;
+
+      const footer = $('modalFooter');
+      footer.innerHTML = `
+        <button class="px-4 py-2 bg-gray-50 border rounded-lg hover:bg-gray-100" onclick="closeModal()">Close</button>`;
+      openModal();
+      showToast(`Opened ${x.id}`,'info');
+    }
+
+    function addComment(id){
+      const x = items.find(it=>it.id===id); if(!x) return;
+      const v = (document.getElementById('newComment')?.value||'').trim(); if(!v) return showToast('Enter a comment','warning');
+      x.comments = x.comments||[]; x.comments.push(v); showToast('Comment added','success'); openItem(id);
+    }
+
+    function approveItem(id){
+      const x = items.find(it=>it.id===id) || filteredRaw()[0]; if(!x) return;
+      x.status = 'Approved'; showToast(`${x.id} approved`,'success'); render(); if(!$('modal').classList.contains('hidden')) openItem(id);
+    }
+
+    function rejectItem(id){
+      const x = items.find(it=>it.id===id) || filteredRaw()[0]; if(!x) return;
+      x.status = 'Rejected'; showToast(`${x.id} rejected`,'error'); render(); if(!$('modal').classList.contains('hidden')) openItem(id);
+    }
+
+    function markPaid(id){
+      const x = items.find(it=>it.id===id) || filteredRaw()[0]; if(!x) return;
+      if(x.type==='Petty Cash'){
+        if(x.paid>0) return showToast('Already paid','info');
+        x.paid = x.amount; x.status = 'Paid';
+      } else {
+        if(x.paid>0) return showToast('Advance already paid','info');
+        x.paid = x.amount; x.status = 'Paid';
+      }
+      showToast(`${x.id} marked paid`,'success'); render(); if(!$('modal').classList.contains('hidden')) openItem(id);
+    }
+
+    function addSettlement(id){
+      const x = items.find(it=>it.id===id); if(!x || x.type!=='Cash Advance') return;
+      if((x.paid||0)===0) return showToast('Pay advance first','warning');
+      const input = prompt('Enter settlement amount:', '1000'); if(input===null) return;
+      const amt = Number(input); if(!isFinite(amt)||amt<=0) return showToast('Invalid amount','error');
+      const base = (x.paid||0); const balance = Math.max(0, base - (x.settled||0));
+      if(amt>balance) return showToast('Exceeds balance','error');
+      x.settled = (x.settled||0) + Math.round(amt);
+      const newBal = Math.max(0, base - x.settled);
+      x.status = newBal<=0 ? 'Settled' : x.status;
+      showToast(`Settlement of ${Rs(amt)} recorded for ${x.id}`,'success');
+      render(); if(!$('modal').classList.contains('hidden')) openItem(id);
+    }
+
+    function openCreate(){
+      $('modalTitle').textContent = 'Create Record';
+      $('modalBody').innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="card p-4">
+            <div class="text-sm text-gray-700">Basic Info</div>
+            <div class="mt-3 space-y-3 text-sm">
+              <label class="block">Type <span class="text-red-500">*</span>
+                <select id="cb_type" class="mt-1 w-full px-3 py-2 border rounded-lg" onchange="toggleCreateFields()">
+                  <option value="">Select</option>
+                  <option>Petty Cash</option>
+                  <option>Cash Advance</option>
+                </select>
+              </label>
+              <label class="block">Employee <span class="text-red-500">*</span>
+                <input id="cb_emp" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., Amit Singh"/>
+              </label>
+              <label class="block">Department <span class="text-red-500">*</span>
+                <input id="cb_dept" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., IT"/>
+              </label>
+              <label class="block">Date <span class="text-red-500">*</span>
+                <input id="cb_date" type="date" class="mt-1 w-full px-3 py-2 border rounded-lg"/>
+              </label>
+            </div>
+          </div>
+          <div class="card p-4">
+            <div class="text-sm text-gray-700">Details</div>
+            <div class="mt-3 space-y-3 text-sm">
+              <label class="block">Purpose/Category <span class="text-red-500">*</span>
+                <input id="cb_purpose" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., Travel to client"/>
+              </label>
+              <label class="block">Amount <span class="text-red-500">*</span>
+                <input id="cb_amount" type="number" min="1" step="100" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., 5000"/>
+              </label>
+              <label class="block" id="wrap_due" style="display:none">Due Date (Advance)
+                <input id="cb_due" type="date" class="mt-1 w-full px-3 py-2 border rounded-lg"/>
+              </label>
+              <label class="block">Attachments
+                <input id="cb_files" type="file" multiple class="mt-1 w-full px-3 py-1.5 border rounded-lg bg-gray-50"/>
+                <div class="text-xs text-gray-500 mt-1">Attach bills/requests. Stored locally for demo.</div>
+              </label>
+            </div>
+          </div>
+        </div>`;
+      const footer = $('modalFooter');
+      footer.innerHTML = `
+        <button class="px-4 py-2 bg-gray-50 border rounded-lg hover:bg-gray-100" onclick="closeModal()">Cancel</button>
+        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" onclick="createItem()"><i class='fas fa-save mr-1'></i>Create</button>`;
+      openModal();
+    }
+
+    function toggleCreateFields(){
+      const t = document.getElementById('cb_type').value;
+      document.getElementById('wrap_due').style.display = (t==='Cash Advance') ? '' : 'none';
+    }
+
+    function createItem(){
+      const type = document.getElementById('cb_type').value;
+      const employee = document.getElementById('cb_emp').value.trim();
+      const dept = document.getElementById('cb_dept').value.trim();
+      const date = document.getElementById('cb_date').value.trim();
+      const purpose = document.getElementById('cb_purpose').value.trim();
+      const amount = Number((document.getElementById('cb_amount').value||'').trim());
+      const due = document.getElementById('cb_due').value.trim();
+      const files = Array.from(document.getElementById('cb_files')?.files||[]);
+      const attachments = files.map(f=>({ name: f.name, size: f.size }));
+      if(!type||!employee||!dept||!date||!purpose||!isFinite(amount)||amount<=0) return showToast('Fill Type, Employee, Dept, Date, Purpose, valid Amount','error');
+      if(type==='Cash Advance' && !due) return showToast('Due Date is required for advance','error');
+      const idPrefix = type==='Petty Cash' ? 'PCV' : 'CAV';
+      const id = `${idPrefix}-${new Date().getFullYear()}-${String(Math.floor(Math.random()*900)+100).padStart(3,'0')}`;
+      items.unshift({ id, type, employee, dept, date, purpose, category: purpose.split(' ')[0]||'General', amount: Math.round(amount), paid:0, settled:0, dueDate: type==='Cash Advance'?due:'', status:'Submitted', comments:[], attachments });
+      showToast(`${id} created${attachments.length?` with ${attachments.length} attachment(s)`:''}`,'success');
+      populateFilters(); render(); closeModal();
+    }
+
+    function downloadAttachment(id, name){ showToast(`Downloading ${name} from ${id}`,'info'); }
+
+    function applyFilters(){ render(); showToast('Filters applied','info'); }
+    function resetFilters(){ $('fSearch').value=''; $('fType').value=''; $('fStatus').value=''; $('fEmp').value=''; $('fDept').value=''; $('fFrom').value=''; $('fTo').value=''; render(); showToast('Filters reset','info'); }
+    function setDatePreset(p){ const from=$('fFrom'), to=$('fTo'); const d=new Date(); if(p==='today'){ const t=d.toISOString().slice(0,10); from.value=t; to.value=t; } else if(p==='last7'){ const d7=new Date(d); d7.setDate(d.getDate()-7); from.value=d7.toISOString().slice(0,10); to.value=d.toISOString().slice(0,10); } else if(p==='month'){ const s=new Date(d.getFullYear(), d.getMonth(), 1); from.value=s.toISOString().slice(0,10); to.value=d.toISOString().slice(0,10); } else { from.value=''; to.value=''; } render(); showToast('Preset applied','info'); }
+    function exportCSV(){ showToast('Exported current view to CSV (stub)','info'); }
+    function refreshData(){ showToast('Data refreshed','info'); render(); }
+
+    function openModal(){ $('modal').classList.remove('hidden'); }
+    function closeModal(){ $('modal').classList.add('hidden'); }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.reveal').forEach((el,i) => setTimeout(()=>el.classList.add('show'), 60*i));
+      populateFilters();
+      render();
+    });
+  </script>
+</body>
+</html>

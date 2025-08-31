@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Buyer Portal – Budget Management</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: linear-gradient(120deg,#f3f6fd 0%,#e9eafc 100%); color:#111827 }
+    .card { box-shadow: 0 8px 28px rgba(59,130,246,.08); border:1px solid #E5E7EB; border-radius:1rem; background:#fff; overflow: hidden }
+    .badge { font-size:.7rem; font-weight:700; padding:.2rem .5rem; border-radius:999px; border:1px solid; white-space:nowrap }
+    .badge.healthy { background:#ECFDF5; color:#047857; border-color:#A7F3D0 }
+    .badge.risk { background:#FEF3C7; color:#92400E; border-color:#FDE68A }
+    .badge.overrun { background:#FEE2E2; color:#991B1B; border-color:#FCA5A5 }
+    .badge.frozen { background:#E5E7EB; color:#374151; border-color:#D1D5DB }
+    .badge.pending { background:#DBEAFE; color:#1D4ED8; border-color:#BFDBFE }
+    .amount { overflow-wrap:anywhere; word-break:break-word; line-height:1.1 }
+  .num { white-space: nowrap; font-variant-numeric: tabular-nums; font-feature-settings: 'tnum' 1; }
+    .reveal { opacity:0; transform: translateY(8px); transition: .5s }
+    .reveal.show { opacity:1; transform: none }
+    .progress { height:8px; background:#E5E7EB; border-radius:999px; overflow:hidden }
+    .progress > span { display:block; height:100% }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button onclick="navBack()" class="h-10 w-10 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100" title="Back to Buyer Dashboard"><i class="fas fa-arrow-left"></i></button>
+        <div>
+          <h1 class="text-lg sm:text-xl font-bold text-gray-900">Budget Management</h1>
+          <p class="text-xs text-gray-500 -mt-0.5">Track budgets • Utilization • Variance • Actions</p>
+        </div>
+      </div>
+      <div class="hidden md:flex items-center gap-3">
+        <div class="relative">
+          <input id="q" type="search" placeholder="Search Budget/Dept/Owner..." class="w-72 pl-10 pr-3 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none"/>
+          <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+        </div>
+        <button class="h-10 px-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700" onclick="exportCSV()"><i class="fas fa-file-export mr-1"></i>Export</button>
+        <button class="h-10 px-3 rounded-lg bg-gray-50 border hover:bg-gray-100" onclick="refreshData()"><i class="fas fa-sync-alt"></i></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- KPIs -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
+      <div class="card p-5 reveal">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-gray-500">Total Budget (FY)</div>
+            <div id="kpiTotalBudget" class="amount text-2xl font-extrabold text-blue-700">--</div>
+            <div class="text-xs text-blue-600">Selected filters</div>
+          </div>
+          <div class="p-3 bg-blue-100 rounded-full"><i class="fas fa-wallet text-blue-700"></i></div>
+        </div>
+      </div>
+      <div class="card p-5 reveal">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-gray-500">Consumed</div>
+            <div id="kpiConsumed" class="amount text-2xl font-extrabold text-green-700">--</div>
+            <div class="text-xs text-green-600">Actual posted</div>
+          </div>
+          <div class="p-3 bg-green-100 rounded-full"><i class="fas fa-chart-line text-green-700"></i></div>
+        </div>
+      </div>
+      <div class="card p-5 reveal">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-gray-500">Committed</div>
+            <div id="kpiCommitted" class="amount text-2xl font-extrabold text-amber-700">--</div>
+            <div class="text-xs text-amber-600">Open POs</div>
+          </div>
+          <div class="p-3 bg-amber-100 rounded-full"><i class="fas fa-file-invoice text-amber-700"></i></div>
+        </div>
+      </div>
+      <div class="card p-5 reveal">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-gray-500">Remaining</div>
+            <div id="kpiRemaining" class="amount text-2xl font-extrabold text-gray-900">--</div>
+            <div class="text-xs text-gray-600">Budget left</div>
+          </div>
+          <div class="p-3 bg-gray-100 rounded-full"><i class="fas fa-piggy-bank text-gray-700"></i></div>
+        </div>
+      </div>
+      <div class="card p-5 reveal">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-gray-500">At Risk</div>
+            <div id="kpiRisk" class="text-2xl font-extrabold text-orange-600">--</div>
+            <div class="text-xs text-orange-600">Utilization ≥ 80%</div>
+          </div>
+          <div class="p-3 bg-orange-100 rounded-full"><i class="fas fa-exclamation-triangle text-orange-600"></i></div>
+        </div>
+      </div>
+      <div class="card p-5 reveal">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-gray-500">Overrun</div>
+            <div id="kpiOverrun" class="text-2xl font-extrabold text-red-600">--</div>
+            <div class="text-xs text-red-600">Consumed > Budget</div>
+          </div>
+          <div class="p-3 bg-red-100 rounded-full"><i class="fas fa-burn text-red-600"></i></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="card p-5 mb-6 reveal">
+      <div class="grid grid-cols-1 md:grid-cols-7 gap-4">
+        <div class="md:col-span-2">
+          <label class="text-xs text-gray-500">Search</label>
+          <div class="relative">
+            <input id="fSearch" type="text" placeholder="Budget Code/Name/Dept" class="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600"/>
+            <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+          </div>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Department</label>
+          <select id="fDept" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600"><option value="">All</option></select>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Category</label>
+          <select id="fCat" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600">
+            <option value="">All</option>
+            <option>Opex</option>
+            <option>Capex</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Owner</label>
+          <select id="fOwner" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600"><option value="">All</option></select>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Status</label>
+          <select id="fStatus" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600">
+            <option value="">All</option>
+            <option>Healthy</option>
+            <option>At Risk</option>
+            <option>Overrun</option>
+            <option>Frozen</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Fiscal Year</label>
+          <select id="fFY" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600"></select>
+        </div>
+        <div class="flex items-end gap-2">
+          <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" onclick="applyFilters()"><i class="fas fa-filter mr-1"></i>Apply</button>
+          <button class="px-4 py-2 bg-gray-50 border rounded-lg hover:bg-gray-100" onclick="resetFilters()"><i class="fas fa-undo mr-1"></i>Reset</button>
+        </div>
+      </div>
+      <div class="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-600">
+        Quick FY:
+        <button class="px-2.5 py-1 rounded border hover:bg-gray-50" onclick="setFyPreset('this')">This FY</button>
+        <button class="px-2.5 py-1 rounded border hover:bg-gray-50" onclick="setFyPreset('last')">Last FY</button>
+        <button class="px-2.5 py-1 rounded border hover:bg-gray-50" onclick="setFyPreset('all')">All</button>
+      </div>
+    </section>
+
+    <!-- Toolbar -->
+    <section class="flex flex-col md:flex-row items-center justify-between gap-3 mb-3">
+      <div class="text-sm text-gray-600">Statuses: Healthy (&lt;80% utilized), At Risk (80–95%), Overrun (&gt;100%), Frozen (locked).</div>
+      <div class="flex gap-2">
+  <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" onclick="openCreate()"><i class="fas fa-plus mr-1"></i>Create Budget</button>
+        <button class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700" onclick="openAdjust()"><i class="fas fa-sliders-h mr-1"></i>Adjust Budget</button>
+        <button class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700" onclick="openTransfer()"><i class="fas fa-exchange-alt mr-1"></i>Transfer</button>
+        <button class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700" onclick="toggleFreezeBulk()"><i class="fas fa-snowflake mr-1"></i>Freeze/Unfreeze</button>
+      </div>
+    </section>
+
+    <!-- Table -->
+    <section class="card overflow-hidden reveal">
+      <div class="overflow-x-auto">
+        <table class="min-w-full">
+          <thead class="bg-gray-50 text-gray-600 text-xs uppercase">
+            <tr>
+              <th class="px-4 py-3 text-left min-w-[16rem]">Budget</th>
+              <th class="px-4 py-3 text-left min-w-[12rem]">Dept / Category</th>
+              <th class="px-4 py-3 text-left min-w-[10rem]">Owner</th>
+              <th class="px-4 py-3 text-left min-w-[8rem]">FY</th>
+              <th class="px-4 py-3 text-right min-w-[10rem]">Allocated</th>
+              <th class="px-4 py-3 text-right min-w-[10rem]">Consumed</th>
+              <th class="px-4 py-3 text-right min-w-[10rem]">Committed</th>
+              <th class="px-4 py-3 text-right min-w-[10rem]">Remaining</th>
+              <th class="px-4 py-3 text-left min-w-[8rem]">Utilization</th>
+              <th class="px-4 py-3 text-left min-w-[8rem]">Status</th>
+              <th class="px-4 py-3 text-left min-w-[10rem]">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tbody" class="text-sm"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Details Modal -->
+  <div id="modal" class="fixed inset-0 bg-black/30 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl w-full max-w-5xl shadow-2xl">
+      <div class="flex items-center justify-between px-5 py-4 border-b">
+        <h3 id="modalTitle" class="text-lg font-semibold text-gray-900">Budget</h3>
+        <button class="h-10 w-10 rounded-lg bg-gray-50 hover:bg-gray-100" onclick="closeModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div id="modalBody" class="p-5 max-h-[70vh] overflow-y-auto"></div>
+      <div class="px-5 py-4 border-t flex items-center justify-end gap-2">
+        <button class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700" onclick="openAdjust()"><i class="fas fa-sliders-h mr-1"></i>Adjust</button>
+        <button class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700" onclick="openTransfer()"><i class="fas fa-exchange-alt mr-1"></i>Transfer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed top-4 right-4 hidden text-white px-4 py-2 rounded-lg shadow-lg"></div>
+
+  <script>
+    // Utils
+    const $ = (id) => document.getElementById(id);
+    const Rs = (n) => new Intl.NumberFormat('en-IN', { style:'currency', currency:'INR', maximumFractionDigits: 0 }).format(n||0);
+    const showToast = (m, t='info') => { const el = $('toast'); const colors = {success:'bg-green-600', info:'bg-blue-600', warning:'bg-yellow-600', error:'bg-red-600'}; el.className = `fixed top-4 right-4 text-white px-4 py-2 rounded-lg shadow-lg ${colors[t]||colors.info}`; el.textContent = m; el.classList.remove('hidden'); setTimeout(()=> el.classList.add('hidden'), 2200); };
+    function navBack(){ window.location.href = 'BuyerDashboard.html'; }
+
+    // Sample budgets
+    const budgets = [
+      { id:'BUD-IT-2024', name:'IT Opex', dept:'IT', category:'Opex', owner:'Amit Singh', fy:'FY2024-25', allocated: 42000000, consumed: 23500000, committed: 9000000, frozen:false },
+      { id:'BUD-MKT-2024', name:'Marketing Opex', dept:'Marketing', category:'Opex', owner:'Anita Rao', fy:'FY2024-25', allocated: 28000000, consumed: 23200000, committed: 3000000, frozen:false },
+      { id:'BUD-OPS-2024', name:'Operations Opex', dept:'Operations', category:'Opex', owner:'Rahul Verma', fy:'FY2024-25', allocated: 35000000, consumed: 27000000, committed: 4000000, frozen:true },
+      { id:'BUD-HR-2024', name:'HR Opex', dept:'HR', category:'Opex', owner:'Neha Gupta', fy:'FY2024-25', allocated: 12000000, consumed: 7800000, committed: 1800000, frozen:false },
+      { id:'BUD-FAC-2024', name:'Facilities Capex', dept:'Facilities', category:'Capex', owner:'Sanjay Mehta', fy:'FY2024-25', allocated: 50000000, consumed: 42000000, committed: 9500000, frozen:false },
+      { id:'BUD-MFG-2024', name:'Manufacturing Capex', dept:'Manufacturing', category:'Capex', owner:'Priya Nair', fy:'FY2024-25', allocated: 90000000, consumed: 91000000, committed: 3500000, frozen:false },
+      { id:'BUD-QA-2024', name:'Quality Assurance Opex', dept:'Quality Assurance', category:'Opex', owner:'Arjun Shah', fy:'FY2024-25', allocated: 8000000, consumed: 5600000, committed: 900000, frozen:false },
+      { id:'BUD-FIN-2024', name:'Finance Opex', dept:'Finance', category:'Opex', owner:'Meera Iyer', fy:'FY2024-25', allocated: 10000000, consumed: 4000000, committed: 1000000, frozen:false },
+      { id:'BUD-IT-2023', name:'IT Opex', dept:'IT', category:'Opex', owner:'Amit Singh', fy:'FY2023-24', allocated: 38000000, consumed: 36000000, committed: 1500000, frozen:false },
+      { id:'BUD-MKT-2023', name:'Marketing Opex', dept:'Marketing', category:'Opex', owner:'Anita Rao', fy:'FY2023-24', allocated: 26000000, consumed: 25000000, committed: 500000, frozen:false },
+      // Added items to cover all statuses and categories across FYs
+      { id:'BUD-SALES-2024', name:'Sales Opex', dept:'Sales', category:'Opex', owner:'Vikram Malhotra', fy:'FY2024-25', allocated: 18000000, consumed: 15200000, committed: 1200000, frozen:false }, // At Risk
+      { id:'BUD-RND-2024', name:'R&D Capex', dept:'R&D', category:'Capex', owner:'Kavya Desai', fy:'FY2024-25', allocated: 60000000, consumed: 30000000, committed: 12000000, frozen:false }, // Healthy
+      { id:'BUD-LOG-2024', name:'Logistics Opex', dept:'Logistics', category:'Opex', owner:'Suraj Kulkarni', fy:'FY2024-25', allocated: 15000000, consumed: 11000000, committed: 2000000, frozen:true }, // Frozen
+      { id:'BUD-ITCAP-2024', name:'IT Infrastructure Capex', dept:'IT', category:'Capex', owner:'Amit Singh', fy:'FY2024-25', allocated: 30000000, consumed: 32000000, committed: 1000000, frozen:false }, // Overrun
+      { id:'BUD-PROC-2025', name:'Procurement Opex', dept:'Procurement', category:'Opex', owner:'Divya Menon', fy:'FY2025-26', allocated: 12000000, consumed: 5000000, committed: 1500000, frozen:false }, // Healthy
+      { id:'BUD-MKT-2025', name:'Marketing Capex', dept:'Marketing', category:'Capex', owner:'Anita Rao', fy:'FY2025-26', allocated: 22000000, consumed: 18500000, committed: 1000000, frozen:false }, // At Risk
+      { id:'BUD-OPS-2025', name:'Operations Opex', dept:'Operations', category:'Opex', owner:'Rahul Verma', fy:'FY2025-26', allocated: 34000000, consumed: 20000000, committed: 9000000, frozen:false }, // Healthy
+      { id:'BUD-HR-2025', name:'HR Capex', dept:'HR', category:'Capex', owner:'Neha Gupta', fy:'FY2025-26', allocated: 8000000, consumed: 5000000, committed: 500000, frozen:false }, // Healthy
+      { id:'BUD-FAC-2023', name:'Facilities Opex', dept:'Facilities', category:'Opex', owner:'Sanjay Mehta', fy:'FY2023-24', allocated: 14000000, consumed: 13000000, committed: 1000000, frozen:false }, // At Risk
+  { id:'BUD-QA-2023', name:'QA Capex', dept:'Quality Assurance', category:'Capex', owner:'Arjun Shah', fy:'FY2023-24', allocated: 7000000, consumed: 7200000, committed: 200000, frozen:false }, // Overrun
+  // Additional FY2024-25 coverage
+  { id:'BUD-LEG-2024', name:'Legal Opex', dept:'Legal', category:'Opex', owner:'Rohit Sinha', fy:'FY2024-25', allocated: 12000000, consumed: 9900000, committed: 500000, frozen:false }, // At Risk
+  { id:'BUD-ENG-2024', name:'Engineering Capex', dept:'Engineering', category:'Capex', owner:'Harini Joshi', fy:'FY2024-25', allocated: 45000000, consumed: 20000000, committed: 15000000, frozen:false }, // Healthy
+  { id:'BUD-SUP-2024', name:'Customer Support Opex', dept:'Customer Support', category:'Opex', owner:'Manish Patel', fy:'FY2024-25', allocated: 8000000, consumed: 3000000, committed: 1000000, frozen:true }, // Frozen
+  { id:'BUD-SEC-2024', name:'Security Capex', dept:'Security', category:'Capex', owner:'Pooja Bhat', fy:'FY2024-25', allocated: 10000000, consumed: 10500000, committed: 200000, frozen:false }, // Overrun
+  { id:'BUD-DS-2024', name:'Data Science Opex', dept:'Data Science', category:'Opex', owner:'Aditya Rao', fy:'FY2024-25', allocated: 16000000, consumed: 9000000, committed: 3000000, frozen:false }, // Healthy
+  // Additional FY2025-26 coverage
+  { id:'BUD-DS-2025', name:'Data Science Opex', dept:'Data Science', category:'Opex', owner:'Aditya Rao', fy:'FY2025-26', allocated: 18000000, consumed: 15000000, committed: 1200000, frozen:false }, // At Risk
+  { id:'BUD-SC-2025', name:'Supply Chain Capex', dept:'Supply Chain', category:'Capex', owner:'Ishaan Kapur', fy:'FY2025-26', allocated: 55000000, consumed: 30000000, committed: 12000000, frozen:false }, // Healthy
+  { id:'BUD-COMPL-2025', name:'Compliance Opex', dept:'Compliance', category:'Opex', owner:'Rashmi Kulkarni', fy:'FY2025-26', allocated: 9000000, consumed: 7200000, committed: 300000, frozen:true }, // Frozen
+  { id:'BUD-TRAIN-2025', name:'Training Opex', dept:'Training', category:'Opex', owner:'Sunita Rao', fy:'FY2025-26', allocated: 6000000, consumed: 3500000, committed: 500000, frozen:false }, // Healthy
+  { id:'BUD-CSR-2025', name:'CSR Opex', dept:'CSR', category:'Opex', owner:'Vivek Anand', fy:'FY2025-26', allocated: 7000000, consumed: 5800000, committed: 300000, frozen:false }, // At Risk
+  { id:'BUD-SEC-2025', name:'Security Capex', dept:'Security', category:'Capex', owner:'Pooja Bhat', fy:'FY2025-26', allocated: 15000000, consumed: 16000000, committed: 400000, frozen:false }, // Overrun
+  { id:'BUD-ENG-2025', name:'Engineering Opex', dept:'Engineering', category:'Opex', owner:'Harini Joshi', fy:'FY2025-26', allocated: 22000000, consumed: 12000000, committed: 6000000, frozen:false }, // Healthy
+  { id:'BUD-LOG-2025', name:'Logistics Opex', dept:'Logistics', category:'Opex', owner:'Suraj Kulkarni', fy:'FY2025-26', allocated: 18000000, consumed: 15000000, committed: 2000000, frozen:true }, // Frozen
+  // Additional FY2023-24 coverage
+  { id:'BUD-ADMIN-2023', name:'Admin Opex', dept:'Admin', category:'Opex', owner:'Kiran Jain', fy:'FY2023-24', allocated: 9000000, consumed: 5000000, committed: 700000, frozen:false }, // Healthy
+  { id:'BUD-SALES-2023', name:'Sales Capex', dept:'Sales', category:'Capex', owner:'Vikram Malhotra', fy:'FY2023-24', allocated: 11000000, consumed: 12000000, committed: 300000, frozen:false }, // Overrun
+  { id:'BUD-HR-2023', name:'HR Opex', dept:'HR', category:'Opex', owner:'Neha Gupta', fy:'FY2023-24', allocated: 10000000, consumed: 8500000, committed: 500000, frozen:true }, // Frozen
+  { id:'BUD-PROC-2023', name:'Procurement Opex', dept:'Procurement', category:'Opex', owner:'Divya Menon', fy:'FY2023-24', allocated: 11000000, consumed: 9200000, committed: 1000000, frozen:false }, // At Risk
+  { id:'BUD-FIN-2023', name:'Finance Capex', dept:'Finance', category:'Capex', owner:'Meera Iyer', fy:'FY2023-24', allocated: 9000000, consumed: 6000000, committed: 500000, frozen:false } // Healthy
+    ];
+
+    function statusOf(b){
+      const util = b.consumed / Math.max(1,b.allocated);
+      if (b.frozen) return 'Frozen';
+      if (b.consumed > b.allocated) return 'Overrun';
+      if (util >= 0.80) return 'At Risk';
+      return 'Healthy';
+    }
+
+    function utilPct(b){ return Math.min(150, Math.round((b.consumed/Math.max(1,b.allocated))*100)); }
+
+    // Populate filters
+    function initFilters(){
+      const ownerSet = Array.from(new Set(budgets.map(b=>b.owner))).sort();
+      const deptSet  = Array.from(new Set(budgets.map(b=>b.dept))).sort();
+      const fyList   = Array.from(new Set(budgets.map(b=>b.fy))).sort().reverse();
+      const curFY = $('fFY').value;
+      $('fOwner').innerHTML = '<option value="">All</option>' + ownerSet.map(o=>`<option>${o}</option>`).join('');
+      $('fDept').innerHTML = '<option value="">All</option>' + deptSet.map(d=>`<option>${d}</option>`).join('');
+      $('fFY').innerHTML = fyList.map((y,i)=>`<option ${i===0?'selected':''}>${y}</option>`).join('');
+      if (curFY && fyList.includes(curFY)) $('fFY').value = curFY;
+    }
+
+    function filtered(){
+      const s = ($('fSearch').value||'').toLowerCase();
+      const dept = $('fDept').value; const cat=$('fCat').value; const owner=$('fOwner').value; const st=$('fStatus').value; const fy=$('fFY').value;
+      return budgets.filter(b=>{
+        const hay = `${b.id}|${b.name}|${b.dept}|${b.owner}`.toLowerCase();
+        if (s && !hay.includes(s)) return false;
+        if (dept && b.dept!==dept) return false;
+        if (cat && b.category!==cat) return false;
+        if (owner && b.owner!==owner) return false;
+        if (fy && b.fy!==fy) return false;
+        if (st && statusOf(b)!==st) return false;
+        return true;
+      });
+    }
+
+    function badge(st){
+      const m = { 'Healthy':'healthy', 'At Risk':'risk', 'Overrun':'overrun', 'Frozen':'frozen', 'Pending':'pending' };
+      return `<span class="badge ${m[st]||'healthy'}">${st}</span>`;
+    }
+
+    function render(){
+      const list = filtered();
+      const tbody = $('tbody');
+  tbody.innerHTML = list.map(b=>{
+        const remaining = b.allocated - b.consumed - b.committed;
+        const util = utilPct(b);
+        const st = statusOf(b);
+        const barColor = st==='Overrun' ? 'bg-red-500' : st==='At Risk' ? 'bg-amber-500' : 'bg-green-500';
+        return `
+          <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+    <td class="px-4 py-3 align-top min-w-[16rem]">
+              <div class="font-semibold text-gray-900">${b.id}</div>
+              <div class="text-xs text-gray-500">${b.name}</div>
+            </td>
+    <td class="px-4 py-3 align-top min-w-[12rem]">
+              <div class="text-sm text-gray-900">${b.dept}</div>
+              <div class="text-xs text-gray-600">${b.category}</div>
+            </td>
+    <td class="px-4 py-3 align-top min-w-[10rem]">${b.owner}</td>
+    <td class="px-4 py-3 align-top min-w-[8rem]">${b.fy}</td>
+    <td class="px-4 py-3 text-right align-top min-w-[10rem]"><div class="num font-semibold">${Rs(b.allocated)}</div></td>
+    <td class="px-4 py-3 text-right align-top min-w-[10rem]"><div class="num">${Rs(b.consumed)}</div></td>
+    <td class="px-4 py-3 text-right align-top min-w-[10rem]"><div class="num">${Rs(b.committed)}</div></td>
+    <td class="px-4 py-3 text-right align-top min-w-[10rem]"><div class="num">${Rs(remaining)}</div></td>
+    <td class="px-4 py-3 align-top min-w-[8rem]">
+              <div class="progress w-40"><span class="${barColor}" style="width:${Math.min(util,100)}%"></span></div>
+              <div class="text-xs text-gray-600 mt-1">${util}%</div>
+            </td>
+    <td class="px-4 py-3 align-top min-w-[8rem]">${badge(st)}</td>
+    <td class="px-4 py-3 align-top min-w-[10rem]">
+              <div class="flex items-center gap-2">
+                <button class="px-3 py-1.5 text-sm rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100" onclick="viewBudget('${b.id}')"><i class="fas fa-eye mr-1"></i>View</button>
+                <button class="px-3 py-1.5 text-sm rounded-lg bg-green-50 text-green-700 hover:bg-green-100" onclick="openAdjust('${b.id}')"><i class="fas fa-sliders-h mr-1"></i>Adjust</button>
+              </div>
+            </td>
+          </tr>`;
+      }).join('') || `<tr><td colspan="11" class="px-4 py-8 text-center text-gray-500">No budgets found for the selected filters.</td></tr>`;
+
+      // KPIs
+      const totalBudget = list.reduce((s,b)=>s+b.allocated,0);
+      const totalConsumed = list.reduce((s,b)=>s+b.consumed,0);
+      const totalCommitted = list.reduce((s,b)=>s+b.committed,0);
+      const totalRemaining = list.reduce((s,b)=>s+(b.allocated-b.consumed-b.committed),0);
+      const riskCount = list.filter(b=>statusOf(b)==='At Risk').length;
+      const overrunCount = list.filter(b=>statusOf(b)==='Overrun').length;
+      $('kpiTotalBudget').textContent = Rs(totalBudget);
+      $('kpiConsumed').textContent = Rs(totalConsumed);
+      $('kpiCommitted').textContent = Rs(totalCommitted);
+      $('kpiRemaining').textContent = Rs(totalRemaining);
+      $('kpiRisk').textContent = String(riskCount);
+      $('kpiOverrun').textContent = String(overrunCount);
+    }
+
+    function viewBudget(id){
+      const b = budgets.find(x=>x.id===id) || filtered()[0];
+      if(!b) return;
+      const remaining = b.allocated - b.consumed - b.committed;
+      const st = statusOf(b);
+      const util = utilPct(b);
+      const months = [
+        {m:'Apr', plan:b.allocated/12, actual: b.consumed*0.06},
+        {m:'May', plan:b.allocated/12, actual: b.consumed*0.07},
+        {m:'Jun', plan:b.allocated/12, actual: b.consumed*0.08},
+        {m:'Jul', plan:b.allocated/12, actual: b.consumed*0.10},
+        {m:'Aug', plan:b.allocated/12, actual: b.consumed*0.12},
+        {m:'Sep', plan:b.allocated/12, actual: b.consumed*0.09},
+        {m:'Oct', plan:b.allocated/12, actual: b.consumed*0.10},
+        {m:'Nov', plan:b.allocated/12, actual: b.consumed*0.09},
+        {m:'Dec', plan:b.allocated/12, actual: b.consumed*0.08},
+        {m:'Jan', plan:b.allocated/12, actual: b.consumed*0.06},
+        {m:'Feb', plan:b.allocated/12, actual: b.consumed*0.08},
+        {m:'Mar', plan:b.allocated/12, actual: b.consumed*0.07},
+      ];
+  const monthlyRows = months.map(x=>`<tr class="border-t"><td class="px-3 py-2">${x.m}</td><td class="px-3 py-2 text-right num">${Rs(x.plan)}</td><td class="px-3 py-2 text-right num">${Rs(x.actual)}</td></tr>`).join('');
+      const txns = [
+        {date:'2024-07-12', ref:'PO-2024-012', desc:'Software subscriptions', amt: -850000},
+        {date:'2024-08-03', ref:'INV-2024-210', desc:'Consulting retainer', amt: -1200000},
+        {date:'2024-08-14', ref:'PO-2024-089', desc:'Laptops batch', amt: -3500000},
+        {date:'2024-09-01', ref:'ADJ-2024-11', desc:'Budget adjustment', amt: +1000000},
+      ];
+  const txnRows = txns.map(t=>`<tr class="border-t"><td class="px-3 py-2">${new Date(t.date).toLocaleDateString('en-IN')}</td><td class="px-3 py-2">${t.ref}</td><td class="px-3 py-2">${t.desc}</td><td class="px-3 py-2 text-right num">${Rs(t.amt)}</td></tr>`).join('');
+
+      $('modalTitle').textContent = `${b.id} • ${b.name}`;
+      $('modalBody').innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div class="lg:col-span-2 space-y-4">
+            <div class="card p-4">
+              <div class="flex items-start justify-between">
+                <div>
+                  <div class="text-sm text-gray-500">Department</div>
+                  <div class="text-xl font-bold text-gray-900">${b.dept}</div>
+                  <div class="text-sm text-gray-600 mt-1">Owner: <span class="font-medium">${b.owner}</span> • Category: ${b.category} • FY: ${b.fy}</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm text-gray-500 mb-1">Status</div>
+                  ${badge(st)}
+                </div>
+              </div>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-gray-700 mt-4">
+                <div><span class="text-gray-500">Allocated</span><div class="font-semibold num">${Rs(b.allocated)}</div></div>
+                <div><span class="text-gray-500">Consumed</span><div class="num">${Rs(b.consumed)}</div></div>
+                <div><span class="text-gray-500">Committed</span><div class="num">${Rs(b.committed)}</div></div>
+                <div><span class="text-gray-500">Remaining</span><div class="font-semibold num">${Rs(remaining)}</div></div>
+              </div>
+              <div class="mt-4">
+                <div class="text-xs text-gray-600 mb-1">Utilization</div>
+                <div class="progress"><span class="${st==='Overrun'?'bg-red-500':st==='At Risk'?'bg-amber-500':'bg-green-500'}" style="width:${Math.min(util,100)}%"></span></div>
+                <div class="text-xs text-gray-600 mt-1">${util}%</div>
+              </div>
+            </div>
+
+            <div class="card p-4 overflow-x-auto">
+              <div class="font-semibold text-gray-900 mb-3">Monthly Breakdown</div>
+              <table class="w-full text-sm">
+                <thead class="bg-gray-50"><tr><th class="px-3 py-2 text-left">Month</th><th class="px-3 py-2 text-right">Plan</th><th class="px-3 py-2 text-right">Actual</th></tr></thead>
+                <tbody>${monthlyRows}</tbody>
+              </table>
+            </div>
+
+            <div class="card p-4 overflow-x-auto">
+              <div class="font-semibold text-gray-900 mb-3">Recent Movements</div>
+              <table class="w-full text-sm">
+                <thead class="bg-gray-50"><tr><th class="px-3 py-2 text-left">Date</th><th class="px-3 py-2 text-left">Ref</th><th class="px-3 py-2 text-left">Description</th><th class="px-3 py-2 text-right">Amount</th></tr></thead>
+                <tbody>${txnRows}</tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-2">Variance Analysis</div>
+              <div class="text-sm text-gray-700">${st==='Overrun' ? 'Budget exceeded – consider reforecast or transfer.' : st==='At Risk' ? 'High utilization – monitor and control spending.' : 'Within safe limits – on track.'}</div>
+            </div>
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-2">Actions</div>
+              <div class="flex flex-wrap gap-2">
+                <button class="px-3 py-2 bg-green-50 text-green-700 rounded-lg border hover:bg-green-100" onclick="openAdjust('${b.id}')"><i class="fas fa-sliders-h mr-1"></i>Adjust</button>
+                <button class="px-3 py-2 bg-purple-50 text-purple-700 rounded-lg border hover:bg-purple-100" onclick="openTransfer('${b.id}')"><i class="fas fa-exchange-alt mr-1"></i>Transfer</button>
+                <button class="px-3 py-2 bg-gray-50 text-gray-700 rounded-lg border hover:bg-gray-100" onclick="toggleFreeze('${b.id}')"><i class="fas fa-snowflake mr-1"></i>${b.frozen?'Unfreeze':'Freeze'}</button>
+              </div>
+            </div>
+            <div class="card p-4">
+              <div class="font-semibold text-gray-900 mb-2">Notes</div>
+              <div class="text-sm text-gray-600">Align spends with quarterly plans. Large POs should be pre-approved against remaining budget.</div>
+            </div>
+          </div>
+        </div>`;
+      // Ensure footer shows relevant actions for a specific budget
+      const footer = document.querySelector('#modal .border-t');
+      if (footer){
+        footer.innerHTML = `
+          <div class="px-5 py-4 w-full flex items-center justify-end gap-2">
+            <button class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700" onclick="openAdjust('${b.id}')"><i class="fas fa-sliders-h mr-1"></i>Adjust</button>
+            <button class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700" onclick="openTransfer('${b.id}')"><i class="fas fa-exchange-alt mr-1"></i>Transfer</button>
+          </div>`;
+      }
+      openModal();
+      showToast(`Opened ${b.id} • ${st}`,'info');
+    }
+
+    // Actions
+    function openAdjust(id){
+      const b = budgets.find(x=>x.id===id) || filtered()[0]; if(!b) return showToast('No budget selected','warning');
+      const txt = prompt(`Adjust ${b.id} (positive to increase, negative to decrease):`, '1000000');
+      if(txt===null) return; const val = Number(txt);
+      if(!isFinite(val) || Math.abs(val)>1e11) return showToast('Invalid amount','error');
+      b.allocated = Math.max(0, b.allocated + val);
+      showToast(`${b.id} adjusted by ${Rs(val)}`,'success');
+      render();
+      if($('modal').classList.contains('hidden')===false) viewBudget(b.id);
+    }
+
+    function openTransfer(id){
+      const b = budgets.find(x=>x.id===id) || filtered()[0]; if(!b) return showToast('No budget selected','warning');
+      const toId = prompt('Transfer to budget ID (exact match):', budgets.find(x=>x.id!==b.id)?.id || '');
+      if(!toId) return; const to = budgets.find(x=>x.id===toId);
+      if(!to) return showToast('Target budget not found','error');
+      const amtTxt = prompt(`Amount to transfer from ${b.id} to ${to.id}:`, '500000');
+      if(amtTxt===null) return; const amt = Number(amtTxt);
+      if(!isFinite(amt) || amt<=0) return showToast('Invalid amount','error');
+      if(b.allocated-amt<0) return showToast('Insufficient alloc on source','error');
+      b.allocated -= amt; to.allocated += amt;
+      showToast(`Transferred ${Rs(amt)} from ${b.id} to ${to.id}`,'success');
+      render();
+      if($('modal').classList.contains('hidden')===false) viewBudget(b.id);
+    }
+
+    function toggleFreeze(id){
+      const b = budgets.find(x=>x.id===id) || filtered()[0]; if(!b) return showToast('No budget selected','warning');
+      b.frozen = !b.frozen;
+      showToast(`${b.id} ${b.frozen?'frozen':'unfrozen'}`,'info');
+      render();
+      if($('modal').classList.contains('hidden')===false) viewBudget(b.id);
+    }
+
+    // Create Budget
+    function openCreate(){
+      $('modalTitle').textContent = 'Create New Budget';
+      $('modalBody').innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="card p-4">
+            <div class="text-sm text-gray-700">Basic Info</div>
+            <div class="mt-3 space-y-3 text-sm">
+              <label class="block">Name
+                <input id="cb_name" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., IT Opex"/>
+              </label>
+              <label class="block">Department
+                <input id="cb_dept" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., IT"/>
+              </label>
+              <label class="block">Category
+                <select id="cb_cat" class="mt-1 w-full px-3 py-2 border rounded-lg">
+                  <option>Opex</option>
+                  <option>Capex</option>
+                </select>
+              </label>
+              <label class="block">Owner
+                <input id="cb_owner" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., Amit Singh"/>
+              </label>
+            </div>
+          </div>
+          <div class="card p-4">
+            <div class="text-sm text-gray-700">Financials</div>
+            <div class="mt-3 space-y-3 text-sm">
+              <label class="block">Fiscal Year
+                <input id="cb_fy" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., FY2025-26"/>
+              </label>
+              <label class="block">Allocated Amount
+                <input id="cb_alloc" type="number" min="0" step="1000" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="e.g., 25000000"/>
+              </label>
+              <label class="block">Custom ID (optional)
+                <input id="cb_id" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="auto-generated if empty"/>
+              </label>
+            </div>
+          </div>
+        </div>`;
+      // Footer actions
+      const footer = document.querySelector('#modal .border-t');
+      if (footer){
+        footer.innerHTML = `
+          <div class="px-5 py-4 w-full flex items-center justify-end gap-2">
+            <button class="px-4 py-2 bg-gray-50 border rounded-lg hover:bg-gray-100" onclick="closeModal()">Cancel</button>
+            <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" onclick="createBudgetSubmit()"><i class="fas fa-save mr-1"></i>Create</button>
+          </div>`;
+      }
+      openModal();
+    }
+
+    function createBudgetSubmit(){
+      const name = $('cb_name').value.trim();
+      const dept = $('cb_dept').value.trim();
+      const cat  = $('cb_cat').value;
+      const owner= $('cb_owner').value.trim();
+      const fy   = $('cb_fy').value.trim();
+      const alloc= Number(($('cb_alloc').value||'').trim());
+      let id     = $('cb_id').value.trim();
+      if(!name||!dept||!owner||!fy||!isFinite(alloc)||alloc<=0){
+        return showToast('Please fill Name, Dept, Owner, FY and a positive Allocated amount','error');
+      }
+      if(!id){ id = `BUD-${dept.toUpperCase().replace(/\s+/g,'').slice(0,4)}-${Date.now().toString().slice(-6)}`; }
+      if(budgets.some(b=>b.id===id)) return showToast('ID already exists','error');
+      budgets.push({ id, name, dept, category:cat, owner, fy, allocated: Math.round(alloc), consumed:0, committed:0, frozen:false });
+      showToast(`Budget ${id} created`,'success');
+      initFilters();
+      render();
+      closeModal();
+    }
+
+    function toggleFreezeBulk(){
+      const list = filtered();
+      if(list.length===0) return showToast('No budgets in view','warning');
+      list.forEach(b=> b.frozen = !b.frozen);
+      showToast(`Toggled freeze on ${list.length} budget(s)`,'info');
+      render();
+    }
+
+    // Toolbar helpers
+    function applyFilters(){ render(); showToast('Filters applied','info'); }
+    function resetFilters(){ $('fSearch').value=''; $('fDept').value=''; $('fCat').value=''; $('fOwner').value=''; $('fStatus').value=''; render(); showToast('Filters reset','info'); }
+    function setFyPreset(p){ const sel=$('fFY'); if(p==='this'){ sel.selectedIndex=0; showToast('FY set to current','info'); } else if(p==='last'){ sel.selectedIndex=Math.min(1, sel.options.length-1); showToast('FY set to last','info'); } else { sel.value=''; showToast('FY cleared','info'); } render(); }
+    function exportCSV(){ showToast('Exported current view to CSV (stub)','info'); }
+    function refreshData(){ showToast('Data refreshed','info'); render(); }
+
+    // Modal helpers
+    function openModal(){ $('modal').classList.remove('hidden'); }
+    function closeModal(){ $('modal').classList.add('hidden'); }
+
+    // Init
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.reveal').forEach((el,i) => setTimeout(()=>el.classList.add('show'), 60*i));
+      initFilters();
+      render();
+    });
+  </script>
+</body>
+</html>

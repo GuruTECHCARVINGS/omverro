@@ -1,0 +1,265 @@
+
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <title>
+   Vendor Acknowledged PO's - Buyer Portal
+  </title>
+  <script src="https://cdn.tailwindcss.com">
+  </script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  <style>
+   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+ </head>
+ <body class="bg-white text-gray-900">
+  <main class="max-w-[1200px] mx-auto px-6 pb-12">
+   <h2 class="text-[#0F2B5B] font-extrabold text-4xl mt-8 mb-6">
+    Vendor Acknowledged PO's
+   </h2>
+   <form class="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-4 sm:space-y-0 mb-6">
+    <select aria-label="Vendor" class="border border-[#B9D1FF] rounded-md px-4 py-3 w-full sm:w-1/3 text-base text-gray-900">
+     <option>
+      Vendor
+     </option>
+     <option>
+      Steadfast Manufacturing
+     </option>
+     <option>
+      Prime Engineering Ltd.
+     </option>
+     <option>
+      Precision Works Inc.
+     </option>
+     <option>
+      Metro Solutions
+     </option>
+     <option>
+      Tech Innovations
+     </option>
+     <option>
+      Apex Industrial Co.
+     </option>
+    </select>
+    <datalist id="po-numbers">
+     <option value="80024001">80024001</option>
+     <option value="800240002">800240002</option>
+     <option value="800239998">800239998</option>
+     <option value="80023995">80023995</option>
+     <option value="80023990">80023990</option>
+     <option value="80023988">80023988</option>
+    </datalist>
+    <input aria-label="PO Number" class="border border-[#B9D1FF] rounded-md px-4 py-3 w-full sm:w-1/3 text-base text-gray-900" list="po-numbers" placeholder="PO Number" type="text"/>
+    <button class="bg-[#0F2B5B] text-white font-semibold rounded-md px-6 py-3 w-full sm:w-auto" type="submit">
+     Apply Filters
+    </button>
+   </form>
+   <div class="overflow-x-auto">
+    <table class="w-full border border-[#B9D1FF] rounded-md border-collapse">
+     <thead>
+      <tr class="bg-white border-b border-[#B9D1FF]">
+       <th class="text-left font-semibold px-6 py-3 border-r border-[#B9D1FF] min-w-[120px]">
+        PO Number
+       </th>
+       <th class="text-left font-semibold px-6 py-3 border-r border-[#B9D1FF] min-w-[220px]">
+        Vendor
+       </th>
+       <th class="text-left font-semibold px-6 py-3 border-r border-[#B9D1FF] min-w-[160px]">
+        Order Date
+       </th>
+       <th class="text-left font-semibold px-6 py-3 border-r border-[#B9D1FF] min-w-[100px]">
+        Status
+       </th>
+       <th class="text-left font-semibold px-6 py-3 border-r border-[#B9D1FF] min-w-[100px]">
+        Quantity
+       </th>
+       <th class="text-left font-semibold px-6 py-3 border-r border-[#B9D1FF] min-w-[140px]">
+        Delivery Date
+       </th>
+       <th class="text-left font-semibold px-6 py-3 border-r border-[#B9D1FF] min-w-[120px]">
+        Net Price
+       </th>
+       <th class="text-left font-semibold px-6 py-3 min-w-[140px]">
+        Total Amount in INR
+       </th>
+      </tr>
+     </thead>
+     <tbody>
+      <tr class="border-t border-[#B9D1FF]">
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        80024001
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        Steadfast Manufacturing
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        March 10, 2024
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        <span class="bg-[#0F2B5B] text-white rounded-md px-3 py-1 text-sm font-semibold select-none">
+         Open
+        </span>
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        150
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        March 20, 2024
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        ₹ 3,000
+       </td>
+       <td class="px-6 py-4 font-extrabold">
+        ₹ 4,50.000
+       </td>
+      </tr>
+      <tr class="border-t border-[#B9D1FF]">
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        800240002
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        Prime Engineering Ltd.
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        March 6, 2024
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        <span class="bg-[#0F2B5B] text-white rounded-md px-3 py-1 text-sm font-semibold select-none">
+         Accepted
+        </span>
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        80
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        March 15, 2024
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        ₹ 2,200
+       </td>
+       <td class="px-6 py-4 font-extrabold">
+        ₹ 1.75.000
+       </td>
+      </tr>
+      <tr class="border-t border-[#B9D1FF]">
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        800239998
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        Precision Works Inc.
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        February 28, 2024
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        <span class="bg-[#0F2B5B] text-white rounded-md px-3 py-1 text-sm font-semibold select-none">
+         Open
+        </span>
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        120
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        March 10, 2024
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        ₹ 2,500
+       </td>
+       <td class="px-6 py-4 font-extrabold">
+        ₹ 3.20.000
+       </td>
+      </tr>
+      <tr class="border-t border-[#B9D1FF]">
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        80023995
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        Metro Solutions
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        February 20, 2024
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        <span class="bg-[#0F2B5B] text-white rounded-md px-3 py-1 text-sm font-semibold select-none">
+         Accepted
+        </span>
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        50
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        March 5, 2024
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        ₹ 1,600
+       </td>
+       <td class="px-6 py-4 font-extrabold">
+        ₹ 82.000
+       </td>
+      </tr>
+      <tr class="border-t border-[#B9D1FF]">
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        80023990
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        Tech Innovations
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        February 12, 2024
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        <span class="bg-[#0F2B5B] text-white rounded-md px-3 py-1 text-sm font-semibold select-none">
+         Open
+        </span>
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        200
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        March 25, 2024
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        ₹ 4,500
+       </td>
+       <td class="px-6 py-4 font-extrabold">
+        ₹ 9.20.000
+       </td>
+      </tr>
+      <tr class="border-t border-[#B9D1FF] rounded-b-md">
+       <td class="px-6 py-4 border-r border-[#B9D1FF] rounded-bl-md">
+        80023988
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        Apex Industrial Co.
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        January 30, 2024
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        <span class="bg-[#0F2B5B] text-white rounded-md px-3 py-1 text-sm font-semibold select-none">
+         Accepted
+        </span>
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        90
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        February 15, 2024
+       </td>
+       <td class="px-6 py-4 border-r border-[#B9D1FF]">
+        ₹ 2,700
+       </td>
+       <td class="px-6 py-4 font-extrabold rounded-br-md">
+        ₹ 2.45.000
+       </td>
+      </tr>
+     </tbody>
+    </table>
+   </div>
+  </main>
+ </body>
+</html>

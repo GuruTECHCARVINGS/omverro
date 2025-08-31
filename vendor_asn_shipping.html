@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ASN & Shipping - Vendor Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .hover-lift {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hover-lift:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .status-pending {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      color: #92400e;
+      border: 1px solid #d97706;
+    }
+
+    .status-in-transit {
+      background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+      color: #1e40af;
+      border: 1px solid #3b82f6;
+    }
+
+    .status-delivered {
+      background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+      color: #166534;
+      border: 1px solid #16a34a;
+    }
+
+    .status-delayed {
+      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+      color: #991b1b;
+      border: 1px solid #dc2626;
+    }
+
+    .status-cancelled {
+      background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+      color: #374151;
+      border: 1px solid #9ca3af;
+    }
+
+    .tab-active {
+      background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+      color: white;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+
+    .tracking-step {
+      position: relative;
+    }
+
+    .tracking-step::before {
+      content: '';
+      position: absolute;
+      left: 15px;
+      top: 30px;
+      bottom: -30px;
+      width: 2px;
+      background: #e5e7eb;
+    }
+
+    .tracking-step:last-child::before {
+      display: none;
+    }
+
+    .tracking-step.completed .tracking-icon {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+    }
+
+    .tracking-step.active .tracking-icon {
+      background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+      color: white;
+    }
+
+    .tracking-step.pending .tracking-icon {
+      background: #e5e7eb;
+      color: #9ca3af;
+    }
+
+    .required-field::after {
+      content: '*';
+      color: #ef4444;
+      margin-left: 4px;
+    }
+
+    .form-error {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+
+    .form-success {
+      border-color: #10b981;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .pulse-delayed {
+      animation: pulse 2s infinite;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed top-4 right-4 z-50 hidden">
+    <div class="glass-card px-6 py-4 rounded-xl shadow-lg fade-in">
+      <div class="flex items-center gap-3">
+        <i id="toast-icon" class="text-lg"></i>
+        <span id="toast-message" class="font-medium"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Navigation -->
+  <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+    <div class="px-6 py-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-4">
+          <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center">
+            <i class="fas fa-truck text-white"></i>
+          </div>
+          <div>
+            <h1 class="font-bold text-xl text-gray-800">ASN & Shipping</h1>
+            <p class="text-sm text-gray-500">Manage advance shipping notices and track shipments</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-6">
+          <div class="flex items-center gap-3">
+            <span class="text-sm text-gray-600">Active Shipments:</span>
+            <span class="text-sm font-medium text-blue-600">24</span>
+          </div>
+          <button onclick="createNewASN()" class="gradient-bg text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all flex items-center gap-2">
+            <i class="fas fa-plus"></i>
+            New ASN
+          </button>
+          <button onclick="viewShippingAnalytics()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-all flex items-center gap-2">
+            <i class="fas fa-chart-line"></i>
+            Analytics
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="p-6 custom-scrollbar overflow-y-auto">
+    <!-- Shipping Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="glass-card p-6 rounded-2xl hover-lift">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+            <i class="fas fa-clock text-blue-600 text-lg"></i>
+          </div>
+          <div class="text-blue-600 text-sm font-medium flex items-center">
+            <i class="fas fa-arrow-up mr-1"></i>+5%
+          </div>
+        </div>
+        <p class="text-gray-600 text-sm font-medium">Pending Shipments</p>
+        <p class="text-2xl font-bold text-gray-900">8</p>
+        <p class="text-xs text-gray-500 mt-1">Ready for dispatch</p>
+      </div>
+
+      <div class="glass-card p-6 rounded-2xl hover-lift">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
+            <i class="fas fa-truck text-yellow-600 text-lg"></i>
+          </div>
+          <div class="text-yellow-600 text-sm font-medium flex items-center">
+            <i class="fas fa-minus mr-1"></i>-2%
+          </div>
+        </div>
+        <p class="text-gray-600 text-sm font-medium">In Transit</p>
+        <p class="text-2xl font-bold text-gray-900">16</p>
+        <p class="text-xs text-gray-500 mt-1">Active shipments</p>
+      </div>
+
+      <div class="glass-card p-6 rounded-2xl hover-lift">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+            <i class="fas fa-check-circle text-green-600 text-lg"></i>
+          </div>
+          <div class="text-green-600 text-sm font-medium flex items-center">
+            <i class="fas fa-arrow-up mr-1"></i>+12%
+          </div>
+        </div>
+        <p class="text-gray-600 text-sm font-medium">Delivered Today</p>
+        <p class="text-2xl font-bold text-gray-900">12</p>
+        <p class="text-xs text-gray-500 mt-1">On-time delivery: 92%</p>
+      </div>
+
+      <div class="glass-card p-6 rounded-2xl hover-lift">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+            <i class="fas fa-exclamation-triangle text-red-600 text-lg"></i>
+          </div>
+          <div class="text-red-600 text-sm font-medium flex items-center">
+            <i class="fas fa-arrow-down mr-1"></i>-8%
+          </div>
+        </div>
+        <p class="text-gray-600 text-sm font-medium">Delayed Shipments</p>
+        <p class="text-2xl font-bold text-gray-900">3</p>
+        <p class="text-xs text-gray-500 mt-1">Require attention</p>
+      </div>
+    </div>
+
+    <!-- Shipping Tabs -->
+    <div class="glass-card rounded-2xl mb-8">
+      <div class="border-b border-gray-200">
+        <div class="flex flex-wrap">
+          <button class="tab-btn tab-active px-6 py-4 text-sm font-medium border-b-2 border-indigo-500" onclick="switchTab('asn')">
+            <i class="fas fa-file-alt mr-2"></i>ASN Management
+          </button>
+          <button class="tab-btn px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700" onclick="switchTab('tracking')">
+            <i class="fas fa-map-marker-alt mr-2"></i>Shipment Tracking
+          </button>
+          <button class="tab-btn px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700" onclick="switchTab('carriers')">
+            <i class="fas fa-truck mr-2"></i>Carriers
+          </button>
+          <button class="tab-btn px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700" onclick="switchTab('analytics')">
+            <i class="fas fa-chart-bar mr-2"></i>Analytics
+          </button>
+          <button class="tab-btn px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700" onclick="switchTab('documents')">
+            <i class="fas fa-file-pdf mr-2"></i>Documents
+          </button>
+        </div>
+      </div>
+
+      <div class="p-6">
+        <!-- ASN Management Tab -->
+        <div id="asn-tab" class="tab-content">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-semibold text-gray-800">Advance Shipping Notices</h2>
+            <div class="flex gap-3">
+              <select id="asnFilter" onchange="filterASN()" class="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <option value="all">All ASNs</option>
+                <option value="pending">Pending</option>
+                <option value="in-transit">In Transit</option>
+                <option value="delivered">Delivered</option>
+                <option value="delayed">Delayed</option>
+              </select>
+              <button onclick="createNewASN()" class="gradient-bg text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all flex items-center gap-2">
+                <i class="fas fa-plus"></i>
+                New ASN
+              </button>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <!-- ASN 1 -->
+            <div class="glass-card p-6 rounded-xl hover-lift">
+              <div class="flex justify-between items-start mb-4">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <h3 class="text-lg font-semibold text-gray-800">ASN-2025-001</h3>
+                    <span class="status-in-transit px-3 py-1 rounded-full text-xs font-medium">In Transit</span>
+                    <span class="text-xs text-gray-500">High Priority</span>
+                  </div>
+                  <p class="text-gray-600 mb-3">IT Equipment shipment to TechCorp Mumbai facility</p>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-500">
+                    <div>
+                      <i class="fas fa-shopping-cart mr-1"></i>
+                      <span>PO: #PO-2025-0456</span>
+                    </div>
+                    <div>
+                      <i class="fas fa-calendar mr-1"></i>
+                      <span>Ship Date: Aug 28, 2025</span>
+                    </div>
+                    <div>
+                      <i class="fas fa-truck mr-1"></i>
+                      <span>Carrier: FedEx Express</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm text-gray-500 mb-2">Expected Delivery</div>
+                  <div class="text-sm font-medium text-gray-800">Aug 31, 2025</div>
+                  <div class="text-xs text-green-600 mt-1">On Time</div>
+                  <button class="text-blue-600 hover:text-blue-800 mt-2 text-sm">
+                    <i class="fas fa-eye mr-1"></i>View Details
+                  </button>
+                </div>
+              </div>
+              <div class="border-t border-gray-200 pt-4">
+                <div class="flex items-center justify-between text-sm">
+                  <div class="flex items-center gap-4">
+                    <span><i class="fas fa-box mr-1"></i>15 items</span>
+                    <span><i class="fas fa-weight mr-1"></i>45.2 kg</span>
+                    <span><i class="fas fa-map-marker-alt mr-1"></i>Mumbai, MH</span>
+                  </div>
+                  <div class="text-gray-600">Tracking: #FDX-987654321</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ASN 2 -->
+            <div class="glass-card p-6 rounded-xl hover-lift">
+              <div class="flex justify-between items-start mb-4">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <h3 class="text-lg font-semibold text-gray-800">ASN-2025-002</h3>
+                    <span class="status-delivered px-3 py-1 rounded-full text-xs font-medium">Delivered</span>
+                    <span class="text-xs text-gray-500">Standard Priority</span>
+                  </div>
+                  <p class="text-gray-600 mb-3">Office supplies and stationery for Global Industries</p>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-500">
+                    <div>
+                      <i class="fas fa-shopping-cart mr-1"></i>
+                      <span>PO: #PO-2025-0389</span>
+                    </div>
+                    <div>
+                      <i class="fas fa-calendar mr-1"></i>
+                      <span>Ship Date: Aug 25, 2025</span>
+                    </div>
+                    <div>
+                      <i class="fas fa-truck mr-1"></i>
+                      <span>Carrier: Blue Dart</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm text-gray-500 mb-2">Delivered On</div>
+                  <div class="text-sm font-medium text-gray-800">Aug 27, 2025</div>
+                  <div class="text-xs text-green-600 mt-1">1 day early</div>
+                  <button class="text-blue-600 hover:text-blue-800 mt-2 text-sm">
+                    <i class="fas fa-eye mr-1"></i>View Details
+                  </button>
+                </div>
+              </div>
+              <div class="border-t border-gray-200 pt-4">
+                <div class="flex items-center justify-between text-sm">
+                  <div class="flex items-center gap-4">
+                    <span><i class="fas fa-box mr-1"></i>8 items</span>
+                    <span><i class="fas fa-weight mr-1"></i>12.5 kg</span>
+                    <span><i class="fas fa-map-marker-alt mr-1"></i>Delhi, DL</span>
+                  </div>
+                  <div class="text-gray-600">POD Received</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ASN 3 -->
+            <div class="glass-card p-6 rounded-xl hover-lift pulse-delayed">
+              <div class="flex justify-between items-start mb-4">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <h3 class="text-lg font-semibold text-gray-800">ASN-2025-003</h3>
+                    <span class="status-delayed px-3 py-1 rounded-full text-xs font-medium">Delayed</span>
+                    <span class="text-xs text-red-600 font-medium">URGENT</span>
+                  </div>
+                  <p class="text-gray-600 mb-3">Industrial equipment for Manufacturing Corp - Critical delivery</p>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-500">
+                    <div>
+                      <i class="fas fa-shopping-cart mr-1"></i>
+                      <span>PO: #PO-2025-0523</span>
+                    </div>
+                    <div>
+                      <i class="fas fa-calendar mr-1"></i>
+                      <span>Ship Date: Aug 26, 2025</span>
+                    </div>
+                    <div>
+                      <i class="fas fa-truck mr-1"></i>
+                      <span>Carrier: DTDC</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm text-gray-500 mb-2">Expected Delivery</div>
+                  <div class="text-sm font-medium text-red-600">Aug 29, 2025</div>
+                  <div class="text-xs text-red-600 mt-1">3 days delayed</div>
+                  <button class="text-blue-600 hover:text-blue-800 mt-2 text-sm">
+                    <i class="fas fa-eye mr-1"></i>View Details
+                  </button>
+                </div>
+              </div>
+              <div class="border-t border-gray-200 pt-4">
+                <div class="flex items-center justify-between text-sm">
+                  <div class="flex items-center gap-4">
+                    <span><i class="fas fa-box mr-1"></i>25 items</span>
+                    <span><i class="fas fa-weight mr-1"></i>156.8 kg</span>
+                    <span><i class="fas fa-map-marker-alt mr-1"></i>Pune, MH</span>
+                  </div>
+                  <div class="text-red-600">Issue: Customs clearance delay</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shipment Tracking Tab -->
+        <div id="tracking-tab" class="tab-content hidden">
+          <div class="mb-6">
+            <div class="flex gap-4">
+              <input
+                type="text"
+                id="trackingSearch"
+                placeholder="Enter tracking number or ASN..."
+                class="flex-1 px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+              <button onclick="searchTracking()" class="gradient-bg text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all">
+                <i class="fas fa-search"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Tracking Details -->
+            <div class="glass-card p-6 rounded-xl">
+              <h3 class="text-lg font-semibold text-gray-800 mb-6">Shipment Details</h3>
+              <div id="trackingDetails" class="space-y-4">
+                <div class="text-center text-gray-500 py-8">
+                  <i class="fas fa-search text-4xl mb-4"></i>
+                  <p>Enter a tracking number to view details</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tracking Timeline -->
+            <div class="glass-card p-6 rounded-xl">
+              <h3 class="text-lg font-semibold text-gray-800 mb-6">Tracking Timeline</h3>
+              <div id="trackingTimeline" class="space-y-6">
+                <div class="text-center text-gray-500 py-8">
+                  <i class="fas fa-route text-4xl mb-4"></i>
+                  <p>Tracking timeline will appear here</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Shipments -->
+          <div class="glass-card p-6 rounded-xl mt-8">
+            <h3 class="text-lg font-semibold text-gray-800 mb-6">Recent Shipments</h3>
+            <div class="space-y-4">
+              <div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer" onclick="trackShipment('FDX-987654321')">
+                <div class="flex items-center gap-4">
+                  <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-truck text-blue-600"></i>
+                  </div>
+                  <div>
+                    <div class="text-sm font-medium text-gray-800">FDX-987654321</div>
+                    <div class="text-xs text-gray-600">FedEx Express • ASN-2025-001</div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm font-medium text-green-600">In Transit</div>
+                  <div class="text-xs text-gray-600">ETA: Aug 31, 2025</div>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer" onclick="trackShipment('BD-456789123')">
+                <div class="flex items-center gap-4">
+                  <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-truck text-green-600"></i>
+                  </div>
+                  <div>
+                    <div class="text-sm font-medium text-gray-800">BD-456789123</div>
+                    <div class="text-xs text-gray-600">Blue Dart • ASN-2025-002</div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm font-medium text-blue-600">Delivered</div>
+                  <div class="text-xs text-gray-600">Aug 27, 2025</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Carriers Tab -->
+        <div id="carriers-tab" class="tab-content hidden">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div class="glass-card p-6 rounded-xl">
+              <h3 class="text-lg font-semibold text-gray-800 mb-6">Carrier Performance</h3>
+              <div class="space-y-6">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <i class="fas fa-truck text-blue-600"></i>
+                    </div>
+                    <span class="text-sm font-medium text-gray-800">FedEx Express</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-sm font-semibold text-green-600">96%</span>
+                    <div class="text-xs text-gray-600">On-time delivery</div>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                      <i class="fas fa-truck text-green-600"></i>
+                    </div>
+                    <span class="text-sm font-medium text-gray-800">Blue Dart</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-sm font-semibold text-yellow-600">89%</span>
+                    <div class="text-xs text-gray-600">On-time delivery</div>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                      <i class="fas fa-truck text-yellow-600"></i>
+                    </div>
+                    <span class="text-sm font-medium text-gray-800">DTDC</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-sm font-semibold text-red-600">78%</span>
+                    <div class="text-xs text-gray-600">On-time delivery</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-card p-6 rounded-xl">
+              <h3 class="text-lg font-semibold text-gray-800 mb-6">Shipping Costs</h3>
+              <div class="space-y-4">
+                <div class="flex justify-between items-center py-3 border-b border-gray-200">
+                  <span class="text-sm font-medium text-gray-800">FedEx Express</span>
+                  <span class="text-sm text-gray-600">₹2.50/kg</span>
+                </div>
+                <div class="flex justify-between items-center py-3 border-b border-gray-200">
+                  <span class="text-sm font-medium text-gray-800">Blue Dart</span>
+                  <span class="text-sm text-gray-600">₹1.80/kg</span>
+                </div>
+                <div class="flex justify-between items-center py-3 border-b border-gray-200">
+                  <span class="text-sm font-medium text-gray-800">DTDC</span>
+                  <span class="text-sm text-gray-600">₹1.20/kg</span>
+                </div>
+                <div class="flex justify-between items-center py-3">
+                  <span class="text-sm font-medium text-gray-800">Professional Courier</span>
+                  <span class="text-sm text-gray-600">₹2.20/kg</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-card p-6 rounded-xl">
+            <h3 class="text-lg font-semibold text-gray-800 mb-6">Carrier Services</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div class="p-4 border border-gray-200 rounded-lg hover-lift">
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-3">
+                  <i class="fas fa-plane text-blue-600"></i>
+                </div>
+                <div class="text-sm font-medium text-gray-800 mb-1">FedEx Express</div>
+                <div class="text-xs text-gray-600 mb-2">1-2 days delivery</div>
+                <div class="text-xs text-green-600">Best for urgent shipments</div>
+              </div>
+
+              <div class="p-4 border border-gray-200 rounded-lg hover-lift">
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-3">
+                  <i class="fas fa-truck text-green-600"></i>
+                </div>
+                <div class="text-sm font-medium text-gray-800 mb-1">Blue Dart</div>
+                <div class="text-xs text-gray-600 mb-2">2-3 days delivery</div>
+                <div class="text-xs text-blue-600">Reliable surface transport</div>
+              </div>
+
+              <div class="p-4 border border-gray-200 rounded-lg hover-lift">
+                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-3">
+                  <i class="fas fa-shipping-fast text-yellow-600"></i>
+                </div>
+                <div class="text-sm font-medium text-gray-800 mb-1">DTDC</div>
+                <div class="text-xs text-gray-600 mb-2">3-5 days delivery</div>
+                <div class="text-xs text-purple-600">Cost-effective option</div>
+              </div>
+
+              <div class="p-4 border border-gray-200 rounded-lg hover-lift">
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-3">
+                  <i class="fas fa-box text-purple-600"></i>
+                </div>
+                <div class="text-sm font-medium text-gray-800 mb-1">Professional Courier</div>
+                <div class="text-xs text-gray-600 mb-2">1-3 days delivery</div>
+                <div class="text-xs text-indigo-600">Document & small package specialist</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div id="analytics-tab" class="tab-content hidden">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div class="glass-card p-6 rounded-xl">
+              <h3 class="text-lg font-semibold text-gray-800 mb-6">Shipping Performance</h3>
+              <div class="space-y-6">
+                <div>
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">On-Time Delivery Rate</span>
+                    <span class="text-sm font-semibold text-green-600">89%</span>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: 89%"></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">Average Transit Time</span>
+                    <span class="text-sm font-semibold text-blue-600">2.4 days</span>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill bg-blue-500" style="width: 75%"></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">Customer Satisfaction</span>
+                    <span class="text-sm font-semibold text-purple-600">4.6/5</span>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill bg-purple-500" style="width: 92%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-card p-6 rounded-xl">
+              <h3 class="text-lg font-semibold text-gray-800 mb-6">Monthly Trends</h3>
+              <div class="space-y-4">
+                <div class="flex justify-between items-center py-3 border-b border-gray-200">
+                  <span class="text-sm font-medium text-gray-800">August 2025</span>
+                  <div class="text-right">
+                    <div class="text-sm font-semibold text-green-600">156 shipments</div>
+                    <div class="text-xs text-gray-600">+12% from July</div>
+                  </div>
+                </div>
+                <div class="flex justify-between items-center py-3 border-b border-gray-200">
+                  <span class="text-sm font-medium text-gray-800">July 2025</span>
+                  <div class="text-right">
+                    <div class="text-sm font-semibold text-blue-600">139 shipments</div>
+                    <div class="text-xs text-gray-600">+8% from June</div>
+                  </div>
+                </div>
+                <div class="flex justify-between items-center py-3 border-b border-gray-200">
+                  <span class="text-sm font-medium text-gray-800">June 2025</span>
+                  <div class="text-right">
+                    <div class="text-sm font-semibold text-purple-600">129 shipments</div>
+                    <div class="text-xs text-gray-600">+15% from May</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-card p-6 rounded-xl">
+            <h3 class="text-lg font-semibold text-gray-800 mb-6">Shipping Issues & Resolutions</h3>
+            <div class="space-y-4">
+              <div class="flex items-start gap-4 p-4 bg-red-50 rounded-lg">
+                <i class="fas fa-exclamation-triangle text-red-600 mt-1"></i>
+                <div class="flex-1">
+                  <div class="text-sm font-medium text-red-800">Customs Clearance Delays</div>
+                  <div class="text-xs text-red-700 mt-1">3 shipments affected • Resolution: Expedited clearance process implemented</div>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-4 p-4 bg-yellow-50 rounded-lg">
+                <i class="fas fa-clock text-yellow-600 mt-1"></i>
+                <div class="flex-1">
+                  <div class="text-sm font-medium text-yellow-800">Carrier Capacity Issues</div>
+                  <div class="text-xs text-yellow-700 mt-1">2 shipments delayed • Resolution: Alternative carrier arrangements made</div>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-4 p-4 bg-green-50 rounded-lg">
+                <i class="fas fa-check-circle text-green-600 mt-1"></i>
+                <div class="flex-1">
+                  <div class="text-sm font-medium text-green-800">Address Verification</div>
+                  <div class="text-xs text-green-700 mt-1">5 shipments corrected • Resolution: Enhanced address validation system</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Documents Tab -->
+        <div id="documents-tab" class="tab-content hidden">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="glass-card p-6 rounded-xl">
+              <h3 class="text-lg font-semibold text-gray-800 mb-6">Shipping Documents</h3>
+              <div class="space-y-4">
+                <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover-lift">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                      <i class="fas fa-file-pdf text-red-600"></i>
+                    </div>
+                    <div>
+                      <div class="text-sm font-medium text-gray-800">Commercial Invoice</div>
+                      <div class="text-xs text-gray-600">ASN-2025-001</div>
+                    </div>
+                  </div>
+                  <button class="text-blue-600 hover:text-blue-800 text-sm">
+                    <i class="fas fa-download mr-1"></i>Download
+                  </button>
+                </div>
+
+                <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover-lift">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <i class="fas fa-file-pdf text-blue-600"></i>
+                    </div>
+                    <div>
+                      <div class="text-sm font-medium text-gray-800">Packing List</div>
+                      <div class="text-xs text-gray-600">ASN-2025-001</div>
+                    </div>
+                  </div>
+                  <button class="text-blue-600 hover:text-blue-800 text-sm">
+                    <i class="fas fa-download mr-1"></i>Download
+                  </button>
+                </div>
+
+                <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover-lift">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                      <i class="fas fa-file-pdf text-green-600"></i>
+                    </div>
+                    <div>
+                      <div class="text-sm font-medium text-gray-800">Bill of Lading</div>
+                      <div class="text-xs text-gray-600">ASN-2025-001</div>
+                    </div>
+                  </div>
+                  <button class="text-blue-600 hover:text-blue-800 text-sm">
+                    <i class="fas fa-download mr-1"></i>Download
+                  </button>
+                </div>
+
+                <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover-lift">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                      <i class="fas fa-file-pdf text-yellow-600"></i>
+                    </div>
+                    <div>
+                      <div class="text-sm font-medium text-gray-800">Insurance Certificate</div>
+                      <div class="text-xs text-gray-600">ASN-2025-001</div>
+                    </div>
+                  </div>
+                  <button class="text-blue-600 hover:text-blue-800 text-sm">
+                    <i class="fas fa-download mr-1"></i>Download
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-card p-6 rounded-xl">
+              <h3 class="text-lg font-semibold text-gray-800 mb-6">Document Templates</h3>
+              <div class="space-y-4">
+                <div class="p-4 border border-gray-200 rounded-lg hover-lift">
+                  <div class="flex items-center gap-3 mb-3">
+                    <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <i class="fas fa-file-alt text-purple-600"></i>
+                    </div>
+                    <div class="text-sm font-medium text-gray-800">ASN Template</div>
+                  </div>
+                  <p class="text-xs text-gray-600 mb-3">Standard advance shipping notice format</p>
+                  <button class="text-purple-600 hover:text-purple-800 text-xs">
+                    <i class="fas fa-download mr-1"></i>Download Template
+                  </button>
+                </div>
+
+                <div class="p-4 border border-gray-200 rounded-lg hover-lift">
+                  <div class="flex items-center gap-3 mb-3">
+                    <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                      <i class="fas fa-file-alt text-indigo-600"></i>
+                    </div>
+                    <div class="text-sm font-medium text-gray-800">Shipping Label Template</div>
+                  </div>
+                  <p class="text-xs text-gray-600 mb-3">Customizable shipping label format</p>
+                  <button class="text-indigo-600 hover:text-indigo-800 text-xs">
+                    <i class="fas fa-download mr-1"></i>Download Template
+                  </button>
+                </div>
+
+                <div class="p-4 border border-gray-200 rounded-lg hover-lift">
+                  <div class="flex items-center gap-3 mb-3">
+                    <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                      <i class="fas fa-file-alt text-green-600"></i>
+                    </div>
+                    <div class="text-sm font-medium text-gray-800">Quality Certificate</div>
+                  </div>
+                  <p class="text-xs text-gray-600 mb-3">Product quality assurance document</p>
+                  <button class="text-green-600 hover:text-green-800 text-xs">
+                    <i class="fas fa-download mr-1"></i>Download Template
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Create ASN Modal -->
+  <div id="createASNModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="glass-card rounded-2xl shadow-2xl w-full max-w-4xl max-h-screen overflow-y-auto">
+        <div class="p-6 border-b border-gray-200">
+          <div class="flex justify-between items-center">
+            <h2 class="text-2xl font-bold text-gray-800">Create Advance Shipping Notice</h2>
+            <button onclick="closeCreateASNModal()" class="p-2 rounded-xl hover:bg-gray-100 transition-colors">
+              <i class="fas fa-times text-gray-600"></i>
+            </button>
+          </div>
+        </div>
+
+        <form class="p-6 space-y-6">
+          <!-- Basic Information -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2 required-field">Purchase Order Number</label>
+              <input
+                type="text"
+                id="poNumber"
+                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="PO-2025-XXXX"
+                required
+              >
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">ASN Number</label>
+              <input
+                type="text"
+                id="asnNumber"
+                class="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-50"
+                placeholder="Auto-generated"
+                readonly
+              >
+            </div>
+          </div>
+
+          <!-- Shipping Information -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2 required-field">Ship From</label>
+              <select id="shipFrom" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" required>
+                <option value="">Select Origin</option>
+                <option value="mumbai">Mumbai Warehouse</option>
+                <option value="delhi">Delhi Distribution Center</option>
+                <option value="pune">Pune Facility</option>
+                <option value="bangalore">Bangalore Hub</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2 required-field">Ship To</label>
+              <input
+                type="text"
+                id="shipTo"
+                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="Customer delivery address"
+                required
+              >
+            </div>
+          </div>
+
+          <!-- Carrier and Dates -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2 required-field">Carrier</label>
+              <select id="carrier" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" required>
+                <option value="">Select Carrier</option>
+                <option value="fedex">FedEx Express</option>
+                <option value="bluedart">Blue Dart</option>
+                <option value="dtdc">DTDC</option>
+                <option value="professional">Professional Courier</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2 required-field">Ship Date</label>
+              <input
+                type="date"
+                id="shipDate"
+                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                required
+              >
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Expected Delivery</label>
+              <input
+                type="date"
+                id="expectedDelivery"
+                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              >
+            </div>
+          </div>
+
+          <!-- Shipment Details -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Total Packages</label>
+              <input
+                type="number"
+                id="totalPackages"
+                min="1"
+                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="0"
+              >
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Total Weight (kg)</label>
+              <input
+                type="number"
+                id="totalWeight"
+                step="0.1"
+                min="0"
+                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="0.0"
+              >
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+              <select id="priority" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                <option value="standard">Standard</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Items Table -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-4">Shipment Items</label>
+            <div class="border border-gray-200 rounded-xl overflow-hidden">
+              <table class="w-full">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit Price</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="asnItemsTable" class="divide-y divide-gray-200">
+                  <tr class="asn-item">
+                    <td class="px-4 py-3">
+                      <input type="text" placeholder="Item description" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    </td>
+                    <td class="px-4 py-3">
+                      <input type="number" min="1" placeholder="Qty" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    </td>
+                    <td class="px-4 py-3">
+                      <input type="number" step="0.01" min="0" placeholder="₹0.00" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    </td>
+                    <td class="px-4 py-3">
+                      <span class="text-sm font-medium">₹0.00</span>
+                    </td>
+                    <td class="px-4 py-3">
+                      <button type="button" onclick="removeASNItem(this)" class="text-red-600 hover:text-red-800">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <button type="button" onclick="addASNItem()" class="mt-4 text-indigo-600 hover:text-indigo-800 flex items-center gap-2">
+              <i class="fas fa-plus"></i>Add Item
+            </button>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="flex justify-end gap-4 pt-6 border-t border-gray-200">
+            <button type="button" onclick="closeCreateASNModal()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors">
+              Cancel
+            </button>
+            <button type="submit" class="gradient-bg text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all">
+              <i class="fas fa-paper-plane mr-2"></i>Create ASN
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global variables
+    let currentTab = 'asn';
+
+    // Tab switching functionality
+    function switchTab(tabName) {
+      // Hide all tabs
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.add('hidden');
+      });
+
+      // Remove active class from all tab buttons
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('tab-active');
+        btn.classList.add('text-gray-500');
+        btn.classList.remove('border-b-2', 'border-indigo-500');
+      });
+
+      // Show selected tab
+      document.getElementById(tabName + '-tab').classList.remove('hidden');
+
+      // Add active class to selected tab button
+      event.target.classList.add('tab-active');
+      event.target.classList.remove('text-gray-500');
+      event.target.classList.add('border-b-2', 'border-indigo-500');
+
+      currentTab = tabName;
+    }
+
+    // ASN functions
+    function createNewASN() {
+      document.getElementById('createASNModal').classList.remove('hidden');
+      generateASNNumber();
+      showToast('Creating new ASN...', 'info', 'fas fa-plus text-blue-500');
+    }
+
+    function closeCreateASNModal() {
+      document.getElementById('createASNModal').classList.add('hidden');
+    }
+
+    function generateASNNumber() {
+      const timestamp = Date.now();
+      const asnNumber = `ASN-2025-${timestamp.toString().slice(-4)}`;
+      document.getElementById('asnNumber').value = asnNumber;
+    }
+
+    function filterASN() {
+      const filter = document.getElementById('asnFilter').value;
+      showToast(`Filtering ASNs by: ${filter}`, 'info', 'fas fa-filter text-blue-500');
+    }
+
+    // Tracking functions
+    function searchTracking() {
+      const trackingNumber = document.getElementById('trackingSearch').value;
+      if (trackingNumber) {
+        showTrackingDetails(trackingNumber);
+        showToast(`Searching for tracking: ${trackingNumber}`, 'info', 'fas fa-search text-blue-500');
+      }
+    }
+
+    function trackShipment(trackingNumber) {
+      document.getElementById('trackingSearch').value = trackingNumber;
+      searchTracking();
+      switchTab('tracking');
+    }
+
+    function showTrackingDetails(trackingNumber) {
+      const details = document.getElementById('trackingDetails');
+      const timeline = document.getElementById('trackingTimeline');
+
+      // Mock tracking data
+      details.innerHTML = `
+        <div class="space-y-4">
+          <div class="flex justify-between items-center">
+            <span class="text-sm font-medium text-gray-700">Tracking Number:</span>
+            <span class="text-sm font-semibold text-gray-800">${trackingNumber}</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm font-medium text-gray-700">Status:</span>
+            <span class="status-in-transit px-3 py-1 rounded-full text-xs font-medium">In Transit</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm font-medium text-gray-700">Carrier:</span>
+            <span class="text-sm text-gray-800">FedEx Express</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm font-medium text-gray-700">Estimated Delivery:</span>
+            <span class="text-sm text-gray-800">August 31, 2025</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm font-medium text-gray-700">Weight:</span>
+            <span class="text-sm text-gray-800">45.2 kg</span>
+          </div>
+        </div>
+      `;
+
+      timeline.innerHTML = `
+        <div class="space-y-6">
+          <div class="tracking-step completed">
+            <div class="flex items-start gap-4">
+              <div class="tracking-icon w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-check text-white text-xs"></i>
+              </div>
+              <div class="flex-1">
+                <div class="text-sm font-medium text-gray-800">Shipment Picked Up</div>
+                <div class="text-xs text-gray-600 mt-1">Mumbai Warehouse, MH</div>
+                <div class="text-xs text-gray-500 mt-1">August 28, 2025 10:30 AM</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tracking-step completed">
+            <div class="flex items-start gap-4">
+              <div class="tracking-icon w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-check text-white text-xs"></i>
+              </div>
+              <div class="flex-1">
+                <div class="text-sm font-medium text-gray-800">In Transit</div>
+                <div class="text-xs text-gray-600 mt-1">En route to Delhi Distribution Center</div>
+                <div class="text-xs text-gray-500 mt-1">August 29, 2025 2:15 PM</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tracking-step active">
+            <div class="flex items-start gap-4">
+              <div class="tracking-icon w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-truck text-blue-600 text-xs"></i>
+              </div>
+              <div class="flex-1">
+                <div class="text-sm font-medium text-gray-800">Out for Delivery</div>
+                <div class="text-xs text-gray-600 mt-1">Arrived at delivery facility</div>
+                <div class="text-xs text-gray-500 mt-1">August 30, 2025 9:45 AM</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tracking-step pending">
+            <div class="flex items-start gap-4">
+              <div class="tracking-icon w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-box text-gray-400 text-xs"></i>
+              </div>
+              <div class="flex-1">
+                <div class="text-sm font-medium text-gray-800">Delivered</div>
+                <div class="text-xs text-gray-600 mt-1">Expected delivery at customer location</div>
+                <div class="text-xs text-gray-500 mt-1">Estimated: August 31, 2025</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ASN Items functions
+    function addASNItem() {
+      const table = document.getElementById('asnItemsTable');
+      const newRow = document.createElement('tr');
+      newRow.className = 'asn-item';
+      newRow.innerHTML = `
+        <td class="px-4 py-3">
+          <input type="text" placeholder="Item description" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+        </td>
+        <td class="px-4 py-3">
+          <input type="number" min="1" placeholder="Qty" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+        </td>
+        <td class="px-4 py-3">
+          <input type="number" step="0.01" min="0" placeholder="₹0.00" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+        </td>
+        <td class="px-4 py-3">
+          <span class="text-sm font-medium">₹0.00</span>
+        </td>
+        <td class="px-4 py-3">
+          <button type="button" onclick="removeASNItem(this)" class="text-red-600 hover:text-red-800">
+            <i class="fas fa-trash"></i>
+          </button>
+        </td>
+      `;
+      table.appendChild(newRow);
+    }
+
+    function removeASNItem(button) {
+      const row = button.closest('.asn-item');
+      if (document.querySelectorAll('.asn-item').length > 1) {
+        row.remove();
+      } else {
+        showToast('At least one item is required', 'error', 'fas fa-exclamation-triangle text-red-500');
+      }
+    }
+
+    // Analytics function
+    function viewShippingAnalytics() {
+      switchTab('analytics');
+      showToast('Loading shipping analytics...', 'info', 'fas fa-chart-line text-blue-500');
+    }
+
+    // Toast notification system
+    function showToast(message, type = 'info', iconClass = 'fas fa-info-circle text-blue-500') {
+      const toast = document.getElementById('toast');
+      const icon = document.getElementById('toast-icon');
+      const messageEl = document.getElementById('toast-message');
+
+      icon.className = iconClass;
+      messageEl.textContent = message;
+
+      toast.classList.remove('hidden');
+      toast.classList.add('fade-in');
+
+      setTimeout(() => {
+        toast.classList.add('hidden');
+        toast.classList.remove('fade-in');
+      }, 4000);
+    }
+
+    // Form submission
+    document.getElementById('createASNModal').querySelector('form').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      // Basic validation
+      const requiredFields = ['poNumber', 'shipFrom', 'shipTo', 'carrier', 'shipDate'];
+      let isValid = true;
+
+      requiredFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (!field.value.trim()) {
+          field.classList.add('form-error');
+          isValid = false;
+        } else {
+          field.classList.remove('form-error');
+          field.classList.add('form-success');
+        }
+      });
+
+      if (isValid) {
+        showToast('ASN created successfully!', 'success', 'fas fa-check-circle text-green-500');
+        setTimeout(() => {
+          closeCreateASNModal();
+        }, 2000);
+      } else {
+        showToast('Please fill in all required fields', 'error', 'fas fa-exclamation-triangle text-red-500');
+      }
+    });
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      // Set default ship date to today
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('shipDate').value = today;
+
+      // Set default expected delivery to 3 days from now
+      const expectedDate = new Date();
+      expectedDate.setDate(expectedDate.getDate() + 3);
+      document.getElementById('expectedDelivery').value = expectedDate.toISOString().split('T')[0];
+    });
+  </script>
+</body>
+</html>

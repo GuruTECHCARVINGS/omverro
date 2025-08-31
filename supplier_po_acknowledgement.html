@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supplier PO Acknowledgement - Buyer Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body{font-family:'Inter',sans-serif}
+    .card{transition:transform .2s ease, box-shadow .2s ease}
+    .card:hover{transform:translateY(-2px); box-shadow:0 10px 25px rgba(0,0,0,.07)}
+    .gradient-blue{background:linear-gradient(135deg,#3b82f6 0%,#1d4ed8 100%)}
+    .gradient-green{background:linear-gradient(135deg,#10b981 0%,#059669 100%)}
+    .gradient-purple{background:linear-gradient(135deg,#8b5cf6 0%,#7c3aed 100%)}
+    .gradient-orange{background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%)}
+    .gradient-red{background:linear-gradient(135deg,#ef4444 0%,#dc2626 100%)}
+    .gradient-yellow{background:linear-gradient(135deg,#eab308 0%,#ca8a04 100%)}
+    .badge{padding:.25rem .5rem; border-radius:9999px; font-size:.75rem; font-weight:600}
+    .pill{padding:.125rem .5rem; border-radius:9999px; font-size:.75rem; font-weight:600}
+    .status-sent{border-left:4px solid #f59e0b}
+    .status-acknowledged{border-left:4px solid #10b981}
+    .status-rejected{border-left:4px solid #ef4444}
+    .status-partial{border-left:4px solid #8b5cf6}
+    .status-overdue{border-left:4px solid #dc2626; background:rgba(239,68,68,0.02)}
+    .timeline-step{position:relative}
+    .timeline-step::after{content:'';position:absolute;top:2rem;left:50%;width:100%;height:2px;background:#e5e7eb;z-index:-1}
+    .timeline-step:last-child::after{display:none}
+    .step-completed{color:#10b981;background:#dcfce7}
+    .step-current{color:#f59e0b;background:#fef3c7}
+    .step-pending{color:#6b7280;background:#f3f4f6}
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <!-- Header -->
+  <header class="bg-white border-b">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="h-16 flex items-center justify-between">
+        <div class="flex items-center">
+          <button class="mr-3 p-2 rounded-lg hover:bg-gray-100" title="Back to Buyer Dashboard (Alt+B)" onclick="navBack()">
+            <i class="fas fa-arrow-left text-gray-600"></i>
+          </button>
+          <h1 class="text-xl font-semibold text-gray-900">Supplier PO Acknowledgement</h1>
+          <span class="ml-3 badge bg-blue-100 text-blue-800"><i class="fas fa-sync-alt mr-1"></i>Real-time Status</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="exportReport()" class="p-2 rounded-lg hover:bg-gray-100" title="Export Report"><i class="fas fa-download text-gray-600"></i></button>
+          <button onclick="refreshData()" class="p-2 rounded-lg hover:bg-gray-100" title="Refresh"><i class="fas fa-sync-alt text-gray-600"></i></button>
+          <button onclick="openSettings()" class="p-2 rounded-lg hover:bg-gray-100" title="Settings"><i class="fas fa-cog text-gray-600"></i></button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Breadcrumb -->
+    <nav class="flex mb-6" aria-label="Breadcrumb">
+      <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+          <button onclick="navBack()" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+            <i class="fas fa-home w-4 h-4 mr-2"></i>Buyer Dashboard
+          </button>
+        </li>
+        <li class="inline-flex items-center text-sm text-gray-500">
+          <i class="fas fa-chevron-right w-4 h-4 text-gray-400 mx-1"></i>
+          Supplier PO Acknowledgement
+        </li>
+      </ol>
+    </nav>
+
+    <!-- Acknowledgement Overview Metrics -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+      <div class="bg-white rounded-xl p-6 card">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Sent POs</p>
+            <p class="text-3xl font-bold text-blue-600" id="mSent">18</p>
+            <p class="text-xs text-blue-600">Awaiting response</p>
+          </div>
+          <div class="p-3 bg-blue-100 rounded-full"><i class="fas fa-paper-plane text-blue-600"></i></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-6 card">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Acknowledged</p>
+            <p class="text-3xl font-bold text-green-600" id="mAcknowledged">14</p>
+            <p class="text-xs text-green-600">Accepted by suppliers</p>
+          </div>
+          <div class="p-3 bg-green-100 rounded-full"><i class="fas fa-check-circle text-green-600"></i></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-6 card">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Rejected</p>
+            <p class="text-3xl font-bold text-red-600" id="mRejected">2</p>
+            <p class="text-xs text-red-600">Need attention</p>
+          </div>
+          <div class="p-3 bg-red-100 rounded-full"><i class="fas fa-times-circle text-red-600"></i></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-6 card">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Partial Accept</p>
+            <p class="text-3xl font-bold text-purple-600" id="mPartial">3</p>
+            <p class="text-xs text-purple-600">Modified terms</p>
+          </div>
+          <div class="p-3 bg-purple-100 rounded-full"><i class="fas fa-edit text-purple-600"></i></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-6 card">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Overdue</p>
+            <p class="text-3xl font-bold text-orange-600" id="mOverdue">4</p>
+            <p class="text-xs text-orange-600">48+ hours</p>
+          </div>
+          <div class="p-3 bg-orange-100 rounded-full"><i class="fas fa-clock text-orange-600"></i></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Acknowledgement Timeline -->
+    <section class="bg-white rounded-xl p-6 card mb-8">
+      <h3 class="text-lg font-semibold text-gray-900 mb-6">
+        <i class="fas fa-timeline mr-2 text-blue-600"></i>PO Acknowledgement Process
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div class="timeline-step text-center">
+          <div class="w-12 h-12 mx-auto rounded-full flex items-center justify-center text-sm font-semibold step-completed">
+            <i class="fas fa-paper-plane"></i>
+          </div>
+          <p class="text-xs font-medium mt-2">PO Sent</p>
+          <p class="text-xs text-gray-500">To Supplier</p>
+        </div>
+        <div class="timeline-step text-center">
+          <div class="w-12 h-12 mx-auto rounded-full flex items-center justify-center text-sm font-semibold step-completed">
+            <i class="fas fa-eye"></i>
+          </div>
+          <p class="text-xs font-medium mt-2">PO Viewed</p>
+          <p class="text-xs text-gray-500">By Supplier</p>
+        </div>
+        <div class="timeline-step text-center">
+          <div class="w-12 h-12 mx-auto rounded-full flex items-center justify-center text-sm font-semibold step-current">
+            <i class="fas fa-handshake"></i>
+          </div>
+          <p class="text-xs font-medium mt-2">Acknowledgement</p>
+          <p class="text-xs text-gray-500">In Progress</p>
+        </div>
+        <div class="timeline-step text-center">
+          <div class="w-12 h-12 mx-auto rounded-full flex items-center justify-center text-sm font-semibold step-pending">
+            <i class="fas fa-file-contract"></i>
+          </div>
+          <p class="text-xs font-medium mt-2">Terms Agreed</p>
+          <p class="text-xs text-gray-500">Pending</p>
+        </div>
+        <div class="timeline-step text-center">
+          <div class="w-12 h-12 mx-auto rounded-full flex items-center justify-center text-sm font-semibold step-pending">
+            <i class="fas fa-truck"></i>
+          </div>
+          <p class="text-xs font-medium mt-2">Delivery</p>
+          <p class="text-xs text-gray-500">Scheduled</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters & Actions -->
+    <section class="bg-white rounded-xl p-6 card mb-8">
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 flex-1">
+          <div>
+            <label class="text-sm text-gray-600">Status</label>
+            <select id="fStatus" class="w-full border rounded-lg p-2" onchange="applyFilters()">
+              <option value="">All Status</option>
+              <option>Sent</option>
+              <option>Acknowledged</option>
+              <option>Rejected</option>
+              <option>Partial Accept</option>
+              <option>Overdue</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-sm text-gray-600">Supplier</label>
+            <select id="fSupplier" class="w-full border rounded-lg p-2" onchange="applyFilters()">
+              <option value="">All Suppliers</option>
+              <option>TechNova Solutions</option>
+              <option>GreenLeaf Supplies</option>
+              <option>Omega Hardware</option>
+              <option>PrintWorks</option>
+              <option>LogiTrans</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-sm text-gray-600">Date Range</label>
+            <select id="fDateRange" class="w-full border rounded-lg p-2" onchange="applyFilters()">
+              <option>Last 7 days</option>
+              <option>Last 30 days</option>
+              <option>This Quarter</option>
+              <option>Custom</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-sm text-gray-600">Priority</label>
+            <select id="fPriority" class="w-full border rounded-lg p-2" onchange="applyFilters()">
+              <option value="">All Priority</option>
+              <option>Urgent</option>
+              <option>High</option>
+              <option>Medium</option>
+              <option>Low</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-sm text-gray-600">Amount Range</label>
+            <select id="fAmount" class="w-full border rounded-lg p-2" onchange="applyFilters()">
+              <option value="">All Amounts</option>
+              <option>< ₹50K</option>
+              <option>₹50K - ₹2L</option>
+              <option>₹2L - ₹10L</option>
+              <option>> ₹10L</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="px-3 py-2 gradient-blue text-white rounded-lg hover:opacity-90" onclick="applyFilters()"><i class="fas fa-filter mr-2"></i>Filter</button>
+          <button class="px-3 py-2 border rounded-lg hover:bg-gray-50" onclick="resetFilters()">Reset</button>
+          <button class="px-3 py-2 gradient-green text-white rounded-lg hover:opacity-90" onclick="sendReminders()"><i class="fas fa-bell mr-2"></i>Send Reminders</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- PO Acknowledgement Table -->
+    <section class="bg-white rounded-xl overflow-hidden card mb-8">
+      <div class="px-6 py-4 border-b flex items-center justify-between">
+        <h3 class="text-lg font-semibold text-gray-900"><i class="fas fa-clipboard-check mr-2 text-blue-600"></i>PO Acknowledgement Status</h3>
+        <div class="flex items-center gap-2">
+          <button class="px-3 py-2 gradient-orange text-white rounded-lg hover:opacity-90" onclick="bulkReminder()"><i class="fas fa-bell-slash mr-2"></i>Bulk Reminder</button>
+          <button class="px-3 py-2 border rounded-lg hover:bg-gray-50" onclick="refreshData()"><i class="fas fa-sync-alt mr-2"></i>Refresh</button>
+        </div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-4 py-3 text-left"><input type="checkbox" id="selAll" class="rounded border-gray-300" onchange="toggleAll()" /></th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">PO Details</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Supplier</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Amount</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Sent Date</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Response</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="poAckTable" class="bg-white divide-y"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Recent Activity Feed -->
+    <section class="bg-white rounded-xl p-6 card">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4"><i class="fas fa-activity mr-2 text-green-600"></i>Recent Acknowledgement Activity</h3>
+      <div id="activityFeed" class="space-y-4 max-h-96 overflow-y-auto"></div>
+    </section>
+  </main>
+
+  <!-- Modal -->
+  <div id="modal" class="hidden fixed inset-0 bg-gray-700/50 z-50">
+    <div class="relative max-w-4xl mx-auto bg-white rounded-xl shadow-xl mt-16 max-h-[80vh] overflow-y-auto">
+      <div class="flex items-center justify-between px-6 py-4 border-b">
+        <h3 class="text-lg font-semibold" id="modalTitle">Details</h3>
+        <button class="p-2 hover:bg-gray-100 rounded-lg" onclick="closeModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div id="modalBody" class="p-6"></div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="hidden fixed top-4 right-4 text-white px-4 py-2 rounded-lg shadow-lg"></div>
+
+  <script>
+    const Rs = n => '₹' + (Number(n)||0).toLocaleString('en-IN');
+    const el = id => document.getElementById(id);
+
+    function navBack(){ try{ showToast('Back to Buyer Dashboard','info'); setTimeout(()=>location.href='BuyerDashboard.html',350);}catch{ history.back(); } }
+
+    // Sample PO acknowledgement data
+    const poAcknowledgements = [
+      {
+        id: 'PO-2025-0826-1201',
+        supplier: 'TechNova Solutions',
+        contact: 'Anita Rao',
+        email: 'anita@technova.com',
+        amount: 245000,
+        sentDate: '2025-08-24',
+        status: 'Acknowledged',
+        responseDate: '2025-08-25',
+        priority: 'Urgent',
+        deliveryDate: '2025-09-05',
+        items: [{desc: 'Dell Latitude 5410 Laptops', qty: 10, price: 45000}],
+        comments: 'Confirmed delivery date and specifications',
+        lastViewed: '2025-08-25 09:15 AM'
+      },
+      {
+        id: 'PO-2025-0826-1207',
+        supplier: 'GreenLeaf Supplies',
+        contact: 'Rahul Mehta',
+        email: 'rahul@greenleaf.co',
+        amount: 35000,
+        sentDate: '2025-08-25',
+        status: 'Sent',
+        responseDate: null,
+        priority: 'Medium',
+        deliveryDate: '2025-09-10',
+        items: [{desc: 'Office Supplies Bulk Order', qty: 1, price: 35000}],
+        comments: null,
+        lastViewed: '2025-08-25 02:30 PM'
+      },
+      {
+        id: 'PO-2025-0826-1215',
+        supplier: 'Omega Hardware',
+        contact: 'Kiran Shah',
+        email: 'kiran@omega-hw.in',
+        amount: 125000,
+        sentDate: '2025-08-23',
+        status: 'Rejected',
+        responseDate: '2025-08-24',
+        priority: 'High',
+        deliveryDate: '2025-09-01',
+        items: [{desc: 'Ergonomic Office Chairs', qty: 20, price: 4800}],
+        comments: 'Unable to meet delivery timeline. Alternative: 2025-09-15',
+        rejectionReason: 'Delivery schedule conflict',
+        lastViewed: '2025-08-24 11:45 AM'
+      },
+      {
+        id: 'PO-2025-0826-1220',
+        supplier: 'TechNova Solutions',
+        contact: 'Anita Rao',
+        email: 'anita@technova.com',
+        amount: 185000,
+        sentDate: '2025-08-24',
+        status: 'Partial Accept',
+        responseDate: '2025-08-25',
+        priority: 'High',
+        deliveryDate: '2025-09-08',
+        items: [{desc: 'HP ProLiant DL360 Server', qty: 1, price: 185000}],
+        comments: 'Accepted with modified warranty terms - 2 years instead of 3',
+        partialDetails: 'Warranty period modified',
+        lastViewed: '2025-08-25 03:20 PM'
+      },
+      {
+        id: 'PO-2025-0826-1229',
+        supplier: 'PrintWorks',
+        contact: 'Priya Sharma',
+        email: 'priya@printworks.com',
+        amount: 58000,
+        sentDate: '2025-08-22',
+        status: 'Overdue',
+        responseDate: null,
+        priority: 'Low',
+        deliveryDate: '2025-09-12',
+        items: [{desc: 'Marketing Campaign Materials', qty: 1, price: 58000}],
+        comments: null,
+        lastViewed: '2025-08-22 04:15 PM',
+        overdueDays: 4
+      },
+      {
+        id: 'PO-2025-0826-1233',
+        supplier: 'LogiTrans',
+        contact: 'Amit Kumar',
+        email: 'amit@logitrans.in',
+        amount: 82000,
+        sentDate: '2025-08-25',
+        status: 'Acknowledged',
+        responseDate: '2025-08-26',
+        priority: 'Medium',
+        deliveryDate: '2025-09-03',
+        items: [{desc: 'Logistics Services Package', qty: 1, price: 82000}],
+        comments: 'Confirmed service schedule and pricing',
+        lastViewed: '2025-08-26 10:30 AM'
+      }
+    ];
+
+    // Activity feed data
+    const recentActivity = [
+      {
+        time: '2025-08-26 10:30 AM',
+        action: 'PO Acknowledged',
+        po: 'PO-2025-0826-1233',
+        supplier: 'LogiTrans',
+        icon: 'fas fa-check-circle',
+        color: 'text-green-600'
+      },
+      {
+        time: '2025-08-25 03:20 PM',
+        action: 'Partial Acceptance',
+        po: 'PO-2025-0826-1220',
+        supplier: 'TechNova Solutions',
+        icon: 'fas fa-edit',
+        color: 'text-purple-600'
+      },
+      {
+        time: '2025-08-25 09:15 AM',
+        action: 'PO Acknowledged',
+        po: 'PO-2025-0826-1201',
+        supplier: 'TechNova Solutions',
+        icon: 'fas fa-check-circle',
+        color: 'text-green-600'
+      },
+      {
+        time: '2025-08-24 11:45 AM',
+        action: 'PO Rejected',
+        po: 'PO-2025-0826-1215',
+        supplier: 'Omega Hardware',
+        icon: 'fas fa-times-circle',
+        color: 'text-red-600'
+      }
+    ];
+
+    function loadPOTable() {
+      const tbody = el('poAckTable');
+      tbody.innerHTML = '';
+      
+      poAcknowledgements.forEach(po => {
+        const tr = document.createElement('tr');
+        tr.className = `hover:bg-gray-50 ${getStatusClass(po.status)}`;
+        
+        const daysSent = Math.floor((new Date() - new Date(po.sentDate)) / (1000 * 60 * 60 * 24));
+        const isOverdue = po.status === 'Sent' && daysSent > 2;
+        
+        tr.innerHTML = `
+          <td class="px-4 py-3"><input type="checkbox" class="rowSel rounded border-gray-300" value="${po.id}"/></td>
+          <td class="px-6 py-3">
+            <div class="font-medium text-gray-900">${po.id}</div>
+            <div class="text-sm text-gray-600">${po.items[0]?.desc || ''}</div>
+            ${po.priority ? `<span class="pill ${getPriorityClass(po.priority)}">${po.priority}</span>` : ''}
+          </td>
+          <td class="px-6 py-3">
+            <div class="font-medium">${po.supplier}</div>
+            <div class="text-sm text-gray-600">${po.contact}</div>
+            <div class="text-xs text-gray-500">${po.email}</div>
+          </td>
+          <td class="px-6 py-3 font-semibold">${Rs(po.amount)}</td>
+          <td class="px-6 py-3 text-sm">
+            <div>${new Date(po.sentDate).toLocaleDateString('en-IN')}</div>
+            <div class="text-xs text-gray-500">${daysSent} days ago</div>
+          </td>
+          <td class="px-6 py-3">${getStatusBadge(po.status, isOverdue)}</td>
+          <td class="px-6 py-3 text-sm">
+            ${po.responseDate ? `
+              <div class="text-green-600 font-medium">${new Date(po.responseDate).toLocaleDateString('en-IN')}</div>
+              <div class="text-xs text-gray-500">Last viewed: ${po.lastViewed || 'N/A'}</div>
+            ` : `
+              <div class="text-orange-600">Awaiting response</div>
+              <div class="text-xs text-gray-500">Last viewed: ${po.lastViewed || 'Not viewed'}</div>
+            `}
+          </td>
+          <td class="px-6 py-3">
+            <div class="flex items-center gap-2">
+              <button class="text-blue-600 hover:text-blue-800" title="View Details" onclick="viewPODetails('${po.id}')"><i class="fas fa-eye"></i></button>
+              <button class="text-green-600 hover:text-green-800" title="Send Reminder" onclick="sendReminder('${po.id}')"><i class="fas fa-bell"></i></button>
+              <button class="text-purple-600 hover:text-purple-800" title="Contact Supplier" onclick="contactSupplier('${po.id}')"><i class="fas fa-phone"></i></button>
+              ${po.status === 'Rejected' ? `<button class="text-orange-600 hover:text-orange-800" title="Resend PO" onclick="resendPO('${po.id}')"><i class="fas fa-redo"></i></button>` : ''}
+            </div>
+          </td>
+        `;
+        
+        tbody.appendChild(tr);
+      });
+    }
+
+    function getStatusClass(status) {
+      switch(status) {
+        case 'Sent': return 'status-sent';
+        case 'Acknowledged': return 'status-acknowledged';
+        case 'Rejected': return 'status-rejected';
+        case 'Partial Accept': return 'status-partial';
+        case 'Overdue': return 'status-overdue';
+        default: return '';
+      }
+    }
+
+    function getStatusBadge(status, isOverdue) {
+      if (isOverdue) status = 'Overdue';
+      
+      const badges = {
+        'Sent': 'bg-blue-100 text-blue-800',
+        'Acknowledged': 'bg-green-100 text-green-800',
+        'Rejected': 'bg-red-100 text-red-800',
+        'Partial Accept': 'bg-purple-100 text-purple-800',
+        'Overdue': 'bg-red-100 text-red-800'
+      };
+      
+      const icons = {
+        'Sent': 'fas fa-paper-plane',
+        'Acknowledged': 'fas fa-check-circle',
+        'Rejected': 'fas fa-times-circle',
+        'Partial Accept': 'fas fa-edit',
+        'Overdue': 'fas fa-exclamation-triangle'
+      };
+      
+      return `<span class="pill ${badges[status] || 'bg-gray-100 text-gray-800'}">
+        <i class="${icons[status] || 'fas fa-question'} mr-1"></i>${status}
+      </span>`;
+    }
+
+    function getPriorityClass(priority) {
+      const classes = {
+        'Urgent': 'bg-red-100 text-red-800',
+        'High': 'bg-orange-100 text-orange-800',
+        'Medium': 'bg-blue-100 text-blue-800',
+        'Low': 'bg-green-100 text-green-800'
+      };
+      return classes[priority] || 'bg-gray-100 text-gray-800';
+    }
+
+    function loadActivityFeed() {
+      const feed = el('activityFeed');
+      feed.innerHTML = '';
+      
+      recentActivity.forEach(activity => {
+        const div = document.createElement('div');
+        div.className = 'flex items-start gap-3 p-3 bg-gray-50 rounded-lg';
+        div.innerHTML = `
+          <div class="p-2 bg-white rounded-full">
+            <i class="${activity.icon} ${activity.color}"></i>
+          </div>
+          <div class="flex-1">
+            <div class="font-medium text-gray-900">${activity.action}</div>
+            <div class="text-sm text-gray-600">${activity.po} • ${activity.supplier}</div>
+            <div class="text-xs text-gray-500">${activity.time}</div>
+          </div>
+        `;
+        feed.appendChild(div);
+      });
+    }
+
+    // Actions
+    function viewPODetails(poId) {
+      const po = poAcknowledgements.find(p => p.id === poId);
+      if (!po) return;
+      
+      const body = `
+        <div class="space-y-6">
+          <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+            <h4 class="font-semibold text-blue-900">${po.id}</h4>
+            <div class="text-sm text-blue-700 mt-1">${po.supplier} • ${getStatusBadge(po.status, false)}</div>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h5 class="font-medium text-gray-900 mb-3">PO Information</h5>
+              <div class="space-y-2 text-sm">
+                <div><span class="font-medium">Amount:</span> ${Rs(po.amount)}</div>
+                <div><span class="font-medium">Sent Date:</span> ${new Date(po.sentDate).toLocaleDateString('en-IN')}</div>
+                <div><span class="font-medium">Expected Delivery:</span> ${new Date(po.deliveryDate).toLocaleDateString('en-IN')}</div>
+                <div><span class="font-medium">Priority:</span> ${po.priority}</div>
+                ${po.responseDate ? `<div><span class="font-medium">Response Date:</span> ${new Date(po.responseDate).toLocaleDateString('en-IN')}</div>` : ''}
+              </div>
+            </div>
+            
+            <div>
+              <h5 class="font-medium text-gray-900 mb-3">Supplier Information</h5>
+              <div class="space-y-2 text-sm">
+                <div><span class="font-medium">Contact:</span> ${po.contact}</div>
+                <div><span class="font-medium">Email:</span> ${po.email}</div>
+                <div><span class="font-medium">Last Viewed:</span> ${po.lastViewed || 'Not viewed'}</div>
+              </div>
+            </div>
+          </div>
+          
+          <div>
+            <h5 class="font-medium text-gray-900 mb-3">Items</h5>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm border rounded-lg">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-3 py-2 text-left">Description</th>
+                    <th class="px-3 py-2 text-left">Quantity</th>
+                    <th class="px-3 py-2 text-left">Unit Price</th>
+                    <th class="px-3 py-2 text-left">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${po.items.map(item => `
+                    <tr class="border-t">
+                      <td class="px-3 py-2">${item.desc}</td>
+                      <td class="px-3 py-2">${item.qty}</td>
+                      <td class="px-3 py-2">${Rs(item.price)}</td>
+                      <td class="px-3 py-2 font-medium">${Rs(item.qty * item.price)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          ${po.comments ? `
+            <div>
+              <h5 class="font-medium text-gray-900 mb-2">Supplier Comments</h5>
+              <div class="bg-gray-50 p-3 rounded-lg text-sm">${po.comments}</div>
+            </div>
+          ` : ''}
+          
+          ${po.rejectionReason ? `
+            <div>
+              <h5 class="font-medium text-red-900 mb-2">Rejection Reason</h5>
+              <div class="bg-red-50 border border-red-200 p-3 rounded-lg text-sm text-red-800">${po.rejectionReason}</div>
+            </div>
+          ` : ''}
+          
+          ${po.partialDetails ? `
+            <div>
+              <h5 class="font-medium text-purple-900 mb-2">Partial Acceptance Details</h5>
+              <div class="bg-purple-50 border border-purple-200 p-3 rounded-lg text-sm text-purple-800">${po.partialDetails}</div>
+            </div>
+          ` : ''}
+          
+          <div class="flex justify-end gap-2">
+            <button class="px-4 py-2 gradient-green text-white rounded-lg hover:opacity-90" onclick="sendReminder('${po.id}', true)">
+              <i class="fas fa-bell mr-2"></i>Send Reminder
+            </button>
+            <button class="px-4 py-2 gradient-blue text-white rounded-lg hover:opacity-90" onclick="contactSupplier('${po.id}', true)">
+              <i class="fas fa-phone mr-2"></i>Contact Supplier
+            </button>
+            ${po.status === 'Rejected' ? `
+              <button class="px-4 py-2 gradient-orange text-white rounded-lg hover:opacity-90" onclick="resendPO('${po.id}', true)">
+                <i class="fas fa-redo mr-2"></i>Resend PO
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `;
+      
+      el('modalTitle').textContent = 'PO Acknowledgement Details';
+      el('modalBody').innerHTML = body;
+      openModal();
+    }
+
+    function sendReminder(poId, fromModal = false) {
+      const po = poAcknowledgements.find(p => p.id === poId);
+      if (!po) return;
+      
+      showToast(`Reminder sent to ${po.supplier} for ${poId}`, 'info');
+      if (fromModal) closeModal();
+    }
+
+    function contactSupplier(poId, fromModal = false) {
+      const po = poAcknowledgements.find(p => p.id === poId);
+      if (!po) return;
+      
+      showToast(`Contacting ${po.contact} at ${po.supplier}`, 'info');
+      if (fromModal) closeModal();
+    }
+
+    function resendPO(poId, fromModal = false) {
+      const po = poAcknowledgements.find(p => p.id === poId);
+      if (!po) return;
+      
+      showToast(`PO ${poId} resent to ${po.supplier}`, 'success');
+      if (fromModal) closeModal();
+    }
+
+    function toggleAll() {
+      const checked = el('selAll').checked;
+      document.querySelectorAll('.rowSel').forEach(cb => cb.checked = checked);
+    }
+
+    function bulkReminder() {
+      const selected = [...document.querySelectorAll('.rowSel:checked')];
+      if (selected.length === 0) {
+        showToast('Please select POs to send reminders', 'warning');
+        return;
+      }
+      showToast(`Reminders sent for ${selected.length} POs`, 'success');
+    }
+
+    function sendReminders() {
+      showToast('Reminders sent to all overdue suppliers', 'success');
+    }
+
+    function applyFilters() {
+      showToast('Filters applied', 'info');
+      loadPOTable();
+    }
+
+    function resetFilters() {
+      el('fStatus').value = '';
+      el('fSupplier').value = '';
+      el('fPriority').value = '';
+      el('fAmount').value = '';
+      loadPOTable();
+      showToast('Filters reset', 'info');
+    }
+
+    function refreshData() {
+      showToast('Data refreshed', 'info');
+      loadPOTable();
+      loadActivityFeed();
+    }
+
+    function exportReport() {
+      showToast('Exporting acknowledgement report...', 'info');
+      setTimeout(() => {
+        showToast('Report exported successfully!', 'success');
+      }, 2000);
+    }
+
+    function openSettings() {
+      showToast('Opening acknowledgement settings...', 'info');
+    }
+
+    // Modal & Toast
+    function openModal() { el('modal').classList.remove('hidden'); }
+    function closeModal() { el('modal').classList.add('hidden'); }
+    function showToast(msg, type = 'info') {
+      const t = el('toast');
+      const colors = {success: 'bg-green-600', info: 'bg-blue-600', warning: 'bg-yellow-600', error: 'bg-red-600'};
+      t.className = `fixed top-4 right-4 text-white px-4 py-2 rounded-lg shadow-lg ${colors[type] || 'bg-gray-800'}`;
+      t.textContent = msg;
+      t.classList.remove('hidden');
+      setTimeout(() => t.classList.add('hidden'), 2500);
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      loadPOTable();
+      loadActivityFeed();
+      
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.altKey && (e.key === 'b' || e.key === 'B')) {
+          e.preventDefault();
+          navBack();
+        }
+        if (e.key === 'Escape') closeModal();
+        if (e.ctrlKey && e.key === 'r') {
+          e.preventDefault();
+          refreshData();
+        }
+      });
+      
+      // Auto-refresh every 30 seconds
+      setInterval(refreshData, 30000);
+      
+      showToast('PO Acknowledgement system loaded', 'info');
+    });
+  </script>
+</body>
+</html>
