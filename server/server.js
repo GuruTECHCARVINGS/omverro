@@ -14,6 +14,8 @@ const users = [
   { email: 'rithesh@omverro.com', password: 'rithesh123', role: 'vendor' },
   { email: 'gurudatt@omverro.com', password: 'gurudatt123', role: 'vendor' },
   { email: 'shashidhar@omverro.com', password: 'shashi123', role: 'buyer' },
+   { email: 'vendor@omverro.com', password: 'vendor123', role: 'vendor' },
+    { email: 'buyer@omverro.com', password: 'buyer123', role: 'buyer' },
 ];
 
 // Login endpoint
