@@ -23,10 +23,19 @@
         <h1 class="text-2xl font-bold text-gray-900"> OMVERRO Procurement Hub</h1>
       </div>
 
-      <h2 class="text-xl font-semibold mb-2 text-gray-800">Welcome Back, Procurement Manager!</h2>
-      <p class="text-sm text-gray-500 mb-6">
+      <h2 id="welcomeHeading" class="text-xl font-semibold mb-2 text-gray-800">Welcome Back, Procurement Manager!</h2>
+      <p id="welcomeDesc" class="text-sm text-gray-500 mb-6">
         Sign in to manage your procurement dashboard, orders, and supplier interactions with ease.
       </p>
+
+      <!-- Role selector: choose buyer or vendor -->
+      <div class="flex items-center gap-3 mb-4">
+        <label for="role" class="text-sm font-medium">Sign in as</label>
+        <select id="role" class="px-3 py-2 border rounded-lg border-gray-300 bg-white text-sm">
+          <option value="buyer">Buyer</option>
+          <option value="vendor">Vendor</option>
+        </select>
+      </div>
 
       <form id="loginForm" class="space-y-4">
         <input type="email" id="email" placeholder="Enter your email" class="w-full px-4 py-3 border rounded-xl border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm" required>
@@ -143,11 +152,34 @@
   </div>
 
   <script>
+    // Update UI when role changes
+    const roleSelect = document.getElementById('role');
+    const welcomeHeading = document.getElementById('welcomeHeading');
+    const welcomeDesc = document.getElementById('welcomeDesc');
+    const registerLink = document.querySelector('.text-sm.text-gray-500.mt-6 a') || null;
+
+    function updateUIForRole(role) {
+      if (role === 'vendor') {
+        welcomeHeading.textContent = 'Welcome Back, Valued Vendor!';
+        welcomeDesc.textContent = 'Sign in to manage orders, invoices and your product catalog.';
+        if (registerLink) registerLink.textContent = 'Apply for partnership';
+      } else {
+        welcomeHeading.textContent = 'Welcome Back, Procurement Manager!';
+        welcomeDesc.textContent = 'Sign in to manage your procurement dashboard, orders, and supplier interactions with ease.';
+        if (registerLink) registerLink.textContent = 'Register here';
+      }
+    }
+
+    // initialize UI
+    updateUIForRole(roleSelect.value);
+    roleSelect.addEventListener('change', () => updateUIForRole(roleSelect.value));
+
     document.getElementById('loginForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
+      const role = roleSelect.value; // buyer or vendor
       
       try {
         const response = await fetch('http://localhost:3000/login', {
@@ -155,16 +187,19 @@
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ email, password, role }),
         });
         
         if (response.ok) {
           const data = await response.json();
-          // Assuming successful login returns user data or token
-          // Store authentication token if needed
-          localStorage.setItem('authToken', data.token);
-          // Redirect to buyer dashboard
-          window.location.href = 'BuyerDashboard.html';
+          // Store authentication token if returned
+          if (data.token) localStorage.setItem('authToken', data.token);
+          // Redirect based on role
+          if (role === 'vendor') {
+            window.location.href = 'vendor_dashboard_new.html';
+          } else {
+            window.location.href = 'BuyerDashboard.html';
+          }
         } else {
           const errorData = await response.json();
           alert('Login failed: ' + (errorData.message || 'Invalid credentials'));
