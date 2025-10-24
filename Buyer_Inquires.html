@@ -1,251 +1,614 @@
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Inquiries - Vendor Dashboard</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Vendor Inquiries - Buyer Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap"
-    rel="stylesheet"
-  />
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
-  />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
+    :root {
+      --accent: #1d4ed8;
+      --accent-2: #7c3aed;
+      --muted: #64748b;
+      --card: #ffffff;
+    }
     body {
-      font-family: 'Inter', sans-serif;
-      background-color: #F5F5F5;
+      font-family: "Inter", sans-serif;
+      background: linear-gradient(120deg, #f8fafc 0%, #f1f5f9 100%);
       color: #212121;
     }
-    /* Sidebar background */
-    aside {
-      background-color: #6A1B9A;
+    .glass-card {
+      background: rgba(255,255,255,0.9);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      border-radius: 1rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
     }
-    /* Sidebar text */
-    aside nav a {
-      color: #D1C4E9;
+    .glass-card:hover {
+      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1), 0 10px 20px -5px rgba(0, 0, 0, 0.04);
+      border-color: rgba(124, 58, 237, 0.3);
     }
-    aside nav a:hover {
-      color: #FFFFFF;
+    .status-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
-    /* Sidebar icons */
-    aside nav a i {
-      color: inherit;
-    }
-    /* Scrollbar for sidebar nav */
-    aside nav::-webkit-scrollbar {
-      width: 6px;
-    }
-    aside nav::-webkit-scrollbar-thumb {
-      background-color: rgba(255 255 255 / 0.3);
-      border-radius: 3px;
-    }
-    /* Scrollbar for lists */
-    ul::-webkit-scrollbar {
-      width: 8px;
-    }
-    ul::-webkit-scrollbar-thumb {
-      background-color: rgba(138, 43, 226, 0.5);
-      border-radius: 4px;
-    }
-    /* Scrollbar for Firefox */
-    ul {
-      scrollbar-width: thin;
-      scrollbar-color: rgba(138, 43, 226, 0.5) transparent;
-    }
-    /* Section titles */
-    h1, h2 {
-      color: #6A1B9A;
-    }
-    /* Buttons */
-    button {
-      background-color: #8E24AA;
+    .status-open { background: #fef3c7; color: #92400e; }
+    .status-in-progress { background: #dbeafe; color: #1e40af; }
+    .status-resolved { background: #d1fae5; color: #166534; }
+    .status-closed { background: #e5e7eb; color: #374151; }
+    .priority-high { background: #fee2e2; color: #dc2626; }
+    .priority-medium { background: #fef3c7; color: #d97706; }
+    .priority-low { background: #ecfdf5; color: #059669; }
+    .btn-primary {
+      background: linear-gradient(135deg, #7c3aed 0%, #1d4ed8 100%);
       color: white;
-      transition: background-color 0.3s ease;
+      border: none;
+      border-radius: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
     }
-    button:hover {
-      background-color: #6A1B9A;
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px rgba(124, 58, 237, 0.2);
     }
-    /* Input fields and boxes */
-    input, textarea, select {
-      background-color: #FFFFFF;
-      border: 1px solid #E0E0E0;
-      color: #212121;
+    .btn-secondary {
+      background: white;
+      color: #4b5563;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      padding: 0.5rem 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
     }
-    /* Table header */
-    th {
-      background-color: #8E24AA;
-      color: white;
+    .btn-secondary:hover {
+      background: #f9fafb;
+      border-color: #9ca3af;
     }
-    /* Table row hover */
-    tbody tr:hover {
-      background-color: #E6D9F7;
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 50;
+    }
+    .modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .inquiry-card {
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .inquiry-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
     }
   </style>
 </head>
-<body class="min-h-screen flex">
-   <!-- Sidebar -->
-   <!-- <aside class="bg-primary w-20 flex flex-col items-center py-6 space-y-6">
-    <nav class="flex flex-col space-y-6 text-white text-xs font-normal w-full">
-     <a class="flex flex-col items-center space-y-1 opacity-100" href="">
-    <img src="https://www.mitsubishielectric-railway.eu/wp-content/uploads/2020/06/ME-Logo_mit-Claim_rgb.jpg" alt="Mitsubishi Electric logo" class="mx-auto mb-6 max-w-[180px] w-full"/>
-     </a>
-     <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="BuyerVendorApproval.html">
-      <i class="fas fa-file-invoice text-xs">
-      </i>
-      <span>
-       Purchase
-       <br/>
-       Orders
-      </span>
-     </a>
-     <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="Buyer_Vendorlist.html">
-      <i class="fas fa-check-circle text-xs">
-      </i>
-      <span>
-       Approvals
-      </span>
-     </a>
-     <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="Buyer_.manageasn.html">
-      <i class="fas fa-truck text-xs">
-      </i>
-      <span>
-       Suppliers
-      </span>
-     </a>
-     <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="Buyer_Inquires.html">
-      <i class="fas fa-question-circle text-xs">
-      </i>
-      <span>
-       Inquiries
-      </span>
-     </a>
-     <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="Buyer_report.html">
-      <i class="fas fa-chart-bar text-xs">
-      </i>
-      <span>
-       Reports
-      </span>
-     </a>
-     <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="Buyer_settings.html">
-      <i class="fas fa-cog text-xs">
-      </i>
-      <span>
-       Settings
-      </span>
-     </a>
-    </nav>
-   </aside> -->
+<body class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+  
+  <!-- Header -->
+  <header class="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <button onclick="window.history.back()" class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors">
+            <i class="fas fa-arrow-left text-gray-600"></i>
+          </button>
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900">Vendor Inquiries</h1>
+            <p class="text-sm text-gray-500">Manage and respond to vendor queries</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+            <i class="fas fa-question-circle mr-1"></i>
+            <span id="totalInquiries">12</span> Total Inquiries
+          </span>
+        </div>
+      </div>
+    </div>
+  </header>
 
-  <!-- Main content -->
-  <main class="flex-1 p-6 md:p-10 flex flex-col" id="mainContent">
-    <header class="mb-8 flex items-center justify-between">
-      <h1 class="text-2xl font-extrabold">Inquiries</h1>
-      <div class="flex space-x-4 text-gray-600 text-xl">
-        <button aria-label="Notifications" class="hover:text-gray-900">
-          <i class="fas fa-bell"></i>
-        </button>
-        <button aria-label="User profile" class="hover:text-gray-900">
-          <i class="fas fa-user"></i>
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    
+    <!-- Filters and Search -->
+    <div class="glass-card p-6 mb-6">
+      <div class="flex flex-col lg:flex-row gap-4 items-center justify-between">
+        <div class="flex flex-wrap gap-4 items-center">
+          <!-- Search -->
+          <div class="relative">
+            <input type="text" id="searchInput" placeholder="Search inquiries..." 
+                   class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+          </div>
+          
+          <!-- Status Filter -->
+          <select id="statusFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+            <option value="">All Status</option>
+            <option value="open">Open</option>
+            <option value="in-progress">In Progress</option>
+            <option value="resolved">Resolved</option>
+            <option value="closed">Closed</option>
+          </select>
+          
+          <!-- Priority Filter -->
+          <select id="priorityFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+            <option value="">All Priority</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+          
+          <!-- Category Filter -->
+          <select id="categoryFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+            <option value="">All Categories</option>
+            <option value="technical">Technical</option>
+            <option value="billing">Billing</option>
+            <option value="delivery">Delivery</option>
+            <option value="product">Product</option>
+            <option value="contract">Contract</option>
+            <option value="general">General</option>
+          </select>
+        </div>
+        
+        <button onclick="clearFilters()" class="btn-secondary">
+          <i class="fas fa-filter-circle-xmark mr-2"></i>Clear Filters
         </button>
       </div>
-    </header>
+    </div>
 
-    <section class="bg-white rounded-lg shadow p-6 flex-1 overflow-auto">
-      <table class="w-full table-auto border-collapse text-sm">
-        <thead>
-          <tr>
-            <th class="p-3 text-left">Inquiry ID</th>
-            <th class="p-3 text-left">Vendor</th>
-            <th class="p-3 text-left">Subject</th>
-            <th class="p-3 text-left">Date</th>
-            <th class="p-3 text-left">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="border-b border-gray-200">
-            <td class="p-3">INQ-1001</td>
-            <td class="p-3">Vendor A</td>
-            <td class="p-3">Product availability</td>
-            <td class="p-3">2024-06-01</td>
-            <td class="p-3 text-purple-700 font-semibold">Open</td>
-          </tr>
-          <tr class="border-b border-gray-200">
-            <td class="p-3">INQ-1002</td>
-            <td class="p-3">Vendor B</td>
-            <td class="p-3">Delivery schedule</td>
-            <td class="p-3">2024-06-03</td>
-            <td class="p-3 text-green-600 font-semibold">Closed</td>
-          </tr>
-          <tr class="border-b border-gray-200">
-            <td class="p-3">INQ-1003</td>
-            <td class="p-3">Vendor C</td>
-            <td class="p-3">Pricing details</td>
-            <td class="p-3">2024-06-05</td>
-            <td class="p-3 text-purple-700 font-semibold">Open</td>
-          </tr>
-          <tr class="border-b border-gray-200">
-            <td class="p-3">INQ-1004</td>
-            <td class="p-3">Vendor D</td>
-            <td class="p-3">Warranty information</td>
-            <td class="p-3">2024-06-07</td>
-            <td class="p-3 text-yellow-600 font-semibold">Pending</td>
-          </tr>
-          <tr class="border-b border-gray-200">
-            <td class="p-3">INQ-1005</td>
-            <td class="p-3">Vendor E</td>
-            <td class="p-3">Technical support</td>
-            <td class="p-3">2024-06-09</td>
-            <td class="p-3 text-purple-700 font-semibold">Open</td>
-          </tr>
-          <tr class="border-b border-gray-200">
-            <td class="p-3">INQ-1006</td>
-            <td class="p-3">Vendor F</td>
-            <td class="p-3">Order modification</td>
-            <td class="p-3">2024-06-10</td>
-            <td class="p-3 text-green-600 font-semibold">Closed</td>
-          </tr>
-          <tr class="border-b border-gray-200">
-            <td class="p-3">INQ-1007</td>
-            <td class="p-3">Vendor G</td>
-            <td class="p-3">Shipping delay</td>
-            <td class="p-3">2024-06-12</td>
-            <td class="p-3 text-yellow-600 font-semibold">Pending</td>
-          </tr>
-          <tr class="border-b border-gray-200">
-            <td class="p-3">INQ-1008</td>
-            <td class="p-3">Vendor H</td>
-            <td class="p-3">Invoice query</td>
-            <td class="p-3">2024-06-14</td>
-            <td class="p-3 text-purple-700 font-semibold">Open</td>
-          </tr>
-          <tr class="border-b border-gray-200">
-            <td class="p-3">INQ-1009</td>
-            <td class="p-3">Vendor I</td>
-            <td class="p-3">Product specifications</td>
-            <td class="p-3">2024-06-15</td>
-            <td class="p-3 text-green-600 font-semibold">Closed</td>
-          </tr>
-          <tr>
-            <td class="p-3">INQ-1010</td>
-            <td class="p-3">Vendor J</td>
-            <td class="p-3">Contract renewal</td>
-            <td class="p-3">2024-06-17</td>
-            <td class="p-3 text-purple-700 font-semibold">Open</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+      <div class="glass-card p-6 text-center">
+        <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3">
+          <i class="fas fa-clock text-yellow-600 text-xl"></i>
+        </div>
+        <div class="text-2xl font-bold text-gray-900">5</div>
+        <div class="text-sm text-gray-500">Open</div>
+      </div>
+      <div class="glass-card p-6 text-center">
+        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+          <i class="fas fa-hourglass-half text-blue-600 text-xl"></i>
+        </div>
+        <div class="text-2xl font-bold text-gray-900">3</div>
+        <div class="text-sm text-gray-500">In Progress</div>
+      </div>
+      <div class="glass-card p-6 text-center">
+        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+          <i class="fas fa-check-circle text-green-600 text-xl"></i>
+        </div>
+        <div class="text-2xl font-bold text-gray-900">3</div>
+        <div class="text-sm text-gray-500">Resolved</div>
+      </div>
+      <div class="glass-card p-6 text-center">
+        <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+          <i class="fas fa-archive text-gray-600 text-xl"></i>
+        </div>
+        <div class="text-2xl font-bold text-gray-900">1</div>
+        <div class="text-sm text-gray-500">Closed</div>
+      </div>
+    </div>
+
+    <!-- Inquiries List -->
+    <div id="inquiriesList" class="space-y-4">
+      <!-- Sample Inquiry Cards will be populated here by JavaScript -->
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-8 flex items-center justify-center">
+      <nav class="flex items-center gap-2">
+        <button class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="px-3 py-2 text-sm bg-blue-600 text-white border border-blue-600 rounded-lg">1</button>
+        <button class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">2</button>
+        <button class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">3</button>
+        <button class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </nav>
+    </div>
   </main>
 
+  <!-- Inquiry Detail Modal -->
+  <div id="inquiryModal" class="modal">
+    <div class="bg-white rounded-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-bold text-gray-900" id="modalTitle">Inquiry Details</h2>
+          <button onclick="closeModal()" class="p-2 rounded-lg hover:bg-gray-100">
+            <i class="fas fa-times text-gray-500"></i>
+          </button>
+        </div>
+      </div>
+      <div id="modalContent" class="p-6">
+        <!-- Modal content will be populated by JavaScript -->
+      </div>
+    </div>
+  </div>
+
   <script>
-    // Add click event to Inquiries button in sidebar
-    document.getElementById('inquiriesBtn').addEventListener('click', () => {
-      // For demonstration, just alert or you can implement navigation or content load
-      alert('Inquiries button clicked! This would navigate or load the inquiries screen.');
-      // Or you can implement SPA style content loading here
+    // Sample inquiry data
+    const inquiries = [
+      {
+        id: 'INQ-2024-001',
+        vendorId: 'VEN-001',
+        vendorName: 'TechSolutions Ltd',
+        vendorEmail: 'support@techsolutions.com',
+        subject: 'Product Availability for Q4 Orders',
+        category: 'product',
+        priority: 'high',
+        status: 'open',
+        createdDate: '2024-09-01',
+        lastUpdate: '2024-09-02',
+        description: 'We need clarification on the availability of Model X products for our Q4 orders. Our current inventory is running low and we need to plan our procurement accordingly.',
+        attachments: ['product-catalog.pdf', 'inventory-report.xlsx'],
+        responses: []
+      },
+      {
+        id: 'INQ-2024-002',
+        vendorId: 'VEN-002',
+        vendorName: 'Global Manufacturing Co',
+        vendorEmail: 'inquiries@globalmanuf.com',
+        subject: 'Invoice Payment Status Clarification',
+        category: 'billing',
+        priority: 'medium',
+        status: 'in-progress',
+        createdDate: '2024-08-28',
+        lastUpdate: '2024-09-01',
+        description: 'Could you please provide an update on the payment status for Invoice #INV-2024-0856? The payment was processed on our end but we haven\'t received confirmation.',
+        attachments: ['payment-receipt.pdf'],
+        responses: [
+          {
+            from: 'buyer',
+            message: 'We are checking with our accounts team. Will update you within 24 hours.',
+            timestamp: '2024-09-01 10:30 AM'
+          }
+        ]
+      },
+      {
+        id: 'INQ-2024-003',
+        vendorId: 'VEN-003',
+        vendorName: 'Logistics Express',
+        vendorEmail: 'support@logisticsexp.com',
+        subject: 'Delivery Schedule Modification Request',
+        category: 'delivery',
+        priority: 'high',
+        status: 'open',
+        createdDate: '2024-09-03',
+        lastUpdate: '2024-09-03',
+        description: 'Due to unexpected delays in our manufacturing process, we request a modification in the delivery schedule for PO #PO-2024-1245. Can we reschedule delivery from Sept 15 to Sept 22?',
+        attachments: ['revised-schedule.pdf'],
+        responses: []
+      },
+      {
+        id: 'INQ-2024-004',
+        vendorId: 'VEN-004',
+        vendorName: 'Quality Components Inc',
+        vendorEmail: 'quality@qualitycomp.com',
+        subject: 'Technical Specifications Query',
+        category: 'technical',
+        priority: 'medium',
+        status: 'resolved',
+        createdDate: '2024-08-25',
+        lastUpdate: '2024-08-30',
+        description: 'We need detailed technical specifications for the new component series QC-5000. The current documentation seems incomplete for our integration requirements.',
+        attachments: ['current-specs.pdf', 'integration-requirements.docx'],
+        responses: [
+          {
+            from: 'buyer',
+            message: 'Please find the complete technical specifications attached. Let us know if you need any additional information.',
+            timestamp: '2024-08-30 2:15 PM'
+          }
+        ]
+      },
+      {
+        id: 'INQ-2024-005',
+        vendorId: 'VEN-005',
+        vendorName: 'Smart Systems Ltd',
+        vendorEmail: 'info@smartsystems.com',
+        subject: 'Contract Renewal Discussion',
+        category: 'contract',
+        priority: 'low',
+        status: 'in-progress',
+        createdDate: '2024-08-20',
+        lastUpdate: '2024-08-28',
+        description: 'Our current service contract expires on October 31, 2024. We would like to discuss renewal terms and any updates to the service level agreements.',
+        attachments: ['current-contract.pdf'],
+        responses: [
+          {
+            from: 'buyer',
+            message: 'We will schedule a meeting next week to discuss renewal terms.',
+            timestamp: '2024-08-28 4:45 PM'
+          }
+        ]
+      }
+    ];
+
+    function renderInquiries(filteredInquiries = inquiries) {
+      const container = document.getElementById('inquiriesList');
+      
+      if (filteredInquiries.length === 0) {
+        container.innerHTML = `
+          <div class="glass-card p-12 text-center">
+            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-inbox text-gray-400 text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">No inquiries found</h3>
+            <p class="text-gray-500">Try adjusting your filters or search terms.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filteredInquiries.map(inquiry => `
+        <div class="glass-card inquiry-card p-6" onclick="viewInquiry('${inquiry.id}')">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-2">
+                <h3 class="font-semibold text-gray-900">${inquiry.subject}</h3>
+                <span class="status-badge status-${inquiry.status}">${inquiry.status.replace('-', ' ')}</span>
+                <span class="status-badge priority-${inquiry.priority}">${inquiry.priority}</span>
+              </div>
+              <div class="text-sm text-gray-600 mb-2">
+                <i class="fas fa-building mr-2"></i>${inquiry.vendorName}
+                <span class="mx-2">•</span>
+                <i class="fas fa-envelope mr-2"></i>${inquiry.vendorEmail}
+                <span class="mx-2">•</span>
+                <i class="fas fa-calendar mr-2"></i>${new Date(inquiry.createdDate).toLocaleDateString()}
+              </div>
+              <p class="text-gray-700 text-sm leading-relaxed">${inquiry.description.substring(0, 150)}...</p>
+            </div>
+            <div class="text-right ml-4">
+              <div class="text-xs text-gray-500 mb-2">ID: ${inquiry.id}</div>
+              <div class="flex items-center text-xs text-gray-500">
+                <i class="fas fa-tag mr-1"></i>${inquiry.category}
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+            <div class="flex items-center gap-4 text-xs text-gray-500">
+              ${inquiry.attachments.length > 0 ? `<span><i class="fas fa-paperclip mr-1"></i>${inquiry.attachments.length} attachment${inquiry.attachments.length > 1 ? 's' : ''}</span>` : ''}
+              <span><i class="fas fa-comments mr-1"></i>${inquiry.responses.length} response${inquiry.responses.length !== 1 ? 's' : ''}</span>
+              <span><i class="fas fa-clock mr-1"></i>Updated ${new Date(inquiry.lastUpdate).toLocaleDateString()}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button class="btn-secondary text-xs" onclick="event.stopPropagation(); respondToInquiry('${inquiry.id}')">
+                <i class="fas fa-reply mr-1"></i>Respond
+              </button>
+              <button class="text-gray-400 hover:text-gray-600" onclick="event.stopPropagation(); markAsRead('${inquiry.id}')">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function viewInquiry(inquiryId) {
+      const inquiry = inquiries.find(i => i.id === inquiryId);
+      if (!inquiry) return;
+
+      document.getElementById('modalTitle').textContent = inquiry.subject;
+      document.getElementById('modalContent').innerHTML = `
+        <div class="space-y-6">
+          <!-- Inquiry Header -->
+          <div class="bg-gray-50 rounded-lg p-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <div class="text-sm text-gray-500">Inquiry ID</div>
+                <div class="font-semibold">${inquiry.id}</div>
+              </div>
+              <div>
+                <div class="text-sm text-gray-500">Vendor</div>
+                <div class="font-semibold">${inquiry.vendorName}</div>
+              </div>
+              <div>
+                <div class="text-sm text-gray-500">Email</div>
+                <div class="font-semibold">${inquiry.vendorEmail}</div>
+              </div>
+              <div>
+                <div class="text-sm text-gray-500">Category</div>
+                <div class="font-semibold capitalize">${inquiry.category}</div>
+              </div>
+              <div>
+                <div class="text-sm text-gray-500">Priority</div>
+                <span class="status-badge priority-${inquiry.priority}">${inquiry.priority}</span>
+              </div>
+              <div>
+                <div class="text-sm text-gray-500">Status</div>
+                <span class="status-badge status-${inquiry.status}">${inquiry.status.replace('-', ' ')}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div>
+            <h4 class="font-semibold mb-2">Description</h4>
+            <div class="bg-gray-50 rounded-lg p-4 text-gray-700">${inquiry.description}</div>
+          </div>
+
+          <!-- Attachments -->
+          ${inquiry.attachments.length > 0 ? `
+            <div>
+              <h4 class="font-semibold mb-2">Attachments</h4>
+              <div class="space-y-2">
+                ${inquiry.attachments.map(attachment => `
+                  <div class="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                    <i class="fas fa-file text-gray-400"></i>
+                    <span class="text-sm">${attachment}</span>
+                    <button class="ml-auto text-blue-600 hover:text-blue-800 text-sm">Download</button>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Responses -->
+          <div>
+            <h4 class="font-semibold mb-2">Responses (${inquiry.responses.length})</h4>
+            <div class="space-y-3">
+              ${inquiry.responses.length === 0 ? 
+                '<div class="text-gray-500 text-sm">No responses yet</div>' :
+                inquiry.responses.map(response => `
+                  <div class="bg-blue-50 rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-2">
+                      <span class="font-semibold text-blue-700">${response.from === 'buyer' ? 'You' : inquiry.vendorName}</span>
+                      <span class="text-xs text-gray-500">${response.timestamp}</span>
+                    </div>
+                    <div class="text-gray-700">${response.message}</div>
+                  </div>
+                `).join('')
+              }
+            </div>
+          </div>
+
+          <!-- Response Form -->
+          <div>
+            <h4 class="font-semibold mb-2">Send Response</h4>
+            <form onsubmit="sendResponse(event, '${inquiry.id}')">
+              <textarea class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" 
+                        rows="4" placeholder="Type your response here..."></textarea>
+              <div class="mt-3 flex justify-between items-center">
+                <label class="flex items-center text-sm text-gray-600">
+                  <input type="checkbox" class="mr-2"> Send email notification
+                </label>
+                <div class="space-x-3">
+                  <button type="button" onclick="updateInquiryStatus('${inquiry.id}', 'resolved')" 
+                          class="btn-secondary">Mark Resolved</button>
+                  <button type="submit" class="btn-primary">Send Response</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('inquiryModal').classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('inquiryModal').classList.remove('show');
+    }
+
+    function sendResponse(event, inquiryId) {
+      event.preventDefault();
+      const textarea = event.target.querySelector('textarea');
+      const message = textarea.value.trim();
+      
+      if (!message) return;
+
+      // Add response to inquiry (in real app, this would be an API call)
+      const inquiry = inquiries.find(i => i.id === inquiryId);
+      if (inquiry) {
+        inquiry.responses.push({
+          from: 'buyer',
+          message: message,
+          timestamp: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString()
+        });
+        inquiry.lastUpdate = new Date().toISOString().split('T')[0];
+        inquiry.status = 'in-progress';
+      }
+
+      // Show success message
+      alert('Response sent successfully!');
+      
+      // Refresh the modal content
+      viewInquiry(inquiryId);
+      
+      // Refresh the main list
+      applyFilters();
+    }
+
+    function updateInquiryStatus(inquiryId, status) {
+      const inquiry = inquiries.find(i => i.id === inquiryId);
+      if (inquiry) {
+        inquiry.status = status;
+        inquiry.lastUpdate = new Date().toISOString().split('T')[0];
+      }
+      
+      alert(`Inquiry marked as ${status}!`);
+      closeModal();
+      applyFilters();
+    }
+
+    function respondToInquiry(inquiryId) {
+      viewInquiry(inquiryId);
+      // Scroll to response form
+      setTimeout(() => {
+        const responseForm = document.querySelector('#modalContent form');
+        if (responseForm) {
+          responseForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          responseForm.querySelector('textarea').focus();
+        }
+      }, 300);
+    }
+
+    function markAsRead(inquiryId) {
+      // In a real application, this would mark the inquiry as read
+      alert('Marked as read!');
+    }
+
+    function applyFilters() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const statusFilter = document.getElementById('statusFilter').value;
+      const priorityFilter = document.getElementById('priorityFilter').value;
+      const categoryFilter = document.getElementById('categoryFilter').value;
+
+      let filtered = inquiries.filter(inquiry => {
+        const matchesSearch = !search || 
+          inquiry.subject.toLowerCase().includes(search) ||
+          inquiry.vendorName.toLowerCase().includes(search) ||
+          inquiry.description.toLowerCase().includes(search) ||
+          inquiry.id.toLowerCase().includes(search);
+        
+        const matchesStatus = !statusFilter || inquiry.status === statusFilter;
+        const matchesPriority = !priorityFilter || inquiry.priority === priorityFilter;
+        const matchesCategory = !categoryFilter || inquiry.category === categoryFilter;
+
+        return matchesSearch && matchesStatus && matchesPriority && matchesCategory;
+      });
+
+      renderInquiries(filtered);
+    }
+
+    function clearFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('statusFilter').value = '';
+      document.getElementById('priorityFilter').value = '';
+      document.getElementById('categoryFilter').value = '';
+      renderInquiries();
+    }
+
+    // Event listeners
+    document.getElementById('searchInput').addEventListener('input', applyFilters);
+    document.getElementById('statusFilter').addEventListener('change', applyFilters);
+    document.getElementById('priorityFilter').addEventListener('change', applyFilters);
+    document.getElementById('categoryFilter').addEventListener('change', applyFilters);
+
+    // Close modal when clicking outside
+    document.getElementById('inquiryModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeModal();
+      }
     });
+
+    // Initialize
+    renderInquiries();
   </script>
 </body>
 </html>

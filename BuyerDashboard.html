@@ -143,7 +143,7 @@
           src="./mainlogo.png" />
         <div>
           <h1 class="text-xl font-bold text-[#212121] leading-tight"> OMVERRO</h1>
-          <p class="text-xs text-gray-500 -mt-1">Enterprise Procurement Management</p>
+          <p class="text-xs text-gray-500 -mt-1">Smarter supply chains, stronger partnerships</p>
         </div>
       </div>
 
@@ -158,10 +158,60 @@
         <button id="themeToggle" class="h-10 w-10 rounded-full bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-600" title="Theme">
           <i class="fas fa-sun"></i>
         </button>
-        <button id="notificationsButton" class="relative h-10 w-10 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100">
-          <i class="far fa-bell"></i>
-          <span class="absolute -top-1 -right-1 badge">4</span>
-        </button>
+        <div class="relative">
+          <button id="notificationsButton" class="relative h-10 w-10 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100">
+            <i class="far fa-bell"></i>
+            <span class="absolute -top-1 -right-1 badge">4</span>
+          </button>
+          <div id="notificationPanel" class="hidden absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+            <div class="p-4 border-b border-blue-50">
+              <h3 class="text-lg font-semibold text-blue-700 flex items-center gap-2">
+                <i class="fas fa-bell text-red-500"></i> Notifications
+              </h3>
+            </div>
+            <div class="max-h-80 overflow-y-auto">
+              <ul class="divide-y divide-blue-50">
+                <li class="p-4 flex items-start gap-3">
+                  <span class="inline-block mt-1 text-blue-500"><i class="fas fa-check-circle"></i></span>
+                  <div>
+                    <div class="font-semibold text-gray-800">PO #1001 Approved</div>
+                    <div class="text-sm text-gray-500">Your purchase order #1001 has been approved.</div>
+                    <div class="text-xs text-gray-400 mt-1">2 hours ago</div>
+                  </div>
+                </li>
+                <li class="p-4 flex items-start gap-3">
+                  <span class="inline-block mt-1 text-yellow-500"><i class="fas fa-exclamation-triangle"></i></span>
+                  <div>
+                    <div class="font-semibold text-gray-800">Budget Limit Warning</div>
+                    <div class="text-sm text-gray-500">Marketing budget exceeded 90% utilization.</div>
+                    <div class="text-xs text-gray-400 mt-1">Today, 09:15 AM</div>
+                  </div>
+                </li>
+                <li class="p-4 flex items-start gap-3">
+                  <span class="inline-block mt-1 text-green-500"><i class="fas fa-file-invoice"></i></span>
+                  <div>
+                    <div class="font-semibold text-gray-800">Invoice #INV-2024 Received</div>
+                    <div class="text-sm text-gray-500">New invoice from Supplier X received.</div>
+                    <div class="text-xs text-gray-400 mt-1">Yesterday, 5:30 PM</div>
+                  </div>
+                </li>
+                <li class="p-4 flex items-start gap-3">
+                  <span class="inline-block mt-1 text-purple-500"><i class="fas fa-user-plus"></i></span>
+                  <div>
+                    <div class="font-semibold text-gray-800">New Supplier Registered</div>
+                    <div class="text-sm text-gray-500">Supplier Y is now active.</div>
+                    <div class="text-xs text-gray-400 mt-1">Yesterday, 11:00 AM</div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="border-t border-blue-50 p-4">
+              <button onclick="document.getElementById('notificationPanel').classList.add('hidden')" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600" type="button">
+                <i class="fas fa-check"></i> Acknowledge All
+              </button>
+            </div>
+          </div>
+        </div>
         <div class="relative">
           <button id="profileMenuButton" aria-label="Open profile menu" class="flex items-center justify-center w-10 h-10 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-600">
             <i class="fas fa-user-circle fa-lg"></i>
@@ -174,7 +224,7 @@
                 </div>
                 <div>
                   <div class="font-semibold text-blue-600">John Smith</div>
-                  <div class="text-sm text-gray-700">john.smith@techcarvings.com</div>
+                  <div class="text-sm text-gray-700">priya@techcarvings.com</div>
                 </div>
               </div>
             </div>
@@ -225,22 +275,18 @@
         </div>
         <div class="flex items-center gap-3 w-full md:w-auto">
           <input type="date" class="w-full md:w-44 px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600" />
-          <select class="w-full md:w-44 px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600">
-            <option>All Categories</option>
-            <option>Capex</option>
-            <option>Opex</option>
-          </select>
-          <div class="relative w-full md:w-64">
+          <!-- Removed duplicate search bar below -->
+          <!-- <div class="relative w-full md:w-64">
             <input type="search" placeholder="Search PR/PO/Supplier..." class="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600" />
             <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
-          </div>
+          </div> -->
         </div>
       </div>
     </section>
 
     <!-- KPIs -->
     <section class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-      <div class="box-white kpi p-4 reveal">
+      <div class="box-white kpi p-4 reveal cursor-pointer hover:shadow-lg transition-shadow" onclick="location.href='Buyer_Open_RFQs.html'">
         <div class="text-sm text-gray-500">Open RFQs</div>
         <div class="mt-1 text-2xl font-extrabold">8</div>
         <div class="text-xs text-blue-600 mt-1">2 expiring soon</div>
@@ -274,7 +320,7 @@
 
     <!-- Tiles -->
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" aria-label="Dashboard Features">
-      <button class="tile reveal" onclick="location.href='pr_approval_change.html'">
+      <button class="tile reveal" onclick="location.href='pr_creation_change.html'">
         <span class="tile-icon"><i class="fas fa-file-alt"></i></span>
         <span class="tile-title">PR Creation &amp; Change</span>
         <span class="tile-desc">Opex &amp; Capex Purchase Requisitions</span>
@@ -350,7 +396,7 @@
       <button class="tile reveal" onclick="location.href='./Buyer_.manageasn.html'">
         <span class="tile-icon" style="color:#7c3aed;background:#F5F3FF;"><i class="fas fa-shipping-fast"></i></span>
         <span class="tile-title">Manage ASN</span>
-        <span class="tile-desc">Advance Shipment Notices</span>
+        <span class="tile-desc">Advance Shipment Notices</span> 
       </button>
 
       <button class="tile reveal" onclick="location.href='./Buyer_Vendorlist.html'">
@@ -377,70 +423,18 @@
         <span class="tile-desc">Manage asset data</span>
       </button>
 
-      <button class="tile reveal" onclick="document.getElementById('notificationPanel').classList.toggle('hidden')">
-        <span class="tile-icon" style="color:#ef4444;background:#FEF2F2;"><i class="fas fa-bell"></i></span>
-        <span class="tile-title">Notifications</span>
-        <span class="tile-desc">Recent system updates</span>
-      </button>
-
-      <button class="tile reveal" onclick="location.href='./Bulk_processing.html'">
+      <button class="tile reveal" onclick="location.href='./Buyer_Bulk_Processing_Center.html'">
         <span class="tile-icon" style="color:#2563eb;background:#EFF6FF;"><i class="fas fa-layer-group"></i></span>
         <span class="tile-title">Bulk Processing Center</span>
         <span class="tile-desc">Process PR/PO/Invoices in bulk</span>
       </button>
     </section>
 
-    <!-- Notification Panel (sample) -->
-    <div id="notificationPanel" class="hidden max-w-2xl mx-auto mt-8 box-white ring-gradient p-6 reveal">
-      <h3 class="text-xl font-semibold text-blue-700 mb-4 flex items-center gap-2">
-        <i class="fas fa-bell text-red-500"></i> Notifications
-      </h3>
-      <ul class="divide-y divide-blue-50">
-        <li class="py-3 flex items-start gap-3">
-          <span class="inline-block mt-1 text-blue-500"><i class="fas fa-check-circle"></i></span>
-          <div>
-            <div class="font-semibold text-gray-800">PO #1001 Approved</div>
-            <div class="text-sm text-gray-500">Your purchase order #1001 has been approved.</div>
-            <div class="text-xs text-gray-400 mt-1">2 hours ago</div>
-          </div>
-        </li>
-        <li class="py-3 flex items-start gap-3">
-          <span class="inline-block mt-1 text-yellow-500"><i class="fas fa-exclamation-triangle"></i></span>
-          <div>
-            <div class="font-semibold text-gray-800">Budget Limit Warning</div>
-            <div class="text-sm text-gray-500">Marketing budget exceeded 90% utilization.</div>
-            <div class="text-xs text-gray-400 mt-1">Today, 09:15 AM</div>
-          </div>
-        </li>
-        <li class="py-3 flex items-start gap-3">
-          <span class="inline-block mt-1 text-green-500"><i class="fas fa-file-invoice"></i></span>
-          <div>
-            <div class="font-semibold text-gray-800">Invoice #INV-2024 Received</div>
-            <div class="text-sm text-gray-500">New invoice from Supplier X received.</div>
-            <div class="text-xs text-gray-400 mt-1">Yesterday, 5:30 PM</div>
-          </div>
-        </li>
-        <li class="py-3 flex items-start gap-3">
-          <span class="inline-block mt-1 text-purple-500"><i class="fas fa-user-plus"></i></span>
-          <div>
-            <div class="font-semibold text-gray-800">New Supplier Registered</div>
-            <div class="text-sm text-gray-500">Supplier Y is now active.</div>
-            <div class="text-xs text-gray-400 mt-1">Yesterday, 11:00 AM</div>
-          </div>
-        </li>
-      </ul>
-      <div class="mt-4">
-        <button onclick="document.getElementById('notificationPanel').classList.add('hidden')" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600" type="button">
-          <i class="fas fa-check"></i> Acknowledge All
-        </button>
-      </div>
-    </div>
+    </section>
+  </main>
   </main>
 
-    <!-- Floating Action Button for Quick Add -->
-    <button class="fab" title="Quick Add" onclick="alert('Quick Add: PR, PO, RFQ, Supplier, etc.')">
-      <i class="fas fa-plus"></i>
-    </button>
+
 
   <script>
     // Header blur on scroll
@@ -463,10 +457,29 @@
       profileBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         profileDropdown.classList.toggle('hidden');
+        // Close notifications dropdown if open
+        document.getElementById('notificationPanel').classList.add('hidden');
       });
       document.addEventListener('click', (e) => {
         if (!profileDropdown.contains(e.target) && !profileBtn.contains(e.target)) {
           profileDropdown.classList.add('hidden');
+        }
+      });
+    }
+
+    // Notifications dropdown
+    const notificationsBtn = document.getElementById('notificationsButton');
+    const notificationPanel = document.getElementById('notificationPanel');
+    if (notificationsBtn) {
+      notificationsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notificationPanel.classList.toggle('hidden');
+        // Close profile dropdown if open
+        document.getElementById('profileDropdown').classList.add('hidden');
+      });
+      document.addEventListener('click', (e) => {
+        if (!notificationPanel.contains(e.target) && !notificationsBtn.contains(e.target)) {
+          notificationPanel.classList.add('hidden');
         }
       });
     }
@@ -485,12 +498,6 @@
     themeToggle?.addEventListener('click', () => {
       themeToggle.classList.toggle('bg-yellow-50');
       themeToggle.innerHTML = themeToggle.innerHTML.includes('sun') ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
-    });
-
-    // Notifications shortcut
-    document.getElementById('notificationsButton')?.addEventListener('click', () => {
-      document.getElementById('notificationPanel')?.classList.toggle('hidden');
-      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     });
   </script>
 </body>

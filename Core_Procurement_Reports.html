@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Core Procurement Reports - Vendor Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap"
+    rel="stylesheet"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+  />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #F5F5F5;
+      color: #212121;
+    }
+    .card {
+      background-color: white;
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 12px rgb(0 0 0 / 0.15);
+    }
+    .chart-container {
+      max-width: 100%;
+      height: 200px;
+    }
+    .modal-backdrop {
+      background-color: rgba(0,0,0,0.5);
+    }
+    .filter-section {
+      background-color: white;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+      margin-bottom: 2rem;
+    }
+    .summary-card {
+      background: linear-gradient(135deg, #6A1B9A, #8E24AA);
+      color: white;
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex">
+  <!-- Sidebar -->
+  <aside class="bg-primary w-20 flex flex-col items-center py-6 space-y-6">
+    <nav class="flex flex-col space-y-6 text-white text-xs font-normal w-full">
+      <a class="flex flex-col items-center space-y-1 opacity-100" href="">
+        <!-- Logo placeholder -->
+      </a>
+      <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="BuyerVendorApproval.html">
+        <i class="fas fa-file-invoice text-xs"></i>
+        <span>Purchase<br/>Orders</span>
+      </a>
+      <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="Buyer_Vendorlist.html">
+        <i class="fas fa-check-circle text-xs"></i>
+        <span>Approvals</span>
+      </a>
+      <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="Buyer_.manageasn.html">
+        <i class="fas fa-truck text-xs"></i>
+        <span>Suppliers</span>
+      </a>
+      <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="Buyer_Inquires.html">
+        <i class="fas fa-question-circle text-xs"></i>
+        <span>Inquiries</span>
+      </a>
+      <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="Buyer_report.html">
+        <i class="fas fa-chart-bar text-xs"></i>
+        <span>Reports</span>
+      </a>
+      <a class="flex flex-col items-center space-y-1 hover:text-primaryLight text-[10px]" href="Buyer_settings.html">
+        <i class="fas fa-cog text-xs"></i>
+        <span>Settings</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main content -->
+  <main class="flex-1 p-6 md:p-10 flex flex-col space-y-8">
+    <header class="flex items-center justify-between">
+      <h1 class="text-2xl font-extrabold text-[#6A1B9A]">Core Procurement Reports</h1>
+      <div class="flex space-x-4 text-gray-600 text-xl">
+        <button aria-label="Notifications" class="hover:text-gray-900">
+          <i class="fas fa-bell"></i>
+        </button>
+        <button aria-label="User profile" class="hover:text-gray-900">
+          <i class="fas fa-user"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Summary Dashboard -->
+    <section class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="summary-card">
+        <h3 class="text-lg font-semibold">Total Spend</h3>
+        <p class="text-2xl font-bold">$1,250,000</p>
+        <p class="text-sm">+5% from last month</p>
+      </div>
+      <div class="summary-card">
+        <h3 class="text-lg font-semibold">Active Orders</h3>
+        <p class="text-2xl font-bold">240</p>
+        <p class="text-sm">12 pending approval</p>
+      </div>
+      <div class="summary-card">
+        <h3 class="text-lg font-semibold">Supplier Rating</h3>
+        <p class="text-2xl font-bold">4.8/5</p>
+        <p class="text-sm">95% on-time delivery</p>
+      </div>
+      <div class="summary-card">
+        <h3 class="text-lg font-semibold">Order Accuracy</h3>
+        <p class="text-2xl font-bold">97.5%</p>
+        <p class="text-sm">Reduced errors by 2%</p>
+      </div>
+    </section>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+      <h2 class="text-lg font-semibold mb-4 text-[#6A1B9A]">Filters</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label for="dateRange" class="block text-sm font-medium text-gray-700">Date Range</label>
+          <select id="dateRange" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#6A1B9A] focus:border-[#6A1B9A]">
+            <option>Last 30 Days</option>
+            <option>Last 3 Months</option>
+            <option>Last 6 Months</option>
+            <option>Last Year</option>
+          </select>
+        </div>
+        <div>
+          <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
+          <select id="category" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#6A1B9A] focus:border-[#6A1B9A]">
+            <option>All Categories</option>
+            <option>Electronics</option>
+            <option>Office Supplies</option>
+            <option>Raw Materials</option>
+          </select>
+        </div>
+        <div>
+          <label for="supplier" class="block text-sm font-medium text-gray-700">Supplier</label>
+          <select id="supplier" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#6A1B9A] focus:border-[#6A1B9A]">
+            <option>All Suppliers</option>
+            <option>Supplier A</option>
+            <option>Supplier B</option>
+            <option>Supplier C</option>
+          </select>
+        </div>
+      </div>
+      <button id="applyFilters" class="mt-4 bg-[#6A1B9A] text-white px-4 py-2 rounded-md hover:bg-[#5a1390]">Apply Filters</button>
+    </div>
+
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Purchase Spend Analysis -->
+      <div class="card flex flex-col" data-report="spend-analysis">
+        <h2 class="text-lg font-semibold mb-4 text-[#6A1B9A]">Purchase Spend Analysis</h2>
+        <p class="text-sm text-gray-600 mb-4">Tracks spending trends over time (e.g., monthly/yearly spend by category or supplier).</p>
+        <div class="chart-container">
+          <canvas id="spendAnalysisChart" aria-label="Line chart showing purchase spend analysis" role="img"></canvas>
+        </div>
+      </div>
+
+      <!-- Purchase Orders -->
+      <div class="card flex flex-col" data-report="purchase-orders">
+        <h2 class="text-lg font-semibold mb-4 text-[#6A1B9A]">Purchase Orders</h2>
+        <p class="text-sm text-gray-600 mb-4">Summarizes open, approved, and pending orders, including status and delivery timelines.</p>
+        <div class="chart-container">
+          <canvas id="purchaseOrdersChart" aria-label="Bar chart showing purchase orders status" role="img"></canvas>
+        </div>
+      </div>
+
+      <!-- Supplier Performance -->
+      <div class="card flex flex-col" data-report="supplier-performance">
+        <h2 class="text-lg font-semibold mb-4 text-[#6A1B9A]">Supplier Performance</h2>
+        <p class="text-sm text-gray-600 mb-4">Metrics like on-time delivery, quality compliance, and response times.</p>
+        <div class="chart-container">
+          <canvas id="supplierPerformanceChart" aria-label="Bar chart showing supplier performance metrics" role="img"></canvas>
+        </div>
+      </div>
+
+      <!-- Order Accuracy -->
+      <div class="card flex flex-col" data-report="order-accuracy">
+        <h2 class="text-lg font-semibold mb-4 text-[#6A1B9A]">Order Accuracy</h2>
+        <p class="text-sm text-gray-600 mb-4">Tracks error rates in orders, returns, and discrepancies.</p>
+        <div class="chart-container">
+          <canvas id="orderAccuracyChart" aria-label="Pie chart showing order accuracy" role="img"></canvas>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal -->
+  <div id="modalBackdrop" class="fixed inset-0 hidden items-center justify-center modal-backdrop z-50">
+    <div class="bg-white rounded-lg shadow-lg max-w-lg w-full p-6 relative max-h-[80vh] overflow-y-auto">
+      <button id="closeModalBtn" aria-label="Close modal" class="absolute top-3 right-3 text-gray-600 hover:text-gray-900 text-xl">
+        <i class="fas fa-times"></i>
+      </button>
+      <h3 id="modalTitle" class="text-xl font-semibold mb-4 text-gray-900">Report Details</h3>
+      <div id="modalContent" class="text-gray-900 text-sm space-y-2"></div>
+    </div>
+  </div>
+
+  <script>
+    // Charts initialization (same as before)
+    const spendAnalysisCtx = document.getElementById('spendAnalysisChart').getContext('2d');
+    const spendAnalysisChart = new Chart(spendAnalysisCtx, {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        datasets: [{
+          label: 'Spend ($K)',
+          data: [50, 60, 55, 70, 90, 85, 80, 75, 95, 100, 110, 105],
+          borderColor: '#6A1B9A',
+          backgroundColor: 'rgba(106, 27, 154, 0.2)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 3,
+          pointBackgroundColor: '#6A1B9A',
+          borderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              color: '#212121',
+              stepSize: 20,
+            },
+            grid: {
+              color: '#E0E0E0',
+            }
+          },
+          x: {
+            ticks: {
+              color: '#212121',
+            },
+            grid: {
+              color: '#E0E0E0',
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            labels: {
+              color: '#6A1B9A',
+              font: { weight: 'bold' }
+            }
+          },
+          tooltip: {
+            backgroundColor: '#6A1B9A',
+            titleColor: '#fff',
+            bodyColor: '#fff',
+            cornerRadius: 4,
+            padding: 8,
+          }
+        }
+      }
+    });
+
+    const purchaseOrdersCtx = document.getElementById('purchaseOrdersChart').getContext('2d');
+    const purchaseOrdersChart = new Chart(purchaseOrdersCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Open', 'Approved', 'Pending'],
+        datasets: [{
+          label: 'Orders',
+          data: [120, 80, 40],
+          backgroundColor: '#8E24AA',
+          borderRadius: 4,
+          barPercentage: 0.6,
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              color: '#212121',
+              stepSize: 20,
+            },
+            grid: {
+              color: '#E0E0E0',
+            }
+          },
+          x: {
+            ticks: {
+              color: '#212121',
+            },
+            grid: {
+              display: false,
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false,
+          },
+          tooltip: {
+            backgroundColor: '#6A1B9A',
+            titleColor: '#fff',
+            bodyColor: '#fff',
+            cornerRadius: 4,
+            padding: 8,
+          }
+        }
+      }
+    });
+
+    const supplierPerformanceCtx = document.getElementById('supplierPerformanceChart').getContext('2d');
+    const supplierPerformanceChart = new Chart(supplierPerformanceCtx, {
+      type: 'bar',
+      data: {
+        labels: ['On-Time Delivery', 'Quality Compliance', 'Response Time'],
+        datasets: [{
+          label: 'Performance %',
+          data: [95, 92, 88],
+          backgroundColor: '#8E24AA',
+          borderRadius: 4,
+          barPercentage: 0.6,
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100,
+            ticks: {
+              color: '#212121',
+              stepSize: 10,
+              callback: function(value) {
+                return value + '%';
+              }
+            },
+            grid: {
+              color: '#E0E0E0',
+            }
+          },
+          x: {
+            ticks: {
+              color: '#212121',
+            },
+            grid: {
+              display: false,
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false,
+          },
+          tooltip: {
+            backgroundColor: '#6A1B9A',
+            titleColor: '#fff',
+            bodyColor: '#fff',
+            cornerRadius: 4,
+            padding: 8,
+            callbacks: {
+              label: function(context) {
+                return context.parsed.y + '%';
+              }
+            }
+          }
+        }
+      }
+    });
+
+    const orderAccuracyCtx = document.getElementById('orderAccuracyChart').getContext('2d');
+    const orderAccuracyChart = new Chart(orderAccuracyCtx, {
+      type: 'pie',
+      data: {
+        labels: ['Accurate', 'Errors', 'Returns', 'Discrepancies'],
+        datasets: [{
+          data: [85, 10, 3, 2],
+          backgroundColor: ['#6A1B9A', '#8E24AA', '#AB47BC', '#CE93D8'],
+          borderWidth: 1,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#212121',
+              font: { weight: 'bold' }
+            }
+          },
+          tooltip: {
+            backgroundColor: '#6A1B9A',
+            titleColor: '#fff',
+            bodyColor: '#fff',
+            cornerRadius: 4,
+            padding: 8,
+            callbacks: {
+              label: function(context) {
+                return context.label + ': ' + context.parsed + '%';
+              }
+            }
+          }
+        }
+      }
+    });
+
+    // Modal elements
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalContent = document.getElementById('modalContent');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+
+    // Report details data
+    const reportDetails = {
+      'spend-analysis': [
+        'Monthly spend trend: Increased by 15% in Q4',
+        'Top category: Electronics - $450K',
+        'Supplier A: $300K spend',
+        'Year-over-year growth: 8%',
+      ],
+      'purchase-orders': [
+        'Open orders: 120 (Delivery within 30 days)',
+        'Approved orders: 80 (All on track)',
+        'Pending orders: 40 (Awaiting approval)',
+        'Average delivery time: 14 days',
+      ],
+      'supplier-performance': [
+        'On-time delivery: 95% (Target: 98%)',
+        'Quality compliance: 92% (Improved by 5%)',
+        'Response time: 88% within 24 hours',
+        'Top performer: Supplier A - 98% rating',
+      ],
+      'order-accuracy': [
+        'Accurate orders: 85%',
+        'Errors: 10% (Mainly due to data entry)',
+        'Returns: 3% (Warranty claims)',
+        'Discrepancies: 2% (Shipping issues)',
+        'Improvement plan: Implement automated checks',
+      ],
+    };
+
+    // Open modal with report details
+    function openModal(reportType) {
+      modalTitle.textContent = reportType.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
+      modalContent.innerHTML = '';
+      const details = reportDetails[reportType];
+      if (!details) {
+        modalContent.textContent = 'No details available.';
+        return;
+      }
+      const ul = document.createElement('ul');
+      ul.className = 'list-disc list-inside space-y-1';
+      details.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item;
+        ul.appendChild(li);
+      });
+      modalContent.appendChild(ul);
+      modalBackdrop.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    // Close modal function
+    function closeModal() {
+      modalBackdrop.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    // Event listeners
+    closeModalBtn.addEventListener('click', closeModal);
+    modalBackdrop.addEventListener('click', (e) => {
+      if (e.target === modalBackdrop) {
+        closeModal();
+      }
+    });
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !modalBackdrop.classList.contains('hidden')) {
+        closeModal();
+      }
+    });
+
+    // Add click listeners to report cards
+    document.querySelectorAll('.card[data-report]').forEach(card => {
+      card.addEventListener('click', () => {
+        const reportType = card.getAttribute('data-report');
+        openModal(reportType);
+      });
+    });
+
+    // Filter functionality
+    document.getElementById('applyFilters').addEventListener('click', () => {
+      const dateRange = document.getElementById('dateRange').value;
+      const category = document.getElementById('category').value;
+      const supplier = document.getElementById('supplier').value;
+      alert(`Filters applied: ${dateRange}, ${category}, ${supplier}`);
+      // In a real app, update charts based on filters
+    });
+  </script>
+</body>
+</html>

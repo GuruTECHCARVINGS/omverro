@@ -21,6 +21,8 @@
         .priority-urgent { background: #fecaca; color: #dc2626; border-left: 4px solid #dc2626; }
         .priority-high { background: #fed7aa; color: #ea580c; border-left: 4px solid #ea580c; }
         .priority-medium { background: #fef3c7; color: #d97706; border-left: 4px solid #d97706; }
+        .priority-low { background: #f0fdf4; color: #166534; border-left: 4px solid #166534; }
+        .priority-critical { background: #fef2f2; color: #991b1b; border-left: 4px solid #991b1b; }
         .approval-card {
             border-left: 4px solid transparent;
             transition: all 0.3s ease;
@@ -144,12 +146,44 @@
                     <option value="vendor-registration">Vendor Registration</option>
                     <option value="budget-approval">Budget Approval</option>
                     <option value="contract-approval">Contract Approval</option>
+                    <option value="expense-approval">Expense Approval</option>
+                    <option value="travel-approval">Travel Approval</option>
+                    <option value="asset-approval">Asset Approval</option>
+                    <option value="supplier-onboarding">Supplier Onboarding</option>
+                    <option value="payment-approval">Payment Approval</option>
+                    <option value="change-order">Change Order</option>
+                    <option value="emergency-procurement">Emergency Procurement</option>
                 </select>
                 <select id="priorityFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     <option value="">All Priority</option>
+                    <option value="critical">Critical</option>
                     <option value="urgent">Urgent</option>
                     <option value="high">High</option>
                     <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
+                <select id="statusFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="in-review">In Review</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                    <option value="on-hold">On Hold</option>
+                    <option value="escalated">Escalated</option>
+                </select>
+                <select id="departmentFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">All Departments</option>
+                    <option value="it">IT Department</option>
+                    <option value="procurement">Procurement</option>
+                    <option value="finance">Finance</option>
+                    <option value="marketing">Marketing</option>
+                    <option value="operations">Operations</option>
+                    <option value="hr">Human Resources</option>
+                    <option value="legal">Legal</option>
+                    <option value="facilities">Facilities</option>
+                    <option value="sales">Sales</option>
+                    <option value="r-and-d">R&D</option>
+                    <option value="quality">Quality Assurance</option>
                 </select>
             </div>
         </div>
@@ -157,7 +191,7 @@
         <!-- Pending Approvals List -->
         <div class="space-y-4">
             <!-- Approval Item 1 - Urgent -->
-            <div class="approval-card bg-white rounded-lg shadow-sm p-6 priority-urgent" data-type="purchase-requisition" data-priority="urgent">
+            <div class="approval-card bg-white rounded-lg shadow-sm p-6 priority-urgent" data-type="purchase-requisition" data-priority="urgent" data-status="pending" data-department="it">
                 <div class="flex items-start justify-between">
                     <div class="flex-1">
                         <div class="flex items-center gap-3 mb-3">
@@ -234,7 +268,7 @@
             </div>
 
             <!-- Approval Item 2 - High Priority -->
-            <div class="approval-card bg-white rounded-lg shadow-sm p-6 priority-high" data-type="vendor-registration" data-priority="high">
+            <div class="approval-card bg-white rounded-lg shadow-sm p-6 priority-high" data-type="vendor-registration" data-priority="high" data-status="pending" data-department="procurement">
                 <div class="flex items-start justify-between">
                     <div class="flex-1">
                         <div class="flex items-center gap-3 mb-3">
@@ -310,7 +344,7 @@
             </div>
 
             <!-- Approval Item 3 - Medium Priority -->
-            <div class="approval-card bg-white rounded-lg shadow-sm p-6 priority-medium" data-type="budget-approval" data-priority="medium">
+            <div class="approval-card bg-white rounded-lg shadow-sm p-6 priority-medium" data-type="budget-approval" data-priority="medium" data-status="pending" data-department="marketing">
                 <div class="flex items-start justify-between">
                     <div class="flex-1">
                         <div class="flex items-center gap-3 mb-3">
@@ -509,11 +543,41 @@
             });
         });
 
+        // Filter by status
+        document.getElementById('statusFilter').addEventListener('change', function(e) {
+            const selectedStatus = e.target.value;
+            const cards = document.querySelectorAll('.approval-card');
+            
+            cards.forEach(card => {
+                if (!selectedStatus) {
+                    card.style.display = '';
+                } else {
+                    const status = card.getAttribute('data-status');
+                    card.style.display = status === selectedStatus ? '' : 'none';
+                }
+            });
+        });
+
+        // Filter by department
+        document.getElementById('departmentFilter').addEventListener('change', function(e) {
+            const selectedDepartment = e.target.value;
+            const cards = document.querySelectorAll('.approval-card');
+            
+            cards.forEach(card => {
+                if (!selectedDepartment) {
+                    card.style.display = '';
+                } else {
+                    const department = card.getAttribute('data-department');
+                    card.style.display = department === selectedDepartment ? '' : 'none';
+                }
+            });
+        });
+
         // Sample data for detailed view
         const pendingApprovals = {
-            'REQ-2024-001': {
-                id: 'REQ-2024-001',
-                type: 'Purchase Request',
+            'PR-2025-0847': {
+                id: 'PR-2025-0847',
+                type: 'Purchase Requisition',
                 title: 'Emergency Server Equipment',
                 description: 'Urgent procurement for server hardware replacement due to system failure',
                 amount: '₹45,50,000',
@@ -540,11 +604,11 @@
                     riskAssessment: 'High - Production systems at risk without immediate replacement'
                 }
             },
-            'REQ-2024-002': {
-                id: 'REQ-2024-002',
+            'VR-2025-0234': {
+                id: 'VR-2025-0234',
                 type: 'Vendor Registration',
-                title: 'New Vendor Onboarding - Global Supplies Co.',
-                description: 'Registration approval for new vendor specializing in office supplies',
+                title: 'New Vendor Onboarding - Advanced Manufacturing Solutions',
+                description: 'Registration approval for new vendor specializing in industrial equipment',
                 amount: 'N/A',
                 requestedBy: 'Procurement Team',
                 requestedByEmail: 'procurement@company.com',
@@ -552,27 +616,27 @@
                 priority: 'high',
                 status: 'Pending Approval',
                 category: 'Vendor Management',
-                vendor: 'Global Supplies Co.',
+                vendor: 'Advanced Manufacturing Solutions',
                 vendorContact: '+91 87654 32109',
                 dueDate: '2024-08-27',
                 attachments: ['vendor_profile.pdf', 'tax_documents.pdf', 'bank_details.pdf'],
                 details: {
-                    companyDetails: 'Global Supplies Co. - Established 2015, ISO 9001 certified, specializing in office supplies and stationery',
-                    businessLicense: 'GST: 27AABCU9603R1ZM, PAN: AABCU9603R',
-                    creditRating: 'A+ (CRISIL Rating)',
+                    companyDetails: 'Advanced Manufacturing Solutions - Established 2015, ISO 9001 certified, specializing in industrial equipment and machinery',
+                    businessLicense: 'GST: 33AAACN1234F1ZV, PAN: AAACN1234F',
+                    creditRating: 'AA-',
                     approvalHistory: [
                         { step: 'Procurement Officer', status: 'Approved', date: '2024-08-23', approver: 'Lisa Chen' },
                         { step: 'Vendor Manager', status: 'Pending', date: '', approver: 'David Kumar' }
                     ],
-                    serviceOffering: 'Office supplies, stationery, printing materials, furniture',
-                    paymentTerms: '30 days NET',
+                    serviceOffering: 'Industrial equipment, machinery, spare parts, maintenance services',
+                    paymentTerms: 'Net 30 days',
                     riskAssessment: 'Low - Established vendor with good track record'
                 }
             },
-            'REQ-2024-003': {
-                id: 'REQ-2024-003',
+            'BA-2025-0156': {
+                id: 'BA-2025-0156',
                 type: 'Budget Approval',
-                title: 'Q3 Marketing Campaign Budget',
+                title: 'Q4 Marketing Campaign Budget',
                 description: 'Approval for additional marketing budget for digital campaign initiatives',
                 amount: '₹38,50,000',
                 requestedBy: 'Marketing Department',
@@ -586,15 +650,15 @@
                 dueDate: '2024-08-28',
                 attachments: ['campaign_proposal.pdf', 'budget_breakdown.xlsx', 'roi_analysis.pdf'],
                 details: {
-                    campaignDetails: 'Digital marketing campaign for Q3 product launch including social media, PPC, and content marketing',
-                    budgetBreakdown: 'Social Media: ₹15L, PPC: ₹12L, Content Creation: ₹8.5L, Analytics: ₹3L',
-                    expectedROI: '250% - Expected revenue generation of ₹96.25L',
+                    campaignDetails: 'Digital marketing campaign for Q4 product launch including social media, PPC, and content marketing',
+                    budgetBreakdown: 'Digital Ads: ₹25,00,000, Events: ₹8,50,000, Content Creation: ₹5,00,000',
+                    expectedROI: '3.2x - Expected revenue generation of ₹1,23,20,000',
                     approvalHistory: [
-                        { step: 'Marketing Manager', status: 'Approved', date: '2024-08-22', approver: 'Emma Rodriguez' },
+                        { step: 'Marketing Manager', status: 'Approved', date: '2024-08-22', approver: 'Sarah Johnson' },
                         { step: 'CMO', status: 'Pending', date: '', approver: 'Robert Taylor' }
                     ],
                     targetAudience: 'B2B professionals, age 25-45, decision makers in technology sector',
-                    campaignDuration: 'Q3 2024 (July - September)',
+                    campaignDuration: 'Q4 2024 (October - December)',
                     riskAssessment: 'Medium - Market conditions favorable, competitive landscape stable'
                 }
             }
@@ -602,9 +666,11 @@
 
         function getPriorityClasses(priority) {
             switch(priority) {
+                case 'critical': return 'bg-red-100 text-red-800';
                 case 'urgent': return 'bg-red-100 text-red-800';
                 case 'high': return 'bg-orange-100 text-orange-800';
                 case 'medium': return 'bg-yellow-100 text-yellow-800';
+                case 'low': return 'bg-green-100 text-green-800';
                 default: return 'bg-gray-100 text-gray-800';
             }
         }

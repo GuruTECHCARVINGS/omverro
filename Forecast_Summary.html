@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Forecast Summary - Vendor Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    }
+    .card {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid #e2e8f0;
+      transition: all 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    .metric-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    .forecast-trend {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+    }
+    .status-badge {
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+  </style>
+</head>
+<body class="min-h-screen p-8">
+  <div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-800 mb-2">Forecast Summary Dashboard</h1>
+          <p class="text-gray-600">Monitor your material forecasts, orders, and performance metrics</p>
+        </div>
+        <div class="flex items-center space-x-4">
+          <div class="text-right">
+            <div class="text-sm text-gray-500">Welcome back,</div>
+            <div class="font-semibold text-gray-800">SteelCorp Industries</div>
+          </div>
+          <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+            <span class="text-white font-bold">SC</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Key Metrics Row -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="metric-card p-6 rounded-2xl shadow-lg">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-blue-100 text-sm">Total Forecast Value</p>
+            <p class="text-2xl font-bold">$2.4M</p>
+            <p class="text-blue-100 text-xs">+12% from last month</p>
+          </div>
+          <i class="fas fa-chart-line text-3xl text-blue-200"></i>
+        </div>
+      </div>
+
+      <div class="metric-card p-6 rounded-2xl shadow-lg">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-blue-100 text-sm">Active Materials</p>
+            <p class="text-2xl font-bold">24</p>
+            <p class="text-blue-100 text-xs">8 high-demand items</p>
+          </div>
+          <i class="fas fa-cubes text-3xl text-blue-200"></i>
+        </div>
+      </div>
+
+      <div class="metric-card p-6 rounded-2xl shadow-lg">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-blue-100 text-sm">Pending Orders</p>
+            <p class="text-2xl font-bold">156</p>
+            <p class="text-blue-100 text-xs">Due this quarter</p>
+          </div>
+          <i class="fas fa-shopping-cart text-3xl text-blue-200"></i>
+        </div>
+      </div>
+
+      <div class="metric-card p-6 rounded-2xl shadow-lg">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-blue-100 text-sm">Performance Rating</p>
+            <p class="text-2xl font-bold">4.8★</p>
+            <p class="text-blue-100 text-xs">Top 10% of vendors</p>
+          </div>
+          <i class="fas fa-star text-3xl text-blue-200"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Left Panel -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Forecast Overview -->
+        <div class="card p-6 rounded-2xl shadow-lg">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-semibold flex items-center">
+              <i class="fas fa-chart-bar mr-2 text-purple-600"></i>
+              Material Forecast Overview
+            </h2>
+            <div class="flex gap-2">
+              <select id="timeRange" class="border rounded px-3 py-1 text-sm">
+                <option value="6months">Last 6 Months</option>
+                <option value="12months">Last 12 Months</option>
+                <option value="quarter">This Quarter</option>
+              </select>
+              <button id="refreshBtn" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm">
+                <i class="fas fa-sync-alt mr-2"></i>Refresh
+              </button>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full bg-white rounded-lg shadow">
+              <thead>
+                <tr class="bg-purple-50">
+                  <th class="px-6 py-3 text-left text-xs font-medium text-purple-700 uppercase tracking-wider">Material</th>
+                  <th class="px-6 py-3 text-center text-xs font-medium text-purple-700 uppercase tracking-wider">Jan</th>
+                  <th class="px-6 py-3 text-center text-xs font-medium text-purple-700 uppercase tracking-wider">Feb</th>
+                  <th class="px-6 py-3 text-center text-xs font-medium text-purple-700 uppercase tracking-wider">Mar</th>
+                  <th class="px-6 py-3 text-center text-xs font-medium text-purple-700 uppercase tracking-wider">Apr</th>
+                  <th class="px-6 py-3 text-center text-xs font-medium text-purple-700 uppercase tracking-wider">May</th>
+                  <th class="px-6 py-3 text-center text-xs font-medium text-purple-700 uppercase tracking-wider">Jun</th>
+                  <th class="px-6 py-3 text-center text-xs font-medium text-purple-700 uppercase tracking-wider">Status</th>
+                </tr>
+              </thead>
+              <tbody id="forecastBody" class="divide-y divide-gray-200">
+                <!-- Forecast rows populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Forecast Trends Chart -->
+        <div class="card p-6 rounded-2xl shadow-lg">
+          <h2 class="text-xl font-semibold mb-6 flex items-center">
+            <i class="fas fa-chart-line mr-2 text-purple-600"></i>
+            Forecast Trends & Performance
+          </h2>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <canvas id="forecastChart" width="400" height="200"></canvas>
+            </div>
+            <div class="space-y-4">
+              <div class="forecast-trend p-4 rounded-lg">
+                <h3 class="font-semibold mb-2">Demand Forecast</h3>
+                <div class="flex items-center justify-between">
+                  <span class="text-sm">High Demand Period</span>
+                  <span class="bg-white bg-opacity-20 px-2 py-1 rounded text-sm">Jan-Mar</span>
+                </div>
+                <div class="mt-2 bg-white bg-opacity-20 rounded-full h-2">
+                  <div class="bg-white h-2 rounded-full" style="width: 85%"></div>
+                </div>
+              </div>
+              <div class="bg-green-500 p-4 rounded-lg text-white">
+                <h3 class="font-semibold mb-2">On-Time Delivery</h3>
+                <div class="text-2xl font-bold">96.8%</div>
+                <div class="text-sm opacity-90">+2.1% from last quarter</div>
+              </div>
+              <div class="bg-blue-500 p-4 rounded-lg text-white">
+                <h3 class="font-semibold mb-2">Quality Score</h3>
+                <div class="text-2xl font-bold">4.9★</div>
+                <div class="text-sm opacity-90">Consistent excellence</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Panel -->
+      <div class="space-y-6">
+        <!-- Material Performance -->
+        <div class="card p-6 rounded-2xl shadow-lg">
+          <h2 class="text-xl font-semibold mb-4 flex items-center">
+            <i class="fas fa-tachometer-alt mr-2 text-purple-600"></i>
+            Material Performance
+          </h2>
+          <div class="space-y-4">
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <span class="text-sm text-gray-600">Steel Pipes</span>
+                <span class="text-sm font-semibold text-green-600">98% On-time</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="bg-green-600 h-2 rounded-full" style="width: 98%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <span class="text-sm text-gray-600">Steel Sheets</span>
+                <span class="text-sm font-semibold text-yellow-600">92% On-time</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="bg-yellow-600 h-2 rounded-full" style="width: 92%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <span class="text-sm text-gray-600">Steel Beams</span>
+                <span class="text-sm font-semibold text-blue-600">95% On-time</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="bg-blue-600 h-2 rounded-full" style="width: 95%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card p-6 rounded-2xl shadow-lg">
+          <h2 class="text-xl font-semibold mb-4 flex items-center">
+            <i class="fas fa-bolt mr-2 text-purple-600"></i>
+            Quick Actions
+          </h2>
+          <div class="space-y-3">
+            <button class="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center">
+              <i class="fas fa-plus mr-2"></i>Update Forecast
+            </button>
+            <button class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center">
+              <i class="fas fa-upload mr-2"></i>Upload Documents
+            </button>
+            <button class="w-full bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center">
+              <i class="fas fa-envelope mr-2"></i>Contact Buyers
+            </button>
+            <button class="w-full bg-gray-600 text-white py-3 px-4 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center">
+              <i class="fas fa-chart-bar mr-2"></i>View Analytics
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Sample data for vendor dashboard
+    const materials = [
+      { id: 'MT001', name: 'Steel Pipes', category: 'Industrial', forecast: [100, 80, 100, 80, 100, 80], status: 'High Demand' },
+      { id: 'MT002', name: 'Steel Sheets', category: 'Construction', forecast: [90, 85, 95, 75, 90, 85], status: 'Stable' },
+      { id: 'MT003', name: 'Steel Beams', category: 'Infrastructure', forecast: [95, 90, 100, 85, 95, 90], status: 'Growing' },
+      { id: 'MT004', name: 'Steel Rods', category: 'Manufacturing', forecast: [85, 80, 85, 80, 85, 80], status: 'Stable' },
+      { id: 'MT005', name: 'Steel Plates', category: 'Industrial', forecast: [100, 95, 100, 90, 100, 95], status: 'High Demand' }
+    ];
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      populateForecastTable();
+      initializeChart();
+      setupEventListeners();
+    });
+
+    // Populate forecast table
+    function populateForecastTable() {
+      const tbody = document.getElementById('forecastBody');
+
+      materials.forEach(material => {
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-gray-50';
+
+        // Material cell
+        const materialCell = document.createElement('td');
+        materialCell.className = 'px-6 py-4 whitespace-nowrap';
+        materialCell.innerHTML = `
+          <div class="flex items-center">
+            <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+              <span class="text-xs font-medium text-purple-700">${material.id.slice(-3)}</span>
+            </div>
+            <div>
+              <div class="text-sm font-medium text-gray-900">${material.name}</div>
+              <div class="text-sm text-gray-500">${material.category}</div>
+            </div>
+          </div>
+        `;
+        row.appendChild(materialCell);
+
+        // Forecast cells
+        material.forecast.forEach(value => {
+          const cell = document.createElement('td');
+          cell.className = 'px-6 py-4 text-center whitespace-nowrap';
+          cell.innerHTML = `
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+              value >= 95 ? 'bg-green-100 text-green-800' :
+              value >= 85 ? 'bg-yellow-100 text-yellow-800' :
+              'bg-red-100 text-red-800'
+            }">
+              ${value}%
+            </span>
+          `;
+          row.appendChild(cell);
+        });
+
+        // Status cell
+        const statusCell = document.createElement('td');
+        statusCell.className = 'px-6 py-4 text-center whitespace-nowrap';
+        statusCell.innerHTML = `
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            material.status === 'High Demand' ? 'bg-red-100 text-red-800' :
+            material.status === 'Growing' ? 'bg-blue-100 text-blue-800' :
+            'bg-green-100 text-green-800'
+          }">
+            ${material.status}
+          </span>
+        `;
+        row.appendChild(statusCell);
+
+        tbody.appendChild(row);
+      });
+    }
+
+    // Initialize chart
+    function initializeChart() {
+      const ctx = document.getElementById('forecastChart').getContext('2d');
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+
+      const datasets = materials.map(material => ({
+        label: material.name,
+        data: material.forecast,
+        borderColor: `hsl(${Math.random() * 360}, 70%, 50%)`,
+        backgroundColor: 'transparent',
+        tension: 0.4,
+        pointRadius: 4,
+        pointHoverRadius: 6
+      }));
+
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: months,
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                boxWidth: 12,
+                font: {
+                  size: 10
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 110,
+              ticks: {
+                callback: function(value) {
+                  return value + '%';
+                }
+              }
+            }
+          },
+          interaction: {
+            intersect: false,
+            mode: 'index'
+          }
+        }
+      });
+    }
+
+    // Setup event listeners
+    function setupEventListeners() {
+      // Time range selector
+      document.getElementById('timeRange').addEventListener('change', function() {
+        // In a real app, this would fetch different data
+        showToast('Time range updated');
+      });
+
+      // Refresh button
+      document.getElementById('refreshBtn').addEventListener('click', function() {
+        this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Refreshing...';
+        setTimeout(() => {
+          this.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Refresh';
+          showToast('Data refreshed successfully');
+        }, 1500);
+      });
+    }
+
+    // Toast notification
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 ${
+        type === 'error' ? 'bg-red-500' : 'bg-green-500'
+      } text-white`;
+      toast.innerHTML = `<span>${message}</span>`;
+
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.transform = 'translateY(100%)';
+        setTimeout(() => document.body.removeChild(toast), 300);
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

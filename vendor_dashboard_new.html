@@ -19,7 +19,6 @@
       background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
       border: 1px solid #e2e8f0;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      backdrop-filter: blur(10px);
     }
     
     .metric-card:hover {
@@ -30,7 +29,6 @@
     
     .glass-card {
       background: rgba(255, 255, 255, 0.25);
-      backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.18);
     }
     
@@ -120,7 +118,6 @@
       padding: 1rem;
       margin-bottom: 1rem;
       border-radius: 0.5rem;
-      backdrop-filter: blur(10px);
     }
     
     .alert-info { 
@@ -171,24 +168,106 @@
     .header-gradient {
       background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
       border-bottom: 1px solid #e2e8f0;
-      backdrop-filter: blur(10px);
     }
     
-    /* Dropdown specific styles to force them on top but show content underneath */
+    /* FORCE DROPDOWNS TO ALWAYS BE ON TOP - MAXIMUM PRIORITY */
     #notifications-dropdown,
     #messages-dropdown,
     #profile-dropdown {
       position: fixed !important;
-      z-index: 2147483647 !important; /* Maximum possible z-index */
-      /* translucent background so underlying sections remain visible */
-      background: rgba(255, 255, 255, 0.86) !important;
-      /* soft border so it reads well on top of content */
-      border: 1px solid rgba(226, 232, 240, 0.7) !important;
-      /* keep drop shadow but slightly softer */
-      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.18) !important;
-      /* subtle backdrop blur for nicer layered effect */
-      -webkit-backdrop-filter: blur(8px) !important;
-      backdrop-filter: blur(8px) !important;
+      z-index: 2147483647 !important; /* Maximum possible z-index in CSS */
+      background: rgba(255, 255, 255, 0.98) !important;
+      border: 2px solid rgba(139, 92, 246, 0.4) !important;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(139, 92, 246, 0.2) !important;
+      transform: translateY(-10px) scale(0.95) !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      isolation: isolate !important;
+      will-change: transform, opacity !important;
+    }
+
+    /* When dropdowns are visible */
+    #notifications-dropdown:not(.hidden),
+    #messages-dropdown:not(.hidden),
+    #profile-dropdown:not(.hidden) {
+      transform: translateY(0) scale(1) !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      z-index: 2147483647 !important;
+    }
+
+    /* Force all other elements to be behind */
+    * {
+      z-index: auto !important;
+    }
+
+    /* Override any conflicting z-index */
+    .metric-card,
+    .glass-card,
+    .nav-card-btn,
+    .alert,
+    .quick-action-btn,
+    header,
+    main,
+    section {
+      z-index: 1 !important;
+    }
+
+    /* Ensure backdrop is behind dropdowns but above everything else */
+    .dropdown-backdrop {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      background: rgba(0, 0, 0, 0.15) !important;
+      z-index: 2147483646 !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      transition: opacity 0.3s ease !important;
+    }
+
+    .dropdown-backdrop.active {
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+
+    /* Enhanced toast animations */
+    @keyframes progress {
+      0% { width: 100%; }
+      100% { width: 0%; }
+    }
+
+    .animate-progress {
+      animation: progress 4s linear forwards;
+    }
+
+    /* Enhanced hover effects for dropdown items */
+    .notification-item:hover,
+    .message-item:hover {
+      transform: translateX(4px) !important;
+      transition: all 0.2s ease !important;
+    }
+
+    /* Enhanced button hover effects */
+    #notifications-button:hover,
+    #messages-button:hover,
+    #profile-button:hover {
+      transform: scale(1.05) !important;
+      transition: all 0.2s ease !important;
+    }
+
+    /* Enhanced badge animations */
+    .notification-badge {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      transform: scale(1);
+      transition: transform 0.2s ease;
+    }
+
+    .notification-badge:hover {
+      transform: scale(1.1);
     }
   </style>
 </head>
@@ -218,12 +297,13 @@
       
       <div class="flex items-center gap-6 text-gray-700">
         <!-- Notifications -->
-        <div class="relative z-[9999]" id="notifications-menu-container">
+        <!--
+        <div class="relative" id="notifications-menu-container">
           <button id="notifications-button" class="relative p-3 rounded-xl hover:bg-purple-50 transition-all duration-300 group">
             <i class="far fa-bell text-xl group-hover:text-purple-600"></i>
             <span class="notification-badge absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center shadow-lg">3</span>
           </button>
-          <div id="notifications-dropdown" class="hidden w-80 backdrop-blur-lg rounded-2xl">
+          <div id="notifications-dropdown" class="hidden w-80 backdrop-blur-lg rounded-2xl fixed" style="z-index: 2147483647 !important;">
             <div class="px-4 py-3 border-b border-gray-200 flex justify-between items-center">
               <span class="font-semibold text-purple-700">Notifications</span>
               <button class="text-xs text-purple-600 hover:text-purple-800 font-medium" onclick="markAllAsRead()">Mark all read</button>
@@ -263,14 +343,15 @@
             </div>
           </div>
         </div>
+        -->
 
         <!-- Messages -->
-        <div class="relative z-[9999]" id="messages-menu-container">
+        <div class="relative" id="messages-menu-container">
           <button id="messages-button" class="relative p-3 rounded-xl hover:bg-purple-50 transition-all duration-300 group">
             <i class="far fa-envelope text-xl group-hover:text-purple-600"></i>
             <span class="notification-badge absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center shadow-lg">5</span>
           </button>
-          <div id="messages-dropdown" class="hidden w-80 backdrop-blur-lg rounded-2xl">
+          <div id="messages-dropdown" class="hidden w-80 backdrop-blur-lg rounded-2xl fixed" style="z-index: 2147483647 !important;">
             <div class="px-4 py-3 border-b border-gray-200 flex justify-between items-center">
               <span class="font-semibold text-purple-700">Messages</span>
               <button class="text-xs text-purple-600 hover:text-purple-800 font-medium" onclick="composeMessage()">Compose</button>
@@ -314,23 +395,28 @@
               </div>
             </div>
             <div class="px-4 py-2 text-center border-t border-gray-100">
-              <a href="Email_center.html" class="text-xs text-purple-600 hover:text-purple-800 font-medium">Go to Message Center</a>
+              <div class="flex gap-2 justify-center">
+                <a href="Email_center.html" class="text-xs text-purple-600 hover:text-purple-800 font-medium px-3 py-1 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
+                  <i class="fas fa-envelope mr-1"></i>View All Messages
+                </a>
+                <button onclick="loadMoreMessages()" class="text-xs text-blue-600 hover:text-blue-800 font-medium px-3 py-1 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                  <i class="fas fa-plus mr-1"></i>Load More
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Profile -->
-        <div class="relative z-[9999]" id="profile-menu-container">
+        <div class="relative" id="profile-menu-container">
           <button id="profile-button" class="flex items-center gap-3 p-3 rounded-xl hover:bg-purple-50 transition-all duration-300 group">
-            <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white font-semibold">
-              VS
-            </div>
+            <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white font-semibold">VS</div>
             <div class="text-left">
               <p class="text-sm font-semibold text-gray-800">Vendor Supply Co.</p>
               <p class="text-xs text-gray-500">Supply Partner</p>
             </div>
           </button>
-          <div id="profile-dropdown" class="hidden w-56 backdrop-blur-lg rounded-2xl">
+          <div id="profile-dropdown" class="hidden w-56 backdrop-blur-lg rounded-2xl fixed" style="z-index: 2147483647 !important;">
             <div class="px-4 py-3 border-b border-gray-200">
               <p class="text-sm font-medium text-gray-800">Vendor Supply Co.</p>
               <p class="text-xs text-gray-500">vendor@supply.com</p>
@@ -355,7 +441,7 @@
     </header>
 
     <!-- Enhanced Stats Grid -->
-    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-10 z-0">
+    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-10">
       <div class="metric-card p-6 rounded-2xl shadow-lg">
         <div class="flex items-center gap-4 mb-3">
           <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center text-white">
@@ -450,6 +536,13 @@
             <span class="font-medium text-sm text-center">RFQ Management</span>
           </a>
           
+          <a href="vendor_pr_management.html" class="nav-card-btn bg-gradient-to-br from-cyan-500 to-teal-500 text-white flex flex-col items-center p-6 rounded-xl transition-all group hover:shadow-lg transform hover:-translate-y-1">
+            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-3 group-hover:bg-white/30 transition-colors">
+              <i class="fas fa-file-contract text-xl"></i>
+            </div>
+            <span class="font-medium text-sm text-center">PR Management</span>
+          </a>
+          
           <a href="vendor_po_workflow.html" class="nav-card-btn bg-gradient-to-br from-green-500 to-green-600 text-white flex flex-col items-center p-6 rounded-xl transition-all group hover:shadow-lg transform hover:-translate-y-1">
             <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-3 group-hover:bg-white/30 transition-colors">
               <i class="fas fa-shopping-cart text-xl"></i>
@@ -464,14 +557,14 @@
             <span class="font-medium text-sm text-center">Active Orders</span>
           </a>
           
-          <a href="Vendor_ASN.html" class="nav-card-btn bg-gradient-to-br from-orange-500 to-orange-600 text-white flex flex-col items-center p-6 rounded-xl transition-all group hover:shadow-lg transform hover:-translate-y-1">
+          <a href="vendor_asn_shipping.html" class="nav-card-btn bg-gradient-to-br from-orange-500 to-orange-600 text-white flex flex-col items-center p-6 rounded-xl transition-all group hover:shadow-lg transform hover:-translate-y-1">
             <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-3 group-hover:bg-white/30 transition-colors">
               <i class="fas fa-truck-loading text-xl"></i>
             </div>
             <span class="font-medium text-sm text-center">ASN & Shipping</span>
           </a>
           
-          <a href="Vendor_Product_inventory.html" class="nav-card-btn bg-gradient-to-br from-teal-500 to-teal-600 text-white flex flex-col items-center p-6 rounded-xl transition-all group hover:shadow-lg transform hover:-translate-y-1">
+          <a href="vendor_products_inventory.html" class="nav-card-btn bg-gradient-to-br from-teal-500 to-teal-600 text-white flex flex-col items-center p-6 rounded-xl transition-all group hover:shadow-lg transform hover:-translate-y-1">
             <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-3 group-hover:bg-white/30 transition-colors">
               <i class="fas fa-box-open text-xl"></i>
             </div>
@@ -506,7 +599,7 @@
             <span class="font-medium text-sm text-center">Compliance</span>
           </a>
           
-          <a href="Vendor_supporttickets.html" class="nav-card-btn bg-gradient-to-br from-cyan-500 to-cyan-600 text-white flex flex-col items-center p-6 rounded-xl transition-all group hover:shadow-lg transform hover:-translate-y-1">
+          <a href="vendor_support_center.html" class="nav-card-btn bg-gradient-to-br from-cyan-500 to-cyan-600 text-white flex flex-col items-center p-6 rounded-xl transition-all group hover:shadow-lg transform hover:-translate-y-1">
             <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-3 group-hover:bg-white/30 transition-colors">
               <i class="fas fa-headset text-xl"></i>
             </div>
@@ -533,9 +626,9 @@
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <button class="quick-action-btn flex flex-col items-center p-6 rounded-xl transition-all group">
             <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center text-white mb-3 group-hover:scale-110 transition-transform">
-              <i class="fas fa-plus-circle text-lg"></i>
+              <i class="fas fa-envelope text-lg"></i>
             </div>
-            <span class="text-sm font-medium text-gray-700">Create RFQ Response</span>
+            <span class="text-sm font-medium text-gray-700">View Messages</span>
           </button>
           <button class="quick-action-btn flex flex-col items-center p-6 rounded-xl transition-all group">
             <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center text-white mb-3 group-hover:scale-110 transition-transform">
@@ -999,46 +1092,65 @@
           </div>
         </div>
 
-        <!-- Enhanced Upcoming Tasks -->
+        <!-- Enhanced Recent Messages -->
         <div class="glass-card p-6 rounded-2xl shadow-lg">
-          <h2 class="text-lg font-semibold text-gray-800 mb-6 flex items-center">
-            <i class="fas fa-tasks mr-2 text-purple-600"></i>
-            Upcoming Tasks
-          </h2>
-          <div class="space-y-4">
-            <div class="flex items-center gap-4 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl border border-yellow-200">
-              <div class="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center text-white">
-                <i class="fas fa-clock"></i>
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+              <i class="fas fa-envelope mr-2 text-purple-600"></i>
+              Recent Messages
+            </h2>
+            <a href="Email_center.html" class="text-xs text-purple-600 hover:text-purple-800 font-medium flex items-center">
+              <i class="fas fa-external-link-alt mr-1"></i>View All
+            </a>
+          </div>
+          <div class="space-y-4" id="recent-messages-list">
+            <div class="flex items-start gap-4 p-3 rounded-xl hover:bg-green-50 transition-colors cursor-pointer message-preview" onclick="openMessageFromPreview(this)">
+              <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                BT
               </div>
-              <div class="flex-1">
-                <p class="text-sm font-medium text-gray-800">Submit RFQ Response</p>
-                <p class="text-xs text-gray-500 flex items-center">
-                  <i class="fas fa-calendar mr-1"></i>Due: Aug 1, 2025
-                </p>
-              </div>
-            </div>
-            <div class="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
-              <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center text-white">
-                <i class="fas fa-truck"></i>
-              </div>
-              <div class="flex-1">
-                <p class="text-sm font-medium text-gray-800">Create ASN for Order #1247</p>
-                <p class="text-xs text-gray-500 flex items-center">
-                  <i class="fas fa-calendar mr-1"></i>Due: Aug 2, 2025
-                </p>
+              <div class="flex-1 min-w-0">
+                <div class="flex justify-between items-start mb-1">
+                  <span class="font-medium text-sm text-gray-800 truncate">Buyer Team</span>
+                  <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 bg-green-500 rounded-full unread-indicator"></div>
+                    <span class="text-xs text-gray-500">Today</span>
+                  </div>
+                </div>
+                <p class="text-xs text-gray-600 truncate">Order #ORD-1247 confirmed and ready for processing</p>
               </div>
             </div>
-            <div class="flex items-center gap-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
-              <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center text-white">
-                <i class="fas fa-file-invoice"></i>
+            <div class="flex items-start gap-4 p-3 rounded-xl hover:bg-blue-50 transition-colors cursor-pointer message-preview" onclick="openMessageFromPreview(this)">
+              <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                SP
               </div>
-              <div class="flex-1">
-                <p class="text-sm font-medium text-gray-800">Generate Monthly Invoice</p>
-                <p class="text-xs text-gray-500 flex items-center">
-                  <i class="fas fa-calendar mr-1"></i>Due: Aug 5, 2025
-                </p>
+              <div class="flex-1 min-w-0">
+                <div class="flex justify-between items-start mb-1">
+                  <span class="font-medium text-sm text-gray-800 truncate">Support Team</span>
+                  <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 bg-blue-500 rounded-full unread-indicator"></div>
+                    <span class="text-xs text-gray-500">Yesterday</span>
+                  </div>
+                </div>
+                <p class="text-xs text-gray-600 truncate">Your support ticket #SUP-445 has been resolved</p>
               </div>
             </div>
+            <div class="flex items-start gap-4 p-3 rounded-xl hover:bg-purple-50 transition-colors cursor-pointer message-preview" onclick="openMessageFromPreview(this)">
+              <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                AC
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex justify-between items-start mb-1">
+                  <span class="font-medium text-sm text-gray-800 truncate">Accounts Team</span>
+                  <span class="text-xs text-gray-500">Yesterday</span>
+                </div>
+                <p class="text-xs text-gray-600 truncate">Invoice #INV-2024-088 payment received successfully</p>
+              </div>
+            </div>
+          </div>
+          <div class="mt-4 pt-4 border-t border-gray-100">
+            <button onclick="loadMoreMessagesInDashboard()" class="w-full text-sm text-purple-600 hover:text-purple-800 font-medium py-2 px-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors flex items-center justify-center">
+              <i class="fas fa-plus mr-2"></i>Load More Messages
+            </button>
           </div>
         </div>
       </div>
@@ -1047,7 +1159,7 @@
 
   <!-- Enhanced JavaScript -->
   <script>
-    // Enhanced dropdown functionality
+    // Enhanced dropdown functionality with backdrop
     const profileButton = document.getElementById('profile-button');
     const profileDropdown = document.getElementById('profile-dropdown');
     const notificationsButton = document.getElementById('notifications-button');
@@ -1055,36 +1167,144 @@
     const messagesButton = document.getElementById('messages-button');
     const messagesDropdown = document.getElementById('messages-dropdown');
 
+    // Create backdrop element
+    const backdrop = document.createElement('div');
+    backdrop.className = 'dropdown-backdrop';
+    document.body.appendChild(backdrop);
+
     function toggleDropdown(button, dropdown) {
-      button.addEventListener('click', (e) => {
-        e.stopPropagation();
-        
-        // Close other dropdowns first
-        [profileDropdown, notificationsDropdown, messagesDropdown].forEach(dd => {
-          if (dd !== dropdown) dd.classList.add('hidden');
-        });
-        
-        // Toggle current dropdown
-        dropdown.classList.toggle('hidden');
-        
-        // Position dropdown relative to button
-        if (!dropdown.classList.contains('hidden')) {
-          const buttonRect = button.getBoundingClientRect();
-          dropdown.style.top = (buttonRect.bottom + 8) + 'px';
-          dropdown.style.right = (window.innerWidth - buttonRect.right) + 'px';
+      const isCurrentlyHidden = dropdown.classList.contains('hidden');
+      
+      // Close all dropdowns first
+      closeAllDropdowns();
+      
+      if (isCurrentlyHidden) {
+        // Create or update dynamic style to force dropdown on top
+        let dynamicStyle = document.getElementById('dropdown-force-style');
+        if (!dynamicStyle) {
+          dynamicStyle = document.createElement('style');
+          dynamicStyle.id = 'dropdown-force-style';
+          document.head.appendChild(dynamicStyle);
         }
-      });
+        
+        // Force maximum z-index with !important
+        dynamicStyle.textContent = `
+          #${dropdown.id} {
+            z-index: 2147483647 !important;
+            position: fixed !important;
+            background: rgba(255, 255, 255, 0.98) !important;
+            border: 2px solid rgba(139, 92, 246, 0.4) !important;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35) !important;
+          }
+          * {
+            z-index: 1 !important;
+          }
+          #${dropdown.id} {
+            z-index: 2147483647 !important;
+          }
+          .dropdown-backdrop {
+            z-index: 2147483646 !important;
+          }
+        `;
+        
+        // FORCE maximum z-index on the dropdown
+        dropdown.style.zIndex = '2147483647';
+        dropdown.style.position = 'fixed';
+        
+        // Open the clicked dropdown
+        dropdown.classList.remove('hidden');
+        backdrop.classList.add('active');
+        
+        // Enhanced positioning with collision detection
+        const buttonRect = button.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const viewportWidth = window.innerWidth;
+        
+        // Get dropdown dimensions (temporarily show to measure)
+        const originalDisplay = dropdown.style.display;
+        dropdown.style.display = 'block';
+        dropdown.style.visibility = 'hidden';
+        const dropdownRect = dropdown.getBoundingClientRect();
+        dropdown.style.display = originalDisplay;
+        dropdown.style.visibility = 'visible';
+        
+        let top = buttonRect.bottom + 8;
+        let left = buttonRect.right - dropdownRect.width;
+        
+        // Adjust position if dropdown would go off-screen
+        if (top + dropdownRect.height > viewportHeight) {
+          top = buttonRect.top - dropdownRect.height - 8;
+        }
+        
+        if (left < 0) {
+          left = 8;
+        } else if (left + dropdownRect.width > viewportWidth) {
+          left = viewportWidth - dropdownRect.width - 8;
+        }
+        
+        dropdown.style.top = top + 'px';
+        dropdown.style.left = left + 'px';
+        
+        // Add click outside listener
+        setTimeout(() => {
+          document.addEventListener('click', handleOutsideClick);
+        }, 10);
+      }
     }
 
-    toggleDropdown(profileButton, profileDropdown);
-    toggleDropdown(notificationsButton, notificationsDropdown);
-    toggleDropdown(messagesButton, messagesDropdown);
-
-    // Close dropdowns when clicking outside
-    window.addEventListener('click', () => {
+    function closeAllDropdowns() {
+      // Remove dynamic style
+      const dynamicStyle = document.getElementById('dropdown-force-style');
+      if (dynamicStyle) {
+        dynamicStyle.remove();
+      }
+      
+      // Reset all z-index values
+      const allElements = document.querySelectorAll('*');
+      allElements.forEach(el => {
+        el.style.zIndex = '';
+      });
+      
       [profileDropdown, notificationsDropdown, messagesDropdown].forEach(dd => {
         dd.classList.add('hidden');
       });
+      backdrop.classList.remove('active');
+      document.removeEventListener('click', handleOutsideClick);
+    }
+
+    function handleOutsideClick(event) {
+      const dropdowns = [profileDropdown, notificationsDropdown, messagesDropdown];
+      const buttons = [profileButton, notificationsButton, messagesButton];
+      
+      const clickedOutside = !dropdowns.some(dd => dd.contains(event.target)) && 
+                           !buttons.some(btn => btn.contains(event.target));
+      
+      if (clickedOutside) {
+        closeAllDropdowns();
+      }
+    }
+
+    // Enhanced event listeners
+    profileButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleDropdown(profileButton, profileDropdown);
+    });
+
+    notificationsButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleDropdown(notificationsButton, notificationsDropdown);
+    });
+
+    messagesButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleDropdown(messagesButton, messagesDropdown);
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeAllDropdowns();
+      }
     });
 
     // Enhanced notification functionality
@@ -1093,7 +1313,14 @@
       if (unreadDot) {
         unreadDot.style.display = 'none';
         element.style.opacity = '0.7';
+        element.style.transform = 'scale(0.98)';
         updateNotificationCount();
+        
+        // Add subtle animation
+        element.style.transition = 'all 0.3s ease';
+        setTimeout(() => {
+          element.style.transform = 'scale(1)';
+        }, 150);
       }
     }
 
@@ -1101,12 +1328,22 @@
       const unreadDots = document.querySelectorAll('#notifications-dropdown .unread-dot');
       const notificationItems = document.querySelectorAll('#notifications-dropdown .notification-item');
       
-      unreadDots.forEach(dot => dot.style.display = 'none');
-      notificationItems.forEach(item => item.style.opacity = '0.7');
+      unreadDots.forEach(dot => {
+        dot.style.display = 'none';
+        dot.style.transform = 'scale(0)';
+      });
+      
+      notificationItems.forEach((item, index) => {
+        setTimeout(() => {
+          item.style.opacity = '0.7';
+          item.style.transform = 'translateX(-10px)';
+          setTimeout(() => item.style.transform = 'translateX(0)', 200);
+        }, index * 50);
+      });
       
       updateNotificationCount();
       
-      // Show success message
+      // Enhanced success message with animation
       showToast('All notifications marked as read', 'success');
     }
 
@@ -1117,9 +1354,12 @@
       
       if (count === 0) {
         badge.style.display = 'none';
+        badge.style.transform = 'scale(0)';
       } else {
         badge.textContent = count;
         badge.style.display = 'flex';
+        badge.style.transform = 'scale(1)';
+        badge.style.animation = 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite';
       }
     }
 
@@ -1128,23 +1368,31 @@
       const unreadDot = element.querySelector('.unread-dot');
       if (unreadDot) {
         unreadDot.style.display = 'none';
+        unreadDot.style.transform = 'scale(0) rotate(360deg)';
         updateMessageCount();
       }
       
-      // Simulate opening message
+      // Enhanced message opening with better feedback
       const senderName = element.querySelector('.font-medium').textContent;
+      element.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 197, 253, 0.1))';
+      
       showToast(`Opening message from ${senderName}`, 'info');
       
-      // You could redirect to Email_center.html or open a modal here
+      // Close dropdown after opening message
       setTimeout(() => {
+        closeAllDropdowns();
+        // You could redirect to Email_center.html or open a modal here
         // window.location.href = 'Email_center.html';
       }, 1000);
     }
 
     function composeMessage() {
       showToast('Opening compose message window', 'info');
-      // You could open a modal or redirect to compose page
+      closeAllDropdowns();
+      
+      // Enhanced compose functionality
       setTimeout(() => {
+       
         // window.location.href = 'Email_center.html?compose=true';
       }, 1000);
     }
@@ -1156,43 +1404,283 @@
       
       if (count === 0) {
         badge.style.display = 'none';
+        badge.style.transform = 'scale(0)';
       } else {
         badge.textContent = count;
         badge.style.display = 'flex';
+        badge.style.transform = 'scale(1)';
+        badge.style.animation = 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite';
       }
     }
 
-    // Toast notification system
+    // Load more messages functionality
+    let messagePage = 1;
+    const messagesPerPage = 3;
+    
+    function loadMoreMessages() {
+      messagePage++;
+      const messagesContainer = document.querySelector('#messages-dropdown .space-y-2');
+      const loadMoreBtn = document.querySelector('button[onclick="loadMoreMessages()"]');
+      
+      // Disable button during loading
+      loadMoreBtn.disabled = true;
+      loadMoreBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Loading...';
+      
+      // Simulate loading delay
+      setTimeout(() => {
+        const additionalMessages = [
+          {
+            sender: 'Procurement Team',
+            initials: 'PT',
+            message: 'Updated requirements for Order #ORD-1246 - please review',
+            time: 'Yesterday, 02:15 PM',
+            color: 'from-indigo-500 to-purple-500',
+            bgColor: 'indigo'
+          },
+          {
+            sender: 'Quality Control',
+            initials: 'QC',
+            message: 'Quality inspection completed for batch #QC-2024-089',
+            time: '2 days ago, 11:45 AM',
+            color: 'from-teal-500 to-cyan-500',
+            bgColor: 'teal'
+          },
+          {
+            sender: 'Logistics Dept',
+            initials: 'LD',
+            message: 'Shipping schedule updated for Order #ORD-1245',
+            time: '2 days ago, 09:30 AM',
+            color: 'from-orange-500 to-red-500',
+            bgColor: 'orange'
+          }
+        ];
+        
+        additionalMessages.forEach((msg, index) => {
+          const messageElement = document.createElement('div');
+          messageElement.className = `px-4 py-2 text-gray-800 border-b border-gray-100 hover:bg-${msg.bgColor}-50 transition-colors cursor-pointer message-item`;
+          messageElement.innerHTML = `
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 bg-gradient-to-r ${msg.color} rounded-full flex items-center justify-center text-white text-xs font-bold">
+                ${msg.initials}
+              </div>
+              <div class="flex-1">
+                <div class="flex justify-between items-start">
+                  <span class="font-medium text-sm">${msg.sender}</span>
+                  <div class="w-2 h-2 bg-${msg.bgColor}-500 rounded-full unread-dot"></div>
+                </div>
+                <p class="text-xs text-gray-600 mt-1">${msg.message}</p>
+                <div class="text-xs text-gray-500 mt-1">${msg.time}</div>
+              </div>
+            </div>
+          `;
+          
+          messageElement.onclick = () => openMessage(messageElement);
+          messagesContainer.appendChild(messageElement);
+          
+          // Animate new messages
+          setTimeout(() => {
+            messageElement.style.transform = 'translateX(0)';
+            messageElement.style.opacity = '1';
+          }, index * 100);
+        });
+        
+        // Re-enable button
+        loadMoreBtn.disabled = false;
+        loadMoreBtn.innerHTML = '<i class="fas fa-plus mr-1"></i>Load More';
+        
+        // Update message count
+        updateMessageCount();
+        
+        // Show success toast
+        showToast(`Loaded ${additionalMessages.length} more messages`, 'success');
+        
+        // If we've loaded enough pages, hide the load more button
+        if (messagePage >= 3) {
+          loadMoreBtn.style.display = 'none';
+        }
+      }, 1500);
+    }
+
+    // Handle message preview clicks from dashboard
+    function openMessageFromPreview(element) {
+      const senderName = element.querySelector('.font-medium').textContent;
+      const unreadIndicator = element.querySelector('.unread-indicator');
+      
+      // Mark as read if it has unread indicator
+      if (unreadIndicator) {
+        unreadIndicator.style.display = 'none';
+        element.style.opacity = '0.8';
+        updateMessageCount();
+      }
+      
+      // Highlight the clicked message
+      element.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 197, 253, 0.1))';
+      
+      showToast(`Opening message from ${senderName}`, 'info');
+      
+      // Simulate opening message (could redirect to Email_center.html)
+      setTimeout(() => {
+        // window.location.href = `Email_center.html?message=${encodeURIComponent(senderName)}`;
+      }, 1000);
+    }
+
+    // Load more messages in dashboard section
+    let dashboardMessagePage = 1;
+    
+    function loadMoreMessagesInDashboard() {
+      dashboardMessagePage++;
+      const messagesContainer = document.getElementById('recent-messages-list');
+      const loadMoreBtn = document.querySelector('button[onclick="loadMoreMessagesInDashboard()"]');
+      
+      // Disable button during loading
+      loadMoreBtn.disabled = true;
+      loadMoreBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Loading...';
+      
+      // Simulate loading delay
+      setTimeout(() => {
+        const additionalMessages = [
+          {
+            sender: 'Procurement Team',
+            initials: 'PT',
+            message: 'Updated requirements for Order #ORD-1246 - please review the specifications',
+            time: '2 days ago',
+            color: 'from-indigo-500 to-purple-500',
+            bgColor: 'indigo',
+            hasUnread: true
+          },
+          {
+            sender: 'Quality Control',
+            initials: 'QC',
+            message: 'Quality inspection completed for batch #QC-2024-089 - results attached',
+            time: '3 days ago',
+            color: 'from-teal-500 to-cyan-500',
+            bgColor: 'teal',
+            hasUnread: false
+          },
+          {
+            sender: 'Logistics Dept',
+            initials: 'LD',
+            message: 'Shipping schedule updated for Order #ORD-1245 - new ETA provided',
+            time: '3 days ago',
+            color: 'from-orange-500 to-red-500',
+            bgColor: 'orange',
+            hasUnread: true
+          }
+        ];
+        
+        additionalMessages.forEach((msg, index) => {
+          const messageElement = document.createElement('div');
+          messageElement.className = `flex items-start gap-4 p-3 rounded-xl hover:bg-${msg.bgColor}-50 transition-colors cursor-pointer message-preview`;
+          messageElement.onclick = () => openMessageFromPreview(messageElement);
+          
+          messageElement.innerHTML = `
+            <div class="w-8 h-8 bg-gradient-to-r ${msg.color} rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+              ${msg.initials}
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex justify-between items-start mb-1">
+                <span class="font-medium text-sm text-gray-800 truncate">${msg.sender}</span>
+                <div class="flex items-center gap-2">
+                  ${msg.hasUnread ? `<div class="w-2 h-2 bg-${msg.bgColor}-500 rounded-full unread-indicator"></div>` : '' }
+                  <span class="text-xs text-gray-500">${msg.time}</span>
+                </div>
+              </div>
+              <p class="text-xs text-gray-600 truncate">${msg.message}</p>
+            </div>
+          `;
+          
+          messagesContainer.appendChild(messageElement);
+          
+          // Animate new messages
+          setTimeout(() => {
+            messageElement.style.transform = 'translateX(0)';
+            messageElement.style.opacity = '1';
+          }, index * 100);
+        });
+        
+        // Re-enable button
+        loadMoreBtn.disabled = false;
+        loadMoreBtn.innerHTML = '<i class="fas fa-plus mr-2"></i>Load More Messages';
+        
+        // Update message count
+        updateMessageCount();
+        
+        // Show success toast
+        showToast(`Loaded ${additionalMessages.length} more messages`, 'success');
+        
+        // If we've loaded enough pages, hide the load more button
+        if (dashboardMessagePage >= 3) {
+          loadMoreBtn.style.display = 'none';
+        }
+      }, 1500);
+    }
+
+    // Enhanced Toast notification system with better positioning
     function showToast(message, type = 'info') {
+      // Remove existing toasts to prevent stacking
+      const existingToasts = document.querySelectorAll('.toast-notification');
+      existingToasts.forEach(toast => toast.remove());
+      
       const toast = document.createElement('div');
       const bgColor = type === 'success' ? 'bg-green-500' : 
-                     type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+                     type === 'error' ? 'bg-red-500' : 
+                     type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500';
       
-      toast.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300`;
+      const iconClass = type === 'success' ? 'check-circle' : 
+                       type === 'error' ? 'times-circle' : 
+                       type === 'warning' ? 'exclamation-triangle' : 'info-circle';
+      
+      toast.className = `toast-notification fixed top-4 right-4 ${bgColor} text-white px-6 py-4 rounded-xl shadow-2xl z-50 transform translate-x-full transition-all duration-300 max-w-sm`;
       toast.innerHTML = `
-        <div class="flex items-center gap-2">
-          <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : 'info'}-circle"></i>
-          <span>${message}</span>
+        <div class="flex items-center gap-3">
+          <i class="fas fa-${iconClass} text-lg flex-shrink-0"></i>
+          <div class="flex-1">
+            <p class="font-medium text-sm leading-tight">${message}</p>
+          </div>
+          <button class="toast-close ml-2 text-white/70 hover:text-white transition-colors" onclick="this.parentElement.parentElement.remove()">
+            <i class="fas fa-times text-sm"></i>
+          </button>
+        </div>
+        <div class="w-full bg-white/20 h-1 mt-3 rounded-full overflow-hidden">
+          <div class="h-full bg-white/60 rounded-full animate-progress"></div>
         </div>
       `;
       
       document.body.appendChild(toast);
       
-      setTimeout(() => toast.style.transform = 'translateX(0)', 100);
-      
+      // Enhanced animations
       setTimeout(() => {
-        toast.style.transform = 'translateX(full)';
-        setTimeout(() => toast.remove(), 300);
-      }, 3000);
+        toast.style.transform = 'translateX(0) scale(1)';
+        toast.style.opacity = '1';
+      }, 100);
+      
+      // Auto-remove with enhanced animation
+      setTimeout(() => {
+        toast.style.transform = 'translateX(100%) scale(0.95)';
+        toast.style.opacity = '0';
+        setTimeout(() => {
+          if (toast.parentElement) {
+            toast.remove();
+          }
+        }, 300);
+      }, 4000);
     }
 
     // Enhanced quick action functionality
     document.querySelectorAll('.quick-action-btn').forEach(btn => {
       btn.addEventListener('click', function(e) {
         e.preventDefault();
+        const span = this.querySelector('span');
+        
+        // Check if this is the Upload Products button
+        if (span && span.textContent === 'Upload Products') {
+          // Navigate to upload products page
+          window.location.href = 'vendor_upload_products.html';
+          return;
+        }
+        
         const iconDiv = this.querySelector('div');
         const icon = iconDiv.querySelector('i');
-        const span = this.querySelector('span');
         const originalIcon = icon.className;
         const originalText = span.textContent;
         

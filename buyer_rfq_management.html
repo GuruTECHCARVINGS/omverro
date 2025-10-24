@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAP ME41 - RFQ Creation and Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .sap-header {
+            background: linear-gradient(135deg, #003366 0%, #0066cc 100%);
+        }
+        .sap-button {
+            background: #007cba;
+            border: 1px solid #005a9e;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .sap-button:hover {
+            background: #005a9e;
+        }
+        .sap-button-secondary {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            color: #495057;
+        }
+        .sap-button-secondary:hover {
+            background: #e9ecef;
+        }
+        .sap-input {
+            border: 1px solid #ced4da;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .sap-input:focus {
+            border-color: #007cba;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 124, 186, 0.25);
+        }
+        .sap-select {
+            border: 1px solid #ced4da;
+            padding: 6px 12px;
+            border-radius: 4px;
+            background: white;
+            font-size: 14px;
+        }
+        .sap-card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .sap-tab {
+            border-bottom: 2px solid transparent;
+            padding: 12px 24px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .sap-tab.active {
+            border-bottom-color: #007cba;
+            color: #007cba;
+        }
+        .status-open { background: #d4edda; color: #155724; }
+        .status-closed { background: #f8d7da; color: #721c24; }
+        .status-awarded { background: #d1ecf1; color: #0c5460; }
+        .status-draft { background: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- SAP Header -->
+    <header class="sap-header text-white p-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <i class="fas fa-shopping-cart text-2xl"></i>
+                <div>
+                    <h1 class="text-xl font-bold">SAP ME41 - RFQ Management</h1>
+                    <p class="text-sm opacity-90">Request for Quotation Creation and Processing</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-sm">User: BUYER01</span>
+                <span class="text-sm">Company: 1000</span>
+                <button class="sap-button-secondary" onclick="logout()">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="flex">
+        <!-- Sidebar Navigation -->
+        <nav class="w-64 bg-white border-r border-gray-200 min-h-screen">
+            <div class="p-4">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">RFQ Management</h2>
+                <ul class="space-y-2">
+                    <li>
+                        <button onclick="showTab('create')" class="sap-tab active w-full text-left">
+                            <i class="fas fa-plus-circle mr-2"></i>Create RFQ
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="showTab('track')" class="sap-tab w-full text-left">
+                            <i class="fas fa-search mr-2"></i>Track RFQs
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="showTab('evaluate')" class="sap-tab w-full text-left">
+                            <i class="fas fa-balance-scale mr-2"></i>Evaluate Responses
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="showTab('award')" class="sap-tab w-full text-left">
+                            <i class="fas fa-trophy mr-2"></i>Award RFQ
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="showTab('reports')" class="sap-tab w-full text-left">
+                            <i class="fas fa-chart-bar mr-2"></i>Reports
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 p-6">
+            <!-- Create RFQ Tab -->
+            <div id="createTab" class="tab-content">
+                <div class="sap-card p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Create Request for Quotation (ME41)</h2>
+
+                    <!-- RFQ Header Information -->
+                                        <!-- RFQ Header Information -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">RFQ Number</label>
+                            <div class="flex space-x-2">
+                                <input type="text" id="rfqNumber" class="sap-input flex-1" placeholder="Auto-generated" readonly>
+                                <button onclick="generateRFQNumber()" class="sap-button">
+                                    <i class="fas fa-magic"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">RFQ Type</label>
+                            <select id="rfqType" class="sap-select w-full">
+                                <option value="">Select Type</option>
+                                <option value="AN">AN - Standard RFQ</option>
+                                <option value="LP">LP - Limited Tender</option>
+                                <option value="NG">NG - Negotiation</option>
+                                <option value="AU">AU - Auction</option>
+                                <option value="FR">FR - Framework Agreement</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Collective Number</label>
+                            <input type="text" id="collectiveNumber" class="sap-input w-full" placeholder="Optional">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Purchasing Organization</label>
+                            <select id="purchOrg" class="sap-select w-full">
+                                <option value="1000">1000 - Main Purchasing Org</option>
+                                <option value="2000">2000 - Regional Purchasing</option>
+                                <option value="3000">3000 - International Procurement</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Purchasing Group</label>
+                            <select id="purchGroup" class="sap-select w-full">
+                                <option value="001">001 - Strategic Sourcing</option>
+                                <option value="002">002 - Direct Materials</option>
+                                <option value="003">003 - Indirect Materials</option>
+                                <option value="004">004 - Services</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Currency</label>
+                            <select id="currency" class="sap-select w-full">
+                                <option value="USD">USD - US Dollar</option>
+                                <option value="EUR">EUR - Euro</option>
+                                <option value="GBP">GBP - British Pound</option>
+                                <option value="INR">INR - Indian Rupee</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Company Code</label>
+                            <select id="companyCode" class="sap-select w-full">
+                                <option value="">Select Company Code</option>
+                                <option value="1000">1000 - Main Company</option>
+                                <option value="2000">2000 - Subsidiary A</option>
+                                <option value="3000">3000 - Subsidiary B</option>
+                                <option value="4000">4000 - International Branch</option>
+                                <option value="5000">5000 - Regional Office</option>
+                            </select>
+                        </div>
+
+                    <!-- PR Selection or Manual Creation -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Source Selection</h3>
+                        <div class="flex space-x-4 mb-4">
+                            <button onclick="showPRSelection()" class="sap-button">
+                                <i class="fas fa-file-alt mr-2"></i>Select Purchase Requisition
+                            </button>
+                            <button onclick="showManualCreation()" class="sap-button-secondary">
+                                <i class="fas fa-edit mr-2"></i>Manual Creation
+                            </button>
+                        </div>
+
+                        <!-- PR Selection Modal Placeholder -->
+                        <div id="prSelection" class="hidden">
+                            <div class="sap-card p-4">
+                                <h4 class="font-semibold mb-3">Select Purchase Requisition</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">PR Number</label>
+                                        <input type="text" id="prNumber" class="sap-input w-full" placeholder="Enter PR Number">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Item Number</label>
+                                        <input type="text" id="prItem" class="sap-input w-full" placeholder="Enter Item Number">
+                                    </div>
+                                </div>
+                                <button onclick="loadPRData()" class="sap-button mt-4">
+                                    <i class="fas fa-search mr-2"></i>Load PR Data
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Manual Creation Form -->
+                        <div id="manualCreation" class="hidden">
+                            <div class="sap-card p-4">
+                                <h4 class="font-semibold mb-3">Manual RFQ Creation</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Short Text</label>
+                                        <input type="text" id="shortText" class="sap-input w-full" placeholder="RFQ Description">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Material Group</label>
+                                        <select id="materialGroup" class="sap-select w-full">
+                                            <option value="">Select Material Group</option>
+                                            <option value="01">01 - Raw Materials</option>
+                                            <option value="02">02 - Semi-Finished</option>
+                                            <option value="03">03 - Finished Goods</option>
+                                            <option value="04">04 - Services</option>
+                                            <option value="05">05 - Equipment</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Supplier Selection -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Supplier Selection</h3>
+                        <div class="sap-card p-4">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="font-medium">Selected Suppliers (0)</span>
+                                <button onclick="openSupplierSelection()" class="sap-button">
+                                    <i class="fas fa-plus mr-2"></i>Add Suppliers
+                                </button>
+                            </div>
+                            <div id="supplierList" class="space-y-2">
+                                <!-- Suppliers will be added here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Terms and Conditions -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Terms and Conditions</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Quotation Deadline</label>
+                                <input type="datetime-local" id="quotationDeadline" class="sap-input w-full">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Incoterms</label>
+                                <select id="incoterms" class="sap-select w-full">
+                                    <option value="">Select Incoterms</option>
+                                    <option value="FOB">FOB - Free on Board</option>
+                                    <option value="CIF">CIF - Cost, Insurance & Freight</option>
+                                    <option value="DDP">DDP - Delivered Duty Paid</option>
+                                    <option value="EXW">EXW - Ex Works</option>
+                                    <option value="FCA">FCA - Free Carrier</option>
+                                    <option value="CPT">CPT - Carriage Paid To</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Payment Terms</label>
+                                <select id="paymentTerms" class="sap-select w-full">
+                                    <option value="">Select Payment Terms</option>
+                                    <option value="0001">0001 - Immediate</option>
+                                    <option value="0002">0002 - 30 days</option>
+                                    <option value="0003">0003 - 60 days</option>
+                                    <option value="0004">0004 - 90 days</option>
+                                    <option value="0005">0005 - Net 30</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Delivery Location</label>
+                                <input type="text" id="deliveryLocation" class="sap-input w-full" placeholder="Plant/Location Code">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Line Items -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Line Items</h3>
+                        <div class="sap-card p-4">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="font-medium">RFQ Items</span>
+                                <button onclick="addLineItem()" class="sap-button">
+                                    <i class="fas fa-plus mr-2"></i>Add Item
+                                </button>
+                            </div>
+                            <div id="lineItemsTable" class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Material</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Unit</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Delivery Date</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Plant</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="lineItemsBody" class="bg-white divide-y divide-gray-200">
+                                        <!-- Line items will be added here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Attachments and Notes -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Attachments & Communications</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="sap-card p-4">
+                                <h4 class="font-semibold mb-3">Attachments</h4>
+                                <div class="space-y-2">
+                                    <input type="file" id="fileInput" multiple class="sap-input w-full" accept=".pdf,.doc,.docx,.xls,.xlsx,.dwg,.jpg,.png">
+                                    <div id="fileList" class="space-y-1"></div>
+                                </div>
+                            </div>
+
+                            <div class="sap-card p-4">
+                                <h4 class="font-semibold mb-3">Notes to Vendors</h4>
+                                <textarea id="vendorNotes" class="sap-input w-full h-32" placeholder="Enter instructions or requirements for vendors..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex justify-end space-x-4">
+                        <button onclick="saveAsDraft()" class="sap-button-secondary">
+                            <i class="fas fa-save mr-2"></i>Save as Draft
+                        </button>
+                        <button onclick="publishRFQ()" class="sap-button">
+                            <i class="fas fa-paper-plane mr-2"></i>Publish RFQ
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Track RFQs Tab -->
+            <div id="trackTab" class="tab-content hidden">
+                <div class="sap-card p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Track RFQ Status</h2>
+
+                    <!-- Filters -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">RFQ Number</label>
+                            <input type="text" id="filterRFQNumber" class="sap-input w-full" placeholder="Search RFQ...">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                            <select id="filterStatus" class="sap-select w-full">
+                                <option value="">All Status</option>
+                                <option value="draft">Draft</option>
+                                <option value="open">Open</option>
+                                <option value="closed">Closed</option>
+                                <option value="awarded">Awarded</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Date From</label>
+                            <input type="date" id="filterDateFrom" class="sap-input w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Date To</label>
+                            <input type="date" id="filterDateTo" class="sap-input w-full">
+                        </div>
+                    </div>
+
+                    <!-- RFQ List -->
+                    <div id="rfqList" class="space-y-4">
+                        <!-- RFQ items will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Evaluate Responses Tab -->
+            <div id="evaluateTab" class="tab-content hidden">
+                <div class="sap-card p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Evaluate Quotation Responses</h2>
+
+                    <!-- Response Comparison -->
+                    <div id="responseComparison" class="mb-6">
+                        <!-- Comparison table will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Award RFQ Tab -->
+            <div id="awardTab" class="tab-content hidden">
+                <div class="sap-card p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Award RFQ</h2>
+
+                    <!-- Award Form -->
+                    <div id="awardForm">
+                        <!-- Award form will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Tab -->
+            <div id="reportsTab" class="tab-content hidden">
+                <div class="sap-card p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">RFQ Reports</h2>
+
+                    <!-- Report Options -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="sap-card p-4 text-center">
+                            <i class="fas fa-chart-bar text-3xl text-blue-500 mb-3"></i>
+                            <h3 class="font-semibold mb-2">RFQ Status Report</h3>
+                            <button onclick="generateStatusReport()" class="sap-button">Generate</button>
+                        </div>
+
+                        <div class="sap-card p-4 text-center">
+                            <i class="fas fa-users text-3xl text-green-500 mb-3"></i>
+                            <h3 class="font-semibold mb-2">Supplier Performance</h3>
+                            <button onclick="generateSupplierReport()" class="sap-button">Generate</button>
+                        </div>
+
+                        <div class="sap-card p-4 text-center">
+                            <i class="fas fa-dollar-sign text-3xl text-purple-500 mb-3"></i>
+                            <h3 class="font-semibold mb-2">Savings Analysis</h3>
+                            <button onclick="generateSavingsReport()" class="sap-button">Generate</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Supplier Selection Modal -->
+    <div id="supplierModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[80vh] overflow-y-auto">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold">Select Suppliers</h3>
+                        <button onclick="closeSupplierModal()" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+
+                    <div class="mb-4">
+                        <input type="text" id="supplierSearch" class="sap-input w-full" placeholder="Search suppliers...">
+                    </div>
+
+                    <div id="supplierSelectionList" class="space-y-2 max-h-96 overflow-y-auto">
+                        <!-- Supplier list will be loaded here -->
+                    </div>
+
+                    <div class="flex justify-end space-x-4 mt-6">
+                        <button onclick="closeSupplierModal()" class="sap-button-secondary">Cancel</button>
+                        <button onclick="addSelectedSuppliers()" class="sap-button">Add Selected</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Line Item Modal -->
+    <div id="lineItemModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold">Add Line Item</h3>
+                        <button onclick="closeLineItemModal()" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Item Number</label>
+                            <input type="text" id="itemNumber" class="sap-input w-full" placeholder="Auto-generated">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Material Code</label>
+                            <input type="text" id="materialCode" class="sap-input w-full" placeholder="Material/Service Code">
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Short Text</label>
+                            <input type="text" id="itemDescription" class="sap-input w-full" placeholder="Material/Service Description">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+                            <input type="number" id="itemQuantity" class="sap-input w-full" step="0.01">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Unit of Measure</label>
+                            <select id="itemUnit" class="sap-select w-full">
+                                <option value="EA">EA - Each</option>
+                                <option value="KG">KG - Kilogram</option>
+                                <option value="M">M - Meter</option>
+                                <option value="M2">M2 - Square Meter</option>
+                                <option value="M3">M3 - Cubic Meter</option>
+                                <option value="L">L - Liter</option>
+                                <option value="PC">PC - Piece</option>
+                                <option value="BOX">BOX - Box</option>
+                                <option value="PAL">PAL - Pallet</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Delivery Date</label>
+                            <input type="date" id="itemDeliveryDate" class="sap-input w-full">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Plant</label>
+                            <select id="itemPlant" class="sap-select w-full">
+                                <option value="1000">1000 - Main Plant</option>
+                                <option value="2000">2000 - Regional Plant</option>
+                                <option value="3000">3000 - Manufacturing Plant</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Target Price</label>
+                            <input type="number" id="targetPrice" class="sap-input w-full" step="0.01" placeholder="Optional">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Storage Location</label>
+                            <input type="text" id="storageLocation" class="sap-input w-full" placeholder="Optional">
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end space-x-4 mt-6">
+                        <button onclick="closeLineItemModal()" class="sap-button-secondary">Cancel</button>
+                        <button onclick="saveLineItem()" class="sap-button">Add Item</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let rfqData = {
+            header: {},
+            suppliers: [],
+            lineItems: [],
+            attachments: []
+        };
+
+        let suppliers = [
+            { id: 'SUP001', name: 'ABC Manufacturing Ltd', rating: 4.5, category: 'Manufacturing' },
+            { id: 'SUP002', name: 'XYZ Supplies Inc', rating: 4.2, category: 'Raw Materials' },
+            { id: 'SUP003', name: 'Global Tech Solutions', rating: 4.8, category: 'Services' },
+            { id: 'SUP004', name: 'Quality Parts Co', rating: 4.1, category: 'Components' },
+            { id: 'SUP005', name: 'Industrial Solutions Ltd', rating: 4.3, category: 'Equipment' }
+        ];
+
+        let rfqs = [
+            {
+                number: 'RFQ2025001',
+                type: 'AN',
+                status: 'open',
+                createdDate: '2025-09-10',
+                deadline: '2025-09-20',
+                suppliers: ['SUP001', 'SUP002', 'SUP003'],
+                responses: 2,
+                totalValue: 150000,
+                currency: 'USD'
+            },
+            {
+                number: 'RFQ2025002',
+                type: 'LP',
+                status: 'awarded',
+                createdDate: '2025-09-08',
+                deadline: '2025-09-18',
+                suppliers: ['SUP004', 'SUP005'],
+                responses: 2,
+                totalValue: 75000,
+                currency: 'USD'
+            }
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            generateRFQNumber();
+            initializeFileUpload();
+            loadRFQList();
+        });
+
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+
+            // Remove active class from all tabs
+            document.querySelectorAll('.sap-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.remove('hidden');
+
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        // RFQ Number generation
+        function generateRFQNumber() {
+            const timestamp = new Date().getTime();
+            const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            const rfqNumber = `RFQ${timestamp.toString().slice(-6)}${random}`;
+            document.getElementById('rfqNumber').value = rfqNumber;
+        }
+
+        // PR Selection
+        function showPRSelection() {
+            document.getElementById('prSelection').classList.remove('hidden');
+            document.getElementById('manualCreation').classList.add('hidden');
+        }
+
+        function showManualCreation() {
+            document.getElementById('manualCreation').classList.remove('hidden');
+            document.getElementById('prSelection').classList.add('hidden');
+        }
+
+        function loadPRData() {
+            const prNumber = document.getElementById('prNumber').value;
+            const prItem = document.getElementById('prItem').value;
+
+            if (!prNumber || !prItem) {
+                alert('Please enter both PR Number and Item Number');
+                return;
+            }
+
+            // Simulate loading PR data
+            alert(`Loading PR ${prNumber}, Item ${prItem}...`);
+            // In real SAP, this would call an API to fetch PR data
+        }
+
+        // Supplier Selection
+        function openSupplierSelection() {
+            const modal = document.getElementById('supplierModal');
+            modal.classList.remove('hidden');
+            loadSupplierList();
+        }
+
+        function closeSupplierModal() {
+            document.getElementById('supplierModal').classList.add('hidden');
+        }
+
+        function loadSupplierList() {
+            const supplierList = document.getElementById('supplierSelectionList');
+            supplierList.innerHTML = '';
+
+            suppliers.forEach(supplier => {
+                const supplierItem = document.createElement('div');
+                supplierItem.className = 'flex items-center justify-between p-3 border border-gray-200 rounded';
+                supplierItem.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <input type="checkbox" class="supplier-checkbox" value="${supplier.id}">
+                        <div>
+                            <div class="font-medium">${supplier.name}</div>
+                            <div class="text-sm text-gray-500">${supplier.category} • Rating: ${supplier.rating}/5</div>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-500">${supplier.id}</div>
+                `;
+                supplierList.appendChild(supplierItem);
+            });
+        }
+
+        function addSelectedSuppliers() {
+            const selectedCheckboxes = document.querySelectorAll('.supplier-checkbox:checked');
+            const supplierList = document.getElementById('supplierList');
+
+            selectedCheckboxes.forEach(checkbox => {
+                const supplierId = checkbox.value;
+                const supplier = suppliers.find(s => s.id === supplierId);
+
+                if (supplier && !rfqData.suppliers.find(s => s.id === supplierId)) {
+                    rfqData.suppliers.push(supplier);
+
+                    const supplierItem = document.createElement('div');
+                    supplierItem.className = 'flex items-center justify-between p-2 bg-gray-50 rounded';
+                    supplierItem.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <i class="fas fa-building text-gray-500"></i>
+                            <div>
+                                <div class="font-medium">${supplier.name}</div>
+                                <div class="text-sm text-gray-500">${supplier.category}</div>
+                            </div>
+                        </div>
+                        <button onclick="removeSupplier('${supplierId}')" class="text-red-500 hover:text-red-700">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    supplierList.appendChild(supplierItem);
+                }
+            });
+
+            updateSupplierCount();
+            closeSupplierModal();
+        }
+
+        function removeSupplier(supplierId) {
+            rfqData.suppliers = rfqData.suppliers.filter(s => s.id !== supplierId);
+            const supplierItems = document.querySelectorAll('#supplierList > div');
+            supplierItems.forEach(item => {
+                if (item.textContent.includes(supplierId)) {
+                    item.remove();
+                }
+            });
+            updateSupplierCount();
+        }
+
+        function updateSupplierCount() {
+            const countElement = document.querySelector('#supplierList').previousElementSibling;
+            countElement.textContent = `Selected Suppliers (${rfqData.suppliers.length})`;
+        }
+
+        // Line Items
+        function addLineItem() {
+            document.getElementById('lineItemModal').classList.remove('hidden');
+            document.getElementById('itemNumber').value = (rfqData.lineItems.length + 1).toString().padStart(5, '0');
+        }
+
+        function closeLineItemModal() {
+            document.getElementById('lineItemModal').classList.add('hidden');
+        }
+
+        function saveLineItem() {
+            const itemData = {
+                itemNumber: document.getElementById('itemNumber').value,
+                materialCode: document.getElementById('materialCode').value,
+                description: document.getElementById('itemDescription').value,
+                quantity: parseFloat(document.getElementById('itemQuantity').value),
+                unit: document.getElementById('itemUnit').value,
+                deliveryDate: document.getElementById('itemDeliveryDate').value,
+                plant: document.getElementById('itemPlant').value,
+                targetPrice: parseFloat(document.getElementById('targetPrice').value) || 0,
+                storageLocation: document.getElementById('storageLocation').value
+            };
+
+            if (!itemData.materialCode || !itemData.description || !itemData.quantity) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            rfqData.lineItems.push(itemData);
+            updateLineItemsTable();
+            closeLineItemModal();
+
+            // Clear form
+            document.getElementById('lineItemModal').querySelectorAll('input, select').forEach(field => {
+                field.value = '';
+            });
+        }
+
+        function updateLineItemsTable() {
+            const tbody = document.getElementById('lineItemsBody');
+            tbody.innerHTML = '';
+
+            rfqData.lineItems.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-4 py-2 text-sm font-medium text-gray-900">${item.itemNumber}</td>
+                    <td class="px-4 py-2 text-sm text-gray-900">${item.materialCode}</td>
+                    <td class="px-4 py-2 text-sm text-gray-900">${item.description}</td>
+                    <td class="px-4 py-2 text-sm text-gray-900">${item.quantity}</td>
+                    <td class="px-4 py-2 text-sm text-gray-900">${item.unit}</td>
+                    <td class="px-4 py-2 text-sm text-gray-900">${item.deliveryDate}</td>
+                    <td class="px-4 py-2 text-sm text-gray-900">${item.plant}</td>
+                    <td class="px-4 py-2 text-sm text-gray-900">
+                        <button onclick="editLineItem(${index})" class="text-blue-500 hover:text-blue-700 mr-2">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteLineItem(${index})" class="text-red-500 hover:text-red-700">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function deleteLineItem(index) {
+            if (confirm('Are you sure you want to delete this line item?')) {
+                rfqData.lineItems.splice(index, 1);
+                updateLineItemsTable();
+            }
+        }
+
+        function editLineItem(index) {
+            const item = rfqData.lineItems[index];
+            // Populate form with item data for editing
+            document.getElementById('itemNumber').value = item.itemNumber;
+            document.getElementById('materialCode').value = item.materialCode;
+            document.getElementById('itemDescription').value = item.description;
+            document.getElementById('itemQuantity').value = item.quantity;
+            document.getElementById('itemUnit').value = item.unit;
+            document.getElementById('itemDeliveryDate').value = item.deliveryDate;
+            document.getElementById('itemPlant').value = item.plant;
+            document.getElementById('targetPrice').value = item.targetPrice;
+            document.getElementById('storageLocation').value = item.storageLocation;
+
+            document.getElementById('lineItemModal').classList.remove('hidden');
+
+            // Remove the item from array and it will be re-added when saved
+            rfqData.lineItems.splice(index, 1);
+        }
+
+        // File Upload
+        function initializeFileUpload() {
+            const fileInput = document.getElementById('fileInput');
+            const fileList = document.getElementById('fileList');
+
+            fileInput.addEventListener('change', function(e) {
+                fileList.innerHTML = '';
+                rfqData.attachments = [];
+
+                Array.from(e.target.files).forEach(file => {
+                    rfqData.attachments.push(file);
+
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'flex items-center justify-between bg-gray-100 p-2 rounded';
+                    fileItem.innerHTML = `
+                        <span class="text-sm text-gray-700">${file.name}</span>
+                        <button onclick="removeFile('${file.name}')" class="text-red-500 hover:text-red-700">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    fileList.appendChild(fileItem);
+                });
+            });
+        }
+
+        function removeFile(fileName) {
+            rfqData.attachments = rfqData.attachments.filter(file => file.name !== fileName);
+            const fileItems = document.querySelectorAll('#fileList > div');
+            fileItems.forEach(item => {
+                if (item.textContent.includes(fileName)) {
+                    item.remove();
+                }
+            });
+        }
+
+        // Save and Publish
+        function saveAsDraft() {
+            collectRFQData();
+            // In real SAP, this would save to database
+            alert('RFQ saved as draft successfully!');
+            console.log('Draft RFQ Data:', rfqData);
+        }
+
+        function publishRFQ() {
+            collectRFQData();
+
+            if (!validateRFQ()) {
+                return;
+            }
+
+            // In real SAP, this would publish the RFQ and send to suppliers
+            alert('RFQ published successfully! Suppliers will be notified.');
+            console.log('Published RFQ Data:', rfqData);
+
+            // Reset form
+            resetForm();
+        }
+
+        function collectRFQData() {
+            rfqData.header = {
+                rfqNumber: document.getElementById('rfqNumber').value,
+                rfqType: document.getElementById('rfqType').value,
+                collectiveNumber: document.getElementById('collectiveNumber').value,
+                purchOrg: document.getElementById('purchOrg').value,
+                purchGroup: document.getElementById('purchGroup').value,
+                currency: document.getElementById('currency').value,
+                companyCode: document.getElementById('companyCode').value,
+                quotationDeadline: document.getElementById('quotationDeadline').value,
+                incoterms: document.getElementById('incoterms').value,
+                paymentTerms: document.getElementById('paymentTerms').value,
+                deliveryLocation: document.getElementById('deliveryLocation').value,
+                shortText: document.getElementById('shortText').value,
+                materialGroup: document.getElementById('materialGroup').value,
+                vendorNotes: document.getElementById('vendorNotes').value
+            };
+        }
+
+        function validateRFQ() {
+            if (!rfqData.header.rfqNumber) {
+                alert('RFQ Number is required');
+                return false;
+            }
+            if (!rfqData.header.rfqType) {
+                alert('RFQ Type is required');
+                return false;
+            }
+            if (!rfqData.header.companyCode) {
+                alert('Company Code is required');
+                return false;
+            }
+            if (!rfqData.header.currency) {
+                alert('Currency is required');
+                return false;
+            }
+            if (rfqData.suppliers.length === 0) {
+                alert('At least one supplier must be selected');
+                return false;
+            }
+            if (rfqData.lineItems.length === 0) {
+                alert('At least one line item is required');
+                return false;
+            }
+            if (!rfqData.header.quotationDeadline) {
+                alert('Quotation deadline is required');
+                return false;
+            }
+            return true;
+        }
+
+        function resetForm() {
+            rfqData = { header: {}, suppliers: [], lineItems: [], attachments: [] };
+            document.querySelectorAll('input, select, textarea').forEach(field => {
+                field.value = '';
+            });
+            document.getElementById('supplierList').innerHTML = '';
+            document.getElementById('lineItemsBody').innerHTML = '';
+            document.getElementById('fileList').innerHTML = '';
+            generateRFQNumber();
+            updateSupplierCount();
+        }
+
+        // Track RFQs
+        function loadRFQList() {
+            const rfqList = document.getElementById('rfqList');
+            rfqList.innerHTML = '';
+
+            rfqs.forEach(rfq => {
+                const rfqCard = document.createElement('div');
+                rfqCard.className = 'sap-card p-4';
+                rfqCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h3 class="text-lg font-semibold">${rfq.number}</h3>
+                            <p class="text-sm text-gray-600">Type: ${rfq.type} • Created: ${rfq.createdDate}</p>
+                        </div>
+                        <span class="status-${rfq.status} px-3 py-1 rounded-full text-sm font-medium">
+                            ${rfq.status.charAt(0).toUpperCase() + rfq.status.slice(1)}
+                        </span>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
+                        <div>
+                            <span class="text-sm text-gray-500">Deadline</span>
+                            <div class="font-medium">${rfq.deadline}</div>
+                        </div>
+                        <div>
+                            <span class="text-sm text-gray-500">Suppliers</span>
+                            <div class="font-medium">${rfq.suppliers.length}</div>
+                        </div>
+                        <div>
+                            <span class="text-sm text-gray-500">Responses</span>
+                            <div class="font-medium">${rfq.responses}</div>
+                        </div>
+                        <div>
+                            <span class="text-sm text-gray-500">Total Value</span>
+                            <div class="font-medium">${rfq.currency} ${rfq.totalValue.toLocaleString()}</div>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-2">
+                        <button onclick="viewRFQDetails('${rfq.number}')" class="sap-button-secondary text-sm">
+                            <i class="fas fa-eye mr-1"></i>View Details
+                        </button>
+                        <button onclick="trackResponses('${rfq.number}')" class="sap-button text-sm">
+                            <i class="fas fa-chart-line mr-1"></i>Track Responses
+                        </button>
+                    </div>
+                `;
+                rfqList.appendChild(rfqCard);
+            });
+        }
+
+        function viewRFQDetails(rfqNumber) {
+            const rfq = rfqs.find(r => r.number === rfqNumber);
+            if (rfq) {
+                alert(`Viewing details for RFQ ${rfqNumber}\nStatus: ${rfq.status}\nDeadline: ${rfq.deadline}\nResponses: ${rfq.responses}`);
+            }
+        }
+
+        function trackResponses(rfqNumber) {
+            alert(`Tracking responses for RFQ ${rfqNumber}`);
+        }
+
+        // Reports
+        function generateStatusReport() {
+            alert('Generating RFQ Status Report...');
+        }
+
+        function generateSupplierReport() {
+            alert('Generating Supplier Performance Report...');
+        }
+
+        function generateSavingsReport() {
+            alert('Generating Savings Analysis Report...');
+        }
+
+        // Utility functions
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                // In real application, this would clear session and redirect
+                alert('Logged out successfully!');
+            }
+        }
+    </script>
+</body>
+</html>

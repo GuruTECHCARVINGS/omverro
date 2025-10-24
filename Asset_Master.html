@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Asset Master — Buyer Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --accent: #1d4ed8;
+      --accent-2: #7c3aed;
+      --muted: #64748b;
+      --card: #ffffff;
+    }
+    body {
+      font-family: "Inter", sans-serif;
+      background: linear-gradient(120deg, #f3f6fd 0%, #e9eafc 100%);
+      color: #212121;
+    }
+    .box-white {
+      background: rgba(255,255,255,0.85);
+      border: 1px solid #E5E7EB;
+      border-radius: 1.25rem;
+      box-shadow: 0 12px 32px 0 rgba(59,130,246,0.08), 0 1.5px 6px 0 #d1e0ef;
+      backdrop-filter: blur(8px) saturate(180%);
+      transition: box-shadow .2s, border-color .2s;
+    }
+    .ring-gradient {
+      position: relative;
+    }
+    .ring-gradient::before {
+      content: "";
+      position: absolute; inset: -1px;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(135deg, #7c3aed55, #1d4ed855);
+      pointer-events: none;
+    }
+    .header-blur {
+      backdrop-filter: saturate(180%) blur(12px);
+      background-color: rgba(255,255,255,0.92);
+      box-shadow: 0 2px 12px rgba(124,58,237,0.07);
+    }
+    .reveal {
+      opacity: 0; transform: translateY(16px) scale(.98); transition: all .6s cubic-bezier(.4,2,.3,1);
+    }
+    .reveal.show {
+      opacity: 1; transform: translateY(0) scale(1);
+    }
+    .badge {
+      font-size: .7rem; font-weight: 700; padding: .25rem .5rem; border-radius: 999px;
+      background: #EEF2FF; color: #7c3aed; border: 1px solid #7c3aed33;
+      box-shadow: 0 2px 8px rgba(124,58,237,0.08);
+    }
+    .toast { transition: transform .25s ease, opacity .25s ease; }
+    .modal-overlay { backdrop-filter: blur(4px); }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+  <!-- Header -->
+  <header id="app-header" class="bg-white border-b border-gray-200 sticky top-0 z-50 transition-colors">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <img
+          alt="TechCarvings Consultancy Pvt Ltd Logo"
+          class="h-12 w-12 rounded-xl"
+          width="48" height="48"
+          src="./mainlogo.png" />
+        <div>
+          <h1 class="text-xl font-bold text-[#212121] leading-tight"> OMVERRO</h1>
+          <p class="text-xs text-gray-500 -mt-1">Enterprise Procurement Management</p>
+        </div>
+      </div>
+
+      <!-- Top actions -->
+      <div class="hidden md:flex items-center gap-4">
+        <div class="relative">
+          <input type="search" placeholder="Search assets..."
+                 class="w-64 pl-10 pr-3 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none"
+                 aria-label="Search"/>
+          <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+        </div>
+        <button id="themeToggle" class="h-10 w-10 rounded-full bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-600" title="Theme">
+          <i class="fas fa-sun"></i>
+        </button>
+        <button id="notificationsButton" class="relative h-10 w-10 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100">
+          <i class="far fa-bell"></i>
+          <span class="absolute -top-1 -right-1 badge">4</span>
+        </button>
+        <div class="relative">
+          <button id="profileMenuButton" aria-label="Open profile menu" class="flex items-center justify-center w-10 h-10 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-600">
+            <i class="fas fa-user-circle fa-lg"></i>
+          </button>
+          <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+            <div class="p-4 border-b border-blue-50">
+              <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                  <i class="fas fa-user fa-2x"></i>
+                </div>
+                <div>
+                  <div class="font-semibold text-blue-600">John Smith</div>
+                  <div class="text-sm text-gray-700">john.smith@techcarvings.com</div>
+                </div>
+              </div>
+            </div>
+            <div class="p-4 space-y-2">
+              <div class="text-sm text-gray-700"><span class="font-semibold">Buyer ID:</span> BUY123456</div>
+              <div class="text-sm text-gray-700"><span class="font-semibold">Company:</span> TechCarvings Consultancy Pvt Ltd</div>
+              <div class="text-sm text-gray-700"><span class="font-semibold">Role:</span> Buyer</div>
+              <a href="profile_settings.html" class="block text-blue-600 hover:underline text-sm mt-2"><i class="fas fa-user-cog mr-2"></i>Profile Settings</a>
+              <a href="change_password.html" class="block text-blue-600 hover:underline text-sm"><i class="fas fa-key mr-2"></i>Change Password</a>
+            </div>
+            <div class="border-t border-blue-50">
+              <button onclick="window.location.href='index.html'" class="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 font-semibold flex items-center gap-2" type="button">
+                <i class="fas fa-sign-out-alt"></i> Log Out
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile -->
+      <button id="mobile-menu-button" aria-label="Open menu" class="md:hidden text-gray-600 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded" aria-expanded="false" aria-controls="mobile-menu">
+        <i class="fas fa-bars fa-lg"></i>
+      </button>
+    </div>
+
+    <!-- Mobile nav -->
+    <nav id="mobile-menu" class="hidden md:hidden border-t border-gray-200 bg-white" aria-label="Mobile Navigation">
+      <div class="px-4 py-3 grid grid-cols-2 gap-3">
+        <a class="px-3 py-2 rounded-lg hover:bg-blue-50 text-gray-700" href="./PR Creation and navigation_buyer.html">PR Management</a>
+        <a class="px-3 py-2 rounded-lg hover:bg-blue-50 text-gray-700" href="./PO_creation and PO_change navigation.html">PO Management</a>
+        <a class="px-3 py-2 rounded-lg hover:bg-blue-50 text-gray-700" href="./vendor_invoice_view_buyer.html">Invoice</a>
+        <a class="px-3 py-2 rounded-lg hover:bg-blue-50 text-gray-700" href="./Budget Management.html">Budget</a>
+        <a class="px-3 py-2 rounded-lg hover:bg-blue-50 text-gray-700" href="./Advance Payment.html">Advance Payment</a>
+        <a class="px-3 py-2 rounded-lg hover:bg-blue-50 text-gray-700" href="./RFP_andReverse_Auction_Navigatingscreen.html">Sourcing</a>
+        <a class="px-3 py-2 rounded-lg hover:bg-blue-50 text-gray-700" href="./Reports_Buyer.html">Reports</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main -->
+  <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <header class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Asset Master</h1>
+        <p class="text-sm text-gray-600">Manage and track all company assets — add, edit, view, and export asset information.</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button id="addAssetBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors">
+          <i class="fas fa-plus"></i> Add Asset
+        </button>
+        <a href="BuyerDashboard.html" class="px-4 py-2 bg-white rounded-lg shadow border text-sm hover:bg-gray-50 flex items-center gap-2 transition-colors">
+          <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+      </div>
+    </header>
+
+    <!-- Controls -->
+    <section class="box-white ring-gradient p-6 mb-6 reveal">
+      <div class="flex flex-wrap items-center gap-4">
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700">Search</label>
+          <input id="search" type="search" placeholder="Search asset ID, name, location..." class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+        </div>
+
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700">Category</label>
+          <select id="filterCategory" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+            <option value="">All Categories</option>
+            <option value="IT Equipment">IT Equipment</option>
+            <option value="Furniture">Furniture</option>
+            <option value="Machinery">Machinery</option>
+            <option value="Vehicles">Vehicles</option>
+            <option value="Buildings">Buildings</option>
+            <option value="Land">Land</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700">Status</label>
+          <select id="filterStatus" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+            <option value="">All Status</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+            <option value="Under Maintenance">Under Maintenance</option>
+            <option value="Disposed">Disposed</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700">Department</label>
+          <select id="filterDepartment" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+            <option value="">All Departments</option>
+            <option value="IT">IT</option>
+            <option value="HR">HR</option>
+            <option value="Finance">Finance</option>
+            <option value="Operations">Operations</option>
+            <option value="Marketing">Marketing</option>
+            <option value="Sales">Sales</option>
+          </select>
+        </div>
+
+        <div class="ml-auto flex items-center gap-2">
+          <button id="btnExport" class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2 transition-colors">
+            <i class="fas fa-download"></i> Export CSV
+          </button>
+          <button id="btnBulkDelete" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2 transition-colors">
+            <i class="fas fa-trash"></i> Bulk Delete
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Table -->
+    <section class="box-white rounded-lg shadow overflow-hidden reveal">
+      <div class="p-4 border-b border-gray-200">
+        <label class="flex items-center gap-2">
+          <input id="selectAll" type="checkbox" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 transition-colors" />
+          <span class="text-sm text-gray-700">Select all visible</span>
+        </label>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left table-auto">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="p-4 text-sm font-semibold text-gray-900">&nbsp;</th>
+              <th class="p-4 text-sm font-semibold text-gray-900">Asset ID</th>
+              <th class="p-4 text-sm font-semibold text-gray-900">Asset Name</th>
+              <th class="p-4 text-sm font-semibold text-gray-900">Category</th>
+              <th class="p-4 text-sm font-semibold text-gray-900">Location</th>
+              <th class="p-4 text-sm font-semibold text-gray-900">Purchase Date</th>
+              <th class="p-4 text-sm font-semibold text-gray-900">Purchase Value</th>
+              <th class="p-4 text-sm font-semibold text-gray-900">Current Value</th>
+              <th class="p-4 text-sm font-semibold text-gray-900">Status</th>
+              <th class="p-4 text-sm font-semibold text-gray-900">Department</th>
+              <th class="p-4 text-sm font-semibold text-gray-900">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <!-- rows injected by JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Pagination -->
+    <div class="mt-6 flex items-center justify-between reveal">
+      <div class="text-sm text-gray-700">
+        Showing <span id="showingCount">0</span> of <span id="totalCount">0</span> assets
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="prevPage" class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors" disabled>
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <span class="text-sm text-gray-700">Page <span id="currentPage">1</span> of <span id="totalPages">1</span></span>
+        <button id="nextPage" class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors" disabled>
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Add/Edit Asset Modal -->
+  <div id="assetModal" class="fixed inset-0 modal-overlay bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b border-gray-200">
+          <h3 id="modalTitle" class="text-lg font-semibold text-gray-900">Add New Asset</h3>
+        </div>
+        <form id="assetForm" class="p-6 space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Asset ID</label>
+              <input type="text" id="assetId" name="assetId" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Asset Name</label>
+              <input type="text" id="assetName" name="assetName" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+              <select id="assetCategory" name="category" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
+                <option value="">Select Category</option>
+                <option value="IT Equipment">IT Equipment</option>
+                <option value="Furniture">Furniture</option>
+                <option value="Machinery">Machinery</option>
+                <option value="Vehicles">Vehicles</option>
+                <option value="Buildings">Buildings</option>
+                <option value="Land">Land</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+              <input type="text" id="assetLocation" name="location" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Purchase Date</label>
+              <input type="date" id="purchaseDate" name="purchaseDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Purchase Value (₹)</label>
+              <input type="number" id="purchaseValue" name="purchaseValue" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Current Value (₹)</label>
+              <input type="number" id="currentValue" name="currentValue" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <select id="assetStatus" name="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+                <option value="Under Maintenance">Under Maintenance</option>
+                <option value="Disposed">Disposed</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Department</label>
+              <select id="assetDepartment" name="department" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
+                <option value="">Select Department</option>
+                <option value="IT">IT</option>
+                <option value="HR">HR</option>
+                <option value="Finance">Finance</option>
+                <option value="Operations">Operations</option>
+                <option value="Marketing">Marketing</option>
+                <option value="Sales">Sales</option>
+              </select>
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <textarea id="assetDescription" name="description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"></textarea>
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Assigned To</label>
+              <input type="text" id="assignedTo" name="assignedTo" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+            </div>
+          </div>
+          <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
+            <button type="button" id="cancelBtn" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Save Asset</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div id="toasts" class="fixed top-6 right-6 space-y-3 z-50"></div>
+
+  <script>
+    // Header blur on scroll
+    const header = document.getElementById('app-header');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 6) header.classList.add('header-blur');
+      else header.classList.remove('header-blur');
+    });
+
+    // Reveal on view
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('show'); });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+    // Profile dropdown
+    const profileBtn = document.getElementById('profileMenuButton');
+    const profileDropdown = document.getElementById('profileDropdown');
+    if (profileBtn) {
+      profileBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        profileDropdown.classList.toggle('hidden');
+      });
+      document.addEventListener('click', (e) => {
+        if (!profileDropdown.contains(e.target) && !profileBtn.contains(e.target)) {
+          profileDropdown.classList.add('hidden');
+        }
+      });
+    }
+
+    // Mobile menu toggle
+    const mobileBtn = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    mobileBtn.addEventListener('click', () => {
+      const expanded = mobileBtn.getAttribute('aria-expanded') === 'true';
+      mobileBtn.setAttribute('aria-expanded', String(!expanded));
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    // Theme toggle (light only visual cue)
+    const themeToggle = document.getElementById('themeToggle');
+    themeToggle?.addEventListener('click', () => {
+      themeToggle.classList.toggle('bg-yellow-50');
+      themeToggle.innerHTML = themeToggle.innerHTML.includes('sun') ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+    });
+
+    // Notifications shortcut
+    document.getElementById('notificationsButton')?.addEventListener('click', () => {
+      document.getElementById('notificationPanel')?.classList.toggle('hidden');
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    });
+
+    // Sample data
+    const sampleAssets = [
+      {
+        id: 'AST-2025-001',
+        name: 'Dell Latitude 5420 Laptop',
+        category: 'IT Equipment',
+        location: 'IT Department - Floor 3',
+        purchaseDate: '2024-01-15',
+        purchaseValue: 85000,
+        currentValue: 68000,
+        status: 'Active',
+        department: 'IT',
+        description: 'Business laptop for development team',
+        assignedTo: 'John Smith'
+      },
+      {
+        id: 'AST-2025-002',
+        name: 'Office Desk - Executive',
+        category: 'Furniture',
+        location: 'Executive Office - Floor 5',
+        purchaseDate: '2024-02-20',
+        purchaseValue: 25000,
+        currentValue: 20000,
+        status: 'Active',
+        department: 'Operations',
+        description: 'Executive office desk with storage',
+        assignedTo: 'Sarah Johnson'
+      },
+      {
+        id: 'AST-2025-003',
+        name: 'HP LaserJet Pro MFP',
+        category: 'IT Equipment',
+        location: 'Admin Office - Floor 2',
+        purchaseDate: '2024-03-10',
+        purchaseValue: 45000,
+        currentValue: 36000,
+        status: 'Active',
+        department: 'HR',
+        description: 'Multi-function printer for admin use',
+        assignedTo: 'Admin Team'
+      },
+      {
+        id: 'AST-2025-004',
+        name: 'Company Vehicle - Toyota Camry',
+        category: 'Vehicles',
+        location: 'Parking Lot A',
+        purchaseDate: '2024-04-05',
+        purchaseValue: 1200000,
+        currentValue: 960000,
+        status: 'Active',
+        department: 'Sales',
+        description: 'Sales team vehicle',
+        assignedTo: 'Mike Davis'
+      },
+      {
+        id: 'AST-2025-005',
+        name: 'Server Rack Equipment',
+        category: 'IT Equipment',
+        location: 'Server Room - Basement',
+        purchaseDate: '2024-05-12',
+        purchaseValue: 150000,
+        currentValue: 120000,
+        status: 'Active',
+        department: 'IT',
+        description: 'Enterprise server infrastructure',
+        assignedTo: 'IT Infrastructure Team'
+      },
+      {
+        id: 'AST-2025-006',
+        name: 'Conference Room Projector',
+        category: 'IT Equipment',
+        location: 'Conference Room A - Floor 4',
+        purchaseDate: '2024-06-18',
+        purchaseValue: 75000,
+        currentValue: 60000,
+        status: 'Under Maintenance',
+        department: 'Operations',
+        description: '4K projector for presentations',
+        assignedTo: 'Conference Room A'
+      },
+      {
+        id: 'AST-2025-007',
+        name: 'Industrial CNC Machine',
+        category: 'Machinery',
+        location: 'Production Floor - Building B',
+        purchaseDate: '2023-08-25',
+        purchaseValue: 2500000,
+        currentValue: 1750000,
+        status: 'Active',
+        department: 'Operations',
+        description: 'Precision CNC machining equipment',
+        assignedTo: 'Production Team'
+      },
+      {
+        id: 'AST-2025-008',
+        name: 'Office Building - Annex',
+        category: 'Buildings',
+        location: '123 Business Street',
+        purchaseDate: '2020-09-01',
+        purchaseValue: 50000000,
+        currentValue: 45000000,
+        status: 'Active',
+        department: 'Operations',
+        description: 'Additional office space building',
+        assignedTo: 'Facility Management'
+      }
+    ];
+
+    let assets = [...sampleAssets];
+    let currentPage = 1;
+    const itemsPerPage = 10;
+    let filteredAssets = [...assets];
+
+    const tableBody = document.getElementById('tableBody');
+    const searchInput = document.getElementById('search');
+    const filterCategory = document.getElementById('filterCategory');
+    const filterStatus = document.getElementById('filterStatus');
+    const filterDepartment = document.getElementById('filterDepartment');
+    const selectAll = document.getElementById('selectAll');
+    const assetModal = document.getElementById('assetModal');
+    const assetForm = document.getElementById('assetForm');
+    const modalTitle = document.getElementById('modalTitle');
+
+    function renderTable() {
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const pageAssets = filteredAssets.slice(startIndex, endIndex);
+
+      tableBody.innerHTML = '';
+
+      pageAssets.forEach((asset, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = idx % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+        tr.innerHTML = `
+          <td class="p-4"><input data-id="${asset.id}" type="checkbox" class="row-chk w-4 h-4 text-blue-600 rounded focus:ring-blue-500 transition-colors" /></td>
+          <td class="p-4 text-sm font-medium text-gray-900">${asset.id}</td>
+          <td class="p-4 text-sm text-gray-900">${asset.name}</td>
+          <td class="p-4 text-sm text-gray-700">${asset.category}</td>
+          <td class="p-4 text-sm text-gray-700">${asset.location}</td>
+          <td class="p-4 text-sm text-gray-700">${formatDate(asset.purchaseDate)}</td>
+          <td class="p-4 text-sm text-gray-700">₹${asset.purchaseValue.toLocaleString()}</td>
+          <td class="p-4 text-sm text-gray-700">₹${asset.currentValue.toLocaleString()}</td>
+          <td class="p-4 text-sm">${statusBadge(asset.status)}</td>
+          <td class="p-4 text-sm text-gray-700">${asset.department}</td>
+          <td class="p-4 text-sm">
+            <div class="flex items-center gap-2">
+              <button data-id="${asset.id}" class="edit-btn px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button data-id="${asset.id}" class="delete-btn px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        `;
+        tableBody.appendChild(tr);
+      });
+
+      // Update pagination
+      updatePagination();
+
+      // Add event listeners
+      document.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', (e) => editAsset(e.target.closest('button').dataset.id)));
+      document.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', (e) => deleteAsset(e.target.closest('button').dataset.id)));
+      document.querySelectorAll('.row-chk').forEach(cb => cb.addEventListener('change', updateSelectAllState));
+      updateSelectAllState();
+    }
+
+    function statusBadge(status) {
+      const statusClasses = {
+        'Active': 'bg-green-100 text-green-800',
+        'Inactive': 'bg-gray-100 text-gray-800',
+        'Under Maintenance': 'bg-yellow-100 text-yellow-800',
+        'Disposed': 'bg-red-100 text-red-800'
+      };
+      return `<span class="px-2 py-1 rounded-full text-xs font-medium ${statusClasses[status] || 'bg-gray-100 text-gray-800'}">${status}</span>`;
+    }
+
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    function updatePagination() {
+      const totalPages = Math.ceil(filteredAssets.length / itemsPerPage);
+      document.getElementById('showingCount').textContent = Math.min(filteredAssets.length, currentPage * itemsPerPage);
+      document.getElementById('totalCount').textContent = filteredAssets.length;
+      document.getElementById('currentPage').textContent = currentPage;
+      document.getElementById('totalPages').textContent = totalPages;
+
+      document.getElementById('prevPage').disabled = currentPage === 1;
+      document.getElementById('nextPage').disabled = currentPage === totalPages;
+    }
+
+    function updateSelectAllState() {
+      const visible = Array.from(document.querySelectorAll('.row-chk'));
+      if (visible.length === 0) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+        return;
+      }
+      const checked = visible.filter(c => c.checked).length;
+      selectAll.checked = checked === visible.length;
+      selectAll.indeterminate = checked > 0 && checked < visible.length;
+    }
+
+    function filterAssets() {
+      const searchTerm = searchInput.value.trim().toLowerCase();
+      const categoryFilter = filterCategory.value;
+      const statusFilter = filterStatus.value;
+      const departmentFilter = filterDepartment.value;
+
+      filteredAssets = assets.filter(asset => {
+        const matchesSearch = !searchTerm ||
+          [asset.id, asset.name, asset.location, asset.description, asset.assignedTo].join(' ').toLowerCase().includes(searchTerm);
+        const matchesCategory = !categoryFilter || asset.category === categoryFilter;
+        const matchesStatus = !statusFilter || asset.status === statusFilter;
+        const matchesDepartment = !departmentFilter || asset.department === departmentFilter;
+
+        return matchesSearch && matchesCategory && matchesStatus && matchesDepartment;
+      });
+
+      currentPage = 1;
+      renderTable();
+    }
+
+    function showModal(asset = null) {
+      if (asset) {
+        modalTitle.textContent = 'Edit Asset';
+        populateForm(asset);
+      } else {
+        modalTitle.textContent = 'Add New Asset';
+        assetForm.reset();
+        document.getElementById('assetId').readOnly = false;
+      }
+      assetModal.classList.remove('hidden');
+    }
+
+    function hideModal() {
+      assetModal.classList.add('hidden');
+      assetForm.reset();
+    }
+
+    function populateForm(asset) {
+      document.getElementById('assetId').value = asset.id;
+      document.getElementById('assetId').readOnly = true;
+      document.getElementById('assetName').value = asset.name;
+      document.getElementById('assetCategory').value = asset.category;
+      document.getElementById('assetLocation').value = asset.location;
+      document.getElementById('purchaseDate').value = asset.purchaseDate;
+      document.getElementById('purchaseValue').value = asset.purchaseValue;
+      document.getElementById('currentValue').value = asset.currentValue || '';
+      document.getElementById('assetStatus').value = asset.status;
+      document.getElementById('assetDepartment').value = asset.department;
+      document.getElementById('assetDescription').value = asset.description || '';
+      document.getElementById('assignedTo').value = asset.assignedTo || '';
+    }
+
+    function saveAsset(formData) {
+      const assetData = {
+        id: formData.get('assetId'),
+        name: formData.get('assetName'),
+        category: formData.get('category'),
+        location: formData.get('location'),
+        purchaseDate: formData.get('purchaseDate'),
+        purchaseValue: parseFloat(formData.get('purchaseValue')),
+        currentValue: formData.get('currentValue') ? parseFloat(formData.get('currentValue')) : null,
+        status: formData.get('status'),
+        department: formData.get('department'),
+        description: formData.get('description'),
+        assignedTo: formData.get('assignedTo')
+      };
+
+      const existingIndex = assets.findIndex(a => a.id === assetData.id);
+      if (existingIndex >= 0) {
+        assets[existingIndex] = assetData;
+        showToast('Asset updated successfully', 'success');
+      } else {
+        assets.push(assetData);
+        showToast('Asset added successfully', 'success');
+      }
+
+      filterAssets();
+      hideModal();
+    }
+
+    function editAsset(assetId) {
+      const asset = assets.find(a => a.id === assetId);
+      if (asset) {
+        showModal(asset);
+      }
+    }
+
+    function deleteAsset(assetId) {
+      if (confirm('Are you sure you want to delete this asset?')) {
+        assets = assets.filter(a => a.id !== assetId);
+        filterAssets();
+        showToast('Asset deleted successfully', 'success');
+      }
+    }
+
+    function bulkDelete() {
+      const selectedIds = Array.from(document.querySelectorAll('.row-chk:checked')).map(cb => cb.dataset.id);
+      if (selectedIds.length === 0) {
+        showToast('No assets selected', 'error');
+        return;
+      }
+
+      if (confirm(`Are you sure you want to delete ${selectedIds.length} asset(s)?`)) {
+        assets = assets.filter(a => !selectedIds.includes(a.id));
+        filterAssets();
+        showToast(`${selectedIds.length} asset(s) deleted successfully`, 'success');
+      }
+    }
+
+    function exportToCSV() {
+      const headers = ['Asset ID', 'Asset Name', 'Category', 'Location', 'Purchase Date', 'Purchase Value', 'Current Value', 'Status', 'Department', 'Description', 'Assigned To'];
+      const csvData = filteredAssets.map(asset => [
+        asset.id,
+        asset.name,
+        asset.category,
+        asset.location,
+        asset.purchaseDate,
+        asset.purchaseValue,
+        asset.currentValue || '',
+        asset.status,
+        asset.department,
+        asset.description || '',
+        asset.assignedTo || ''
+      ]);
+
+      const csvContent = [headers, ...csvData].map(row =>
+        row.map(field => `"${field}"`).join(',')
+      ).join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'asset_master_export.csv');
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showToast('Export completed successfully', 'success');
+    }
+
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = `toast px-4 py-2 rounded-lg shadow-lg text-sm ${
+        type === 'success' ? 'bg-green-600 text-white' :
+        type === 'error' ? 'bg-red-600 text-white' :
+        'bg-blue-600 text-white'
+      }`;
+      toast.textContent = message;
+      document.getElementById('toasts').appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+      }, 50);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-8px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // Event listeners
+    searchInput.addEventListener('input', filterAssets);
+    filterCategory.addEventListener('change', filterAssets);
+    filterStatus.addEventListener('change', filterAssets);
+    filterDepartment.addEventListener('change', filterAssets);
+
+    selectAll.addEventListener('change', () => {
+      document.querySelectorAll('.row-chk').forEach(cb => cb.checked = selectAll.checked);
+    });
+
+    document.getElementById('addAssetBtn').addEventListener('click', () => showModal());
+    document.getElementById('cancelBtn').addEventListener('click', hideModal);
+    document.getElementById('btnExport').addEventListener('click', exportToCSV);
+    document.getElementById('btnBulkDelete').addEventListener('click', bulkDelete);
+
+    document.getElementById('prevPage').addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        renderTable();
+      }
+    });
+
+    document.getElementById('nextPage').addEventListener('click', () => {
+      const totalPages = Math.ceil(filteredAssets.length / itemsPerPage);
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderTable();
+      }
+    });
+
+    assetForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      saveAsset(formData);
+    });
+
+    // Close modal when clicking outside
+    assetModal.addEventListener('click', (e) => {
+      if (e.target === assetModal) {
+        hideModal();
+      }
+    });
+
+    // Initial render
+    filterAssets();
+  </script>
+</body>
+</html>

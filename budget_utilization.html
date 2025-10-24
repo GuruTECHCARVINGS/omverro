@@ -12,7 +12,10 @@
         .budget-card:hover { transform: translateY(-2px); transition: all 0.3s ease; }
         .progress-bar { transition: width 0.5s ease-in-out; }
         .chart-container { position: relative; height: 300px; }
-        .animate-pulse-slow { animation: pulse 3s infinite; }
+                .active {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
         .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
         .alert-high { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); }
         .alert-medium { background: linear-gradient(135deg, #ffa726 0%, #fb8c00 100%); }
@@ -240,8 +243,8 @@
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-lg font-semibold text-gray-900">Monthly Utilization Trend</h3>
                     <div class="flex space-x-2">
-                        <button class="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium">Spent</button>
-                        <button class="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-sm">Budget</button>
+                        <button id="spentBtn" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium active">Spent</button>
+                        <button id="budgetBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-sm">Budget</button>
                     </div>
                 </div>
                 
@@ -270,40 +273,40 @@
                             <div class="flex items-end justify-around h-full pb-2">
                                 <!-- July -->
                                 <div class="flex flex-col items-center w-20">
-                                    <div class="relative w-12 bg-blue-500 rounded-t-lg transition-all duration-1000" 
+                                    <div class="relative w-12 bg-blue-500 rounded-t-lg transition-all duration-1000 july-bar" 
                                          style="height: 120px;" 
                                          title="July: ₹10M (60% utilized)">
-                                        <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs font-medium text-gray-700">₹10M</div>
+                                        <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs font-medium text-gray-700 july-label">₹10M</div>
                                     </div>
                                     <div class="mt-2 text-center">
                                         <div class="text-xs text-gray-500 font-medium">Jul</div>
-                                        <div class="text-xs text-green-600">60%</div>
+                                        <div class="text-xs text-green-600 july-percent">60%</div>
                                     </div>
                                 </div>
                                 
                                 <!-- August -->
                                 <div class="flex flex-col items-center w-20">
-                                    <div class="relative w-12 bg-orange-500 rounded-t-lg transition-all duration-1000" 
+                                    <div class="relative w-12 bg-orange-500 rounded-t-lg transition-all duration-1000 august-bar" 
                                          style="height: 156px;" 
                                          title="August: ₹13M (78% utilized)">
-                                        <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs font-medium text-gray-700">₹13M</div>
+                                        <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs font-medium text-gray-700 august-label">₹13M</div>
                                     </div>
                                     <div class="mt-2 text-center">
                                         <div class="text-xs text-gray-500 font-medium">Aug</div>
-                                        <div class="text-xs text-orange-600">78%</div>
+                                        <div class="text-xs text-orange-600 august-percent">78%</div>
                                     </div>
                                 </div>
                                 
                                 <!-- September -->
                                 <div class="flex flex-col items-center w-20">
-                                    <div class="relative w-12 bg-red-500 rounded-t-lg transition-all duration-1000 animate-pulse-slow" 
+                                    <div class="relative w-12 bg-red-500 rounded-t-lg transition-all duration-1000 animate-pulse-slow september-bar" 
                                          style="height: 156px;" 
                                          title="September: ₹13M (92% utilized)">
-                                        <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs font-medium text-gray-700">₹13M</div>
+                                        <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs font-medium text-gray-700 september-label">₹13M</div>
                                     </div>
                                     <div class="mt-2 text-center">
                                         <div class="text-xs text-gray-500 font-medium">Sep</div>
-                                        <div class="text-xs text-red-600">92%</div>
+                                        <div class="text-xs text-red-600 september-percent">92%</div>
                                     </div>
                                 </div>
                             </div>
@@ -313,25 +316,25 @@
                 
                 <!-- Summary Stats -->
                 <div class="grid grid-cols-3 gap-4">
-                    <div class="text-center p-3 bg-blue-50 rounded-lg">
+                    <div class="text-center p-3 bg-blue-50 rounded-lg summary-card">
                         <p class="text-sm text-gray-600 font-medium">July 2025</p>
-                        <p class="text-lg font-bold text-blue-600">₹10M</p>
-                        <p class="text-xs text-green-600">60% utilized • On track</p>
+                        <p class="text-lg font-bold text-blue-600 summary-amount">₹10M</p>
+                        <p class="text-xs text-green-600 summary-status">60% utilized • On track</p>
                     </div>
-                    <div class="text-center p-3 bg-orange-50 rounded-lg">
+                    <div class="text-center p-3 bg-orange-50 rounded-lg summary-card">
                         <p class="text-sm text-gray-600 font-medium">August 2025</p>
-                        <p class="text-lg font-bold text-orange-600">₹13M</p>
-                        <p class="text-xs text-orange-600">78% utilized • Increasing</p>
+                        <p class="text-lg font-bold text-orange-600 summary-amount">₹13M</p>
+                        <p class="text-xs text-orange-600 summary-status">78% utilized • Increasing</p>
                     </div>
-                    <div class="text-center p-3 bg-red-50 rounded-lg border border-red-200">
+                    <div class="text-center p-3 bg-red-50 rounded-lg border border-red-200 summary-card">
                         <p class="text-sm text-gray-600 font-medium">September 2025</p>
-                        <p class="text-lg font-bold text-red-600">₹13M</p>
-                        <p class="text-xs text-red-600">92% utilized • Critical</p>
+                        <p class="text-lg font-bold text-red-600 summary-amount">₹13M</p>
+                        <p class="text-xs text-red-600 summary-status">92% utilized • Critical</p>
                     </div>
                 </div>
                 
                 <!-- Trend Analysis -->
-                <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg trend-analysis">
                     <div class="flex items-center">
                         <i class="fas fa-chart-line text-yellow-600 mr-2"></i>
                         <span class="text-sm font-medium text-yellow-800">Trend Analysis:</span>
@@ -616,62 +619,791 @@
     <script>
         // Interactive Functions
         function viewAlert(alertId) {
-            alert(`Viewing details for alert: ${alertId}`);
-            // Implementation for viewing alert details
+            // Create modal for alert details
+            const modal = createModal();
+            let content = '';
+
+            switch(alertId) {
+                case 'marketing-critical':
+                    content = `
+                        <div class="text-center mb-6">
+                            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Marketing Budget Critical Alert</h3>
+                            <p class="text-gray-600">Immediate attention required for Marketing department budget</p>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-red-800 mb-2">Current Status</h4>
+                                <ul class="text-sm text-red-700 space-y-1">
+                                    <li>• Budget Utilized: 84.4% (₹15.2M / ₹18M)</li>
+                                    <li>• Time Remaining: 1 month</li>
+                                    <li>• Projected Overspend: ₹2.8M</li>
+                                </ul>
+                            </div>
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-blue-800 mb-2">Recommended Actions</h4>
+                                <ul class="text-sm text-blue-700 space-y-1">
+                                    <li>• Review and optimize current campaigns</li>
+                                    <li>• Consider budget reallocation from underutilized departments</li>
+                                    <li>• Implement spending controls for remaining period</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="flex space-x-3 mt-6">
+                            <button onclick="closeModal()" class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Close</button>
+                            <button onclick="takeAction('marketing-critical')" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Take Action</button>
+                        </div>
+                    `;
+                    break;
+                case 'it-warning':
+                    content = `
+                        <div class="text-center mb-6">
+                            <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-exclamation-circle text-orange-600 text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">IT Budget Warning</h3>
+                            <p class="text-gray-600">IT department approaching budget threshold</p>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-orange-800 mb-2">Current Status</h4>
+                                <ul class="text-sm text-orange-700 space-y-1">
+                                    <li>• Budget Utilized: 70.8% (₹8.5M / ₹12M)</li>
+                                    <li>• Threshold Alert: 75% utilization</li>
+                                    <li>• Monthly Burn Rate: ₹2.1M</li>
+                                </ul>
+                            </div>
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-blue-800 mb-2">Recommendations</h4>
+                                <ul class="text-sm text-blue-700 space-y-1">
+                                    <li>• Review cloud infrastructure costs</li>
+                                    <li>• Optimize software licensing expenses</li>
+                                    <li>• Consider cost-saving alternatives</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="flex space-x-3 mt-6">
+                            <button onclick="closeModal()" class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Close</button>
+                            <button onclick="takeAction('it-warning')" class="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">Review Budget</button>
+                        </div>
+                    `;
+                    break;
+                case 'hr-optimal':
+                    content = `
+                        <div class="text-center mb-6">
+                            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-info-circle text-green-600 text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">HR Budget Status</h3>
+                            <p class="text-gray-600">HR department maintaining optimal budget utilization</p>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-green-800 mb-2">Current Status</h4>
+                                <ul class="text-sm text-green-700 space-y-1">
+                                    <li>• Budget Utilized: 53.3% (₹3.2M / ₹6M)</li>
+                                    <li>• Available Budget: ₹2.8M</li>
+                                    <li>• Status: Healthy utilization</li>
+                                </ul>
+                            </div>
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-blue-800 mb-2">Available Actions</h4>
+                                <ul class="text-sm text-blue-700 space-y-1">
+                                    <li>• Reallocate unused funds to critical departments</li>
+                                    <li>• Plan for Q4 training initiatives</li>
+                                    <li>• Review hiring budget allocation</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="flex space-x-3 mt-6">
+                            <button onclick="closeModal()" class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Close</button>
+                            <button onclick="takeAction('hr-optimal')" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">View Details</button>
+                        </div>
+                    `;
+                    break;
+            }
+
+            modal.innerHTML = content;
+            document.body.appendChild(modal);
         }
 
         function viewExpense(expenseId) {
-            alert(`Viewing expense details: ${expenseId}`);
-            // Implementation for viewing expense details
+            const modal = createModal();
+            let content = '';
+
+            switch(expenseId) {
+                case 'digital-marketing':
+                    content = `
+                        <div class="text-center mb-6">
+                            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-bullhorn text-red-600 text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Digital Marketing Campaign</h3>
+                            <p class="text-gray-600">Marketing Department • August 2025</p>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <h4 class="font-semibold text-gray-800 mb-2">Expense Details</h4>
+                                    <ul class="text-sm text-gray-600 space-y-1">
+                                        <li>• Amount: ₹8.5M</li>
+                                        <li>• Category: Digital Marketing</li>
+                                        <li>• Date: August 2025</li>
+                                        <li>• Impact: High</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <h4 class="font-semibold text-gray-800 mb-2">Performance Metrics</h4>
+                                    <ul class="text-sm text-gray-600 space-y-1">
+                                        <li>• ROI: +45%</li>
+                                        <li>• Reach: 2.1M users</li>
+                                        <li>• Conversion: 3.2%</li>
+                                        <li>• Status: Active</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-blue-800 mb-2">Campaign Breakdown</h4>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between text-sm">
+                                        <span>Social Media Ads</span>
+                                        <span>₹4.2M (49%)</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span>Google Ads</span>
+                                        <span>₹2.8M (33%)</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span>Influencer Marketing</span>
+                                        <span>₹1.5M (18%)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex space-x-3 mt-6">
+                            <button onclick="closeModal()" class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Close</button>
+                            <button onclick="downloadExpenseReport('${expenseId}')" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Download Report</button>
+                        </div>
+                    `;
+                    break;
+                case 'cloud-infrastructure':
+                    content = `
+                        <div class="text-center mb-6">
+                            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-cloud text-blue-600 text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Cloud Infrastructure</h3>
+                            <p class="text-gray-600">IT Department • Q3 2025</p>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <h4 class="font-semibold text-gray-800 mb-2">Expense Details</h4>
+                                    <ul class="text-sm text-gray-600 space-y-1">
+                                        <li>• Amount: ₹4.2M</li>
+                                        <li>• Category: Cloud Services</li>
+                                        <li>• Period: Q3 2025</li>
+                                        <li>• Type: Recurring</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <h4 class="font-semibold text-gray-800 mb-2">Service Breakdown</h4>
+                                    <ul class="text-sm text-gray-600 space-y-1">
+                                        <li>• AWS: ₹2.1M</li>
+                                        <li>• Azure: ₹1.5M</li>
+                                        <li>• Google Cloud: ₹0.6M</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-orange-800 mb-2">Cost Optimization Opportunities</h4>
+                                <ul class="text-sm text-orange-700 space-y-1">
+                                    <li>• Reserved instances could save ₹800K annually</li>
+                                    <li>• Unused resources identified: ₹300K monthly</li>
+                                    <li>• Auto-scaling optimization potential: ₹200K</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="flex space-x-3 mt-6">
+                            <button onclick="closeModal()" class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Close</button>
+                            <button onclick="optimizeCloudCosts()" class="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">Optimize Costs</button>
+                        </div>
+                    `;
+                    break;
+                case 'office-equipment':
+                    content = `
+                        <div class="text-center mb-6">
+                            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-desktop text-green-600 text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Office Equipment Upgrade</h3>
+                            <p class="text-gray-600">Operations Department • July 2025</p>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <h4 class="font-semibold text-gray-800 mb-2">Expense Details</h4>
+                                    <ul class="text-sm text-gray-600 space-y-1">
+                                        <li>• Amount: ₹3.8M</li>
+                                        <li>• Category: Office Equipment</li>
+                                        <li>• Date: July 2025</li>
+                                        <li>• Type: One-time</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <h4 class="font-semibold text-gray-800 mb-2">Equipment List</h4>
+                                    <ul class="text-sm text-gray-600 space-y-1">
+                                        <li>• Laptops: ₹1.8M (120 units)</li>
+                                        <li>• Monitors: ₹1.2M (150 units)</li>
+                                        <li>• Peripherals: ₹0.8M</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-green-800 mb-2">Expected Benefits</h4>
+                                <ul class="text-sm text-green-700 space-y-1">
+                                    <li>• Productivity increase: 25%</li>
+                                    <li>• Reduced maintenance costs: ₹500K annually</li>
+                                    <li>• Extended equipment lifespan: 3-4 years</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="flex space-x-3 mt-6">
+                            <button onclick="closeModal()" class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Close</button>
+                            <button onclick="viewAssetDetails('${expenseId}')" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">View Assets</button>
+                        </div>
+                    `;
+                    break;
+                case 'training-development':
+                    content = `
+                        <div class="text-center mb-6">
+                            <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-graduation-cap text-purple-600 text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Training & Development</h3>
+                            <p class="text-gray-600">HR Department • Q3 2025</p>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <h4 class="font-semibold text-gray-800 mb-2">Expense Details</h4>
+                                    <ul class="text-sm text-gray-600 space-y-1">
+                                        <li>• Amount: ₹2.1M</li>
+                                        <li>• Category: Training</li>
+                                        <li>• Period: Q3 2025</li>
+                                        <li>• Type: Strategic</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <h4 class="font-semibold text-gray-800 mb-2">Program Breakdown</h4>
+                                    <ul class="text-sm text-gray-600 space-y-1">
+                                        <li>• Leadership Training: ₹800K</li>
+                                        <li>• Technical Skills: ₹700K</li>
+                                        <li>• Soft Skills: ₹400K</li>
+                                        <li>• Certification: ₹200K</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-purple-800 mb-2">Expected Outcomes</h4>
+                                <ul class="text-sm text-purple-700 space-y-1">
+                                    <li>• Employee satisfaction: +30%</li>
+                                    <li>• Skill development: 85% completion rate</li>
+                                    <li>• Retention improvement: 15%</li>
+                                    <li>• Performance metrics: +20%</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="flex space-x-3 mt-6">
+                            <button onclick="closeModal()" class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Close</button>
+                            <button onclick="viewTrainingReport('${expenseId}')" class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">View Report</button>
+                        </div>
+                    `;
+                    break;
+            }
+
+            modal.innerHTML = content;
+            document.body.appendChild(modal);
         }
 
         function viewAllExpenses() {
-            alert('Opening detailed expense report...');
-            // Implementation for comprehensive expense view
+            const modal = createModal();
+            modal.innerHTML = `
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-file-alt text-blue-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Complete Expense Report</h3>
+                    <p class="text-gray-600">Detailed breakdown of all Q3 2025 expenses</p>
+                </div>
+
+                <div class="space-y-4 mb-6">
+                    <div class="bg-white border border-gray-200 rounded-lg p-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="font-semibold text-gray-800">Expense Summary</h4>
+                            <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">Q3 2025</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 text-center">
+                            <div>
+                                <p class="text-2xl font-bold text-gray-900">₹36M</p>
+                                <p class="text-sm text-gray-600">Total Spent</p>
+                            </div>
+                            <div>
+                                <p class="text-2xl font-bold text-green-600">₹14M</p>
+                                <p class="text-sm text-gray-600">Remaining</p>
+                            </div>
+                            <div>
+                                <p class="text-2xl font-bold text-orange-600">72%</p>
+                                <p class="text-sm text-gray-600">Utilization</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-800 mb-3">Top Expense Categories</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Marketing</span>
+                                <span class="font-semibold">₹15.2M</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">IT & Technology</span>
+                                <span class="font-semibold">₹8.5M</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Operations</span>
+                                <span class="font-semibold">₹6.8M</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Human Resources</span>
+                                <span class="font-semibold">₹3.2M</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Finance & Admin</span>
+                                <span class="font-semibold">₹2.3M</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex space-x-3">
+                    <button onclick="closeModal()" class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Close</button>
+                    <button onclick="exportExpenseReport()" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Export PDF</button>
+                    <button onclick="downloadExpenseCSV()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Download CSV</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
         }
 
         function applyRecommendation(recommendationId) {
-            if (confirm(`Apply recommendation: ${recommendationId}?`)) {
-                alert('Recommendation applied successfully!');
-                // Implementation for applying budget reallocation
+            if (confirm(`Are you sure you want to apply the recommendation: ${recommendationId.replace(/-/g, ' ')}?\n\nThis will reallocate budget funds between departments.`)) {
+                showNotification('Applying budget reallocation...', 'info');
+
+                setTimeout(() => {
+                    showNotification('Budget reallocation applied successfully! Funds have been transferred.', 'success');
+
+                    // Update the UI to reflect the change
+                    const recommendationElement = document.querySelector(`[onclick="applyRecommendation('${recommendationId}')"]`);
+                    if (recommendationElement) {
+                        recommendationElement.innerHTML = '<i class="fas fa-check mr-2"></i>Applied';
+                        recommendationElement.className = 'text-green-600 hover:text-green-800 text-sm font-medium cursor-not-allowed';
+                        recommendationElement.onclick = null;
+                    }
+                }, 2000);
             }
         }
 
         function requestBudgetIncrease(category) {
-            alert(`Requesting budget increase for ${category}`);
-            // Implementation for budget increase request
+            const modal = createModal();
+            modal.innerHTML = `
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-plus-circle text-blue-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Request Budget Increase</h3>
+                    <p class="text-gray-600">Submit a formal request for additional budget allocation</p>
+                </div>
+
+                <form class="space-y-4" onsubmit="submitBudgetRequest(event, '${category}')">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Department</label>
+                        <input type="text" value="${category.replace('-', ' ').toUpperCase()}" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" readonly>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Requested Amount</label>
+                        <input type="text" id="requestAmount" placeholder="e.g., ₹2.4M" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Justification</label>
+                        <textarea id="requestJustification" rows="4" placeholder="Please provide detailed justification for the budget increase..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Expected ROI/Impact</label>
+                        <input type="text" id="expectedROI" placeholder="e.g., 25% efficiency improvement" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <div class="flex space-x-3">
+                        <button type="button" onclick="closeModal()" class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Cancel</button>
+                        <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Submit Request</button>
+                    </div>
+                </form>
+            `;
+            document.body.appendChild(modal);
         }
 
         function generateReport() {
-            alert('Generating budget utilization report...');
-            // Implementation for report generation
+            showNotification('Generating comprehensive budget utilization report...', 'info');
+
+            setTimeout(() => {
+                showNotification('Report generated successfully! Opening in new tab...', 'success');
+
+                // Simulate opening report
+                setTimeout(() => {
+                    const modal = createModal();
+                    modal.innerHTML = `
+                        <div class="text-center mb-6">
+                            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Report Generated</h3>
+                            <p class="text-gray-600">Your budget utilization report is ready</p>
+                        </div>
+
+                        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                            <h4 class="font-semibold text-gray-800 mb-2">Report Details</h4>
+                            <ul class="text-sm text-gray-600 space-y-1">
+                                <li>• Generated: ${new Date().toLocaleString()}</li>
+                                <li>• Period: Q3 2025</li>
+                                <li>• Format: PDF</li>
+                                <li>• Size: 2.4 MB</li>
+                            </ul>
+                        </div>
+
+                        <div class="flex space-x-3">
+                            <button onclick="closeModal()" class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Close</button>
+                            <button onclick="downloadReport()" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Download Report</button>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                }, 500);
+            }, 3000);
         }
 
         function requestBudgetAdjustment() {
-            alert('Opening budget adjustment request form...');
-            // Implementation for budget adjustment
+            const modal = createModal();
+            modal.innerHTML = `
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-edit text-orange-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Budget Adjustment Request</h3>
+                    <p class="text-gray-600">Request modifications to existing budget allocations</p>
+                </div>
+
+                <form class="space-y-4" onsubmit="submitAdjustmentRequest(event)">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Adjustment Type</label>
+                        <select id="adjustmentType" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent" required>
+                            <option value="">Select adjustment type</option>
+                            <option value="increase">Budget Increase</option>
+                            <option value="decrease">Budget Decrease</option>
+                            <option value="reallocation">Reallocation</option>
+                            <option value="carry-forward">Carry Forward</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Department</label>
+                        <select id="adjustmentDepartment" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent" required>
+                            <option value="">Select department</option>
+                            <option value="marketing">Marketing</option>
+                            <option value="it">IT & Technology</option>
+                            <option value="operations">Operations</option>
+                            <option value="hr">Human Resources</option>
+                            <option value="finance">Finance & Admin</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Amount</label>
+                        <input type="text" id="adjustmentAmount" placeholder="e.g., ₹1.5M" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Reason</label>
+                        <textarea id="adjustmentReason" rows="3" placeholder="Please explain the reason for this adjustment..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent" required></textarea>
+                    </div>
+
+                    <div class="flex space-x-3">
+                        <button type="button" onclick="closeModal()" class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Cancel</button>
+                        <button type="submit" class="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">Submit Request</button>
+                    </div>
+                </form>
+            `;
+            document.body.appendChild(modal);
         }
 
         function viewForecast() {
-            alert('Opening budget forecast analysis...');
-            // Implementation for forecast view
+            const modal = createModal();
+            modal.innerHTML = `
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-chart-bar text-green-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Budget Forecast Analysis</h3>
+                    <p class="text-gray-600">Predictive analysis for Q4 2025 budget utilization</p>
+                </div>
+
+                <div class="space-y-4 mb-6">
+                    <div class="bg-white border border-gray-200 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-800 mb-3">Q4 Forecast Summary</h4>
+                        <div class="grid grid-cols-3 gap-4 text-center">
+                            <div class="bg-blue-50 rounded-lg p-3">
+                                <p class="text-lg font-bold text-blue-600">₹42M</p>
+                                <p class="text-sm text-gray-600">Projected Spend</p>
+                            </div>
+                            <div class="bg-green-50 rounded-lg p-3">
+                                <p class="text-lg font-bold text-green-600">₹8M</p>
+                                <p class="text-sm text-gray-600">Available</p>
+                            </div>
+                            <div class="bg-orange-50 rounded-lg p-3">
+                                <p class="text-lg font-bold text-orange-600">84%</p>
+                                <p class="text-sm text-gray-600">Utilization</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-800 mb-3">Risk Assessment</h4>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between p-2 bg-red-50 rounded">
+                                <span class="text-sm text-red-800">Marketing Overspend Risk</span>
+                                <span class="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">High</span>
+                            </div>
+                            <div class="flex items-center justify-between p-2 bg-orange-50 rounded">
+                                <span class="text-sm text-orange-800">IT Cost Growth</span>
+                                <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">Medium</span>
+                            </div>
+                            <div class="flex items-center justify-between p-2 bg-green-50 rounded">
+                                <span class="text-sm text-green-800">HR Budget Surplus</span>
+                                <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Low</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-800 mb-3">Recommendations</h4>
+                        <ul class="text-sm text-gray-600 space-y-2">
+                            <li class="flex items-start">
+                                <i class="fas fa-arrow-right text-blue-500 mt-0.5 mr-2"></i>
+                                Implement spending controls for Marketing department
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-arrow-right text-blue-500 mt-0.5 mr-2"></i>
+                                Review IT infrastructure costs and optimization opportunities
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-arrow-right text-blue-500 mt-0.5 mr-2"></i>
+                                Consider reallocating HR surplus to critical departments
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="flex space-x-3">
+                    <button onclick="closeModal()" class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Close</button>
+                    <button onclick="exportForecast()" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Export Forecast</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
         }
 
         function setUpAlerts() {
-            alert('Opening alert configuration...');
-            // Implementation for alert setup
+            const modal = createModal();
+            modal.innerHTML = `
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-bell text-purple-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Budget Alert Configuration</h3>
+                    <p class="text-gray-600">Configure automated alerts for budget thresholds and milestones</p>
+                </div>
+
+                <form class="space-y-4" onsubmit="saveAlertSettings(event)">
+                    <div class="space-y-4">
+                        <div class="bg-white border border-gray-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-gray-800 mb-3">Utilization Thresholds</h4>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-600">Warning at 75%</span>
+                                    <input type="checkbox" id="alert75" class="w-4 h-4 text-purple-600" checked>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-600">Critical at 90%</span>
+                                    <input type="checkbox" id="alert90" class="w-4 h-4 text-purple-600" checked>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-600">Overspend Alert</span>
+                                    <input type="checkbox" id="alertOverspend" class="w-4 h-4 text-purple-600" checked>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white border border-gray-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-gray-800 mb-3">Alert Methods</h4>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-600">Email Notifications</span>
+                                    <input type="checkbox" id="emailAlerts" class="w-4 h-4 text-purple-600" checked>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-600">Dashboard Alerts</span>
+                                    <input type="checkbox" id="dashboardAlerts" class="w-4 h-4 text-purple-600" checked>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-600">SMS Notifications</span>
+                                    <input type="checkbox" id="smsAlerts" class="w-4 h-4 text-purple-600">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white border border-gray-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-gray-800 mb-3">Department-Specific Alerts</h4>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-600">Marketing</span>
+                                    <select id="marketingAlertLevel" class="text-sm border border-gray-300 rounded px-2 py-1">
+                                        <option value="high">High Priority</option>
+                                        <option value="medium">Medium Priority</option>
+                                        <option value="low">Low Priority</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-600">IT & Technology</span>
+                                    <select id="itAlertLevel" class="text-sm border border-gray-300 rounded px-2 py-1">
+                                        <option value="high">High Priority</option>
+                                        <option value="medium" selected>Medium Priority</option>
+                                        <option value="low">Low Priority</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-600">Operations</span>
+                                    <select id="operationsAlertLevel" class="text-sm border border-gray-300 rounded px-2 py-1">
+                                        <option value="high">High Priority</option>
+                                        <option value="medium">Medium Priority</option>
+                                        <option value="low" selected>Low Priority</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-3">
+                        <button type="button" onclick="closeModal()" class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Cancel</button>
+                        <button type="submit" class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Save Settings</button>
+                    </div>
+                </form>
+            `;
+            document.body.appendChild(modal);
         }
 
         function exportData() {
-            alert('Exporting budget data...');
-            // Implementation for data export
+            showNotification('Preparing data export...', 'info');
+
+            setTimeout(() => {
+                const modal = createModal();
+                modal.innerHTML = `
+                    <div class="text-center mb-6">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-download text-blue-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Export Budget Data</h3>
+                    <p class="text-gray-600">Choose your preferred export format</p>
+                </div>
+
+                <div class="space-y-3 mb-6">
+                    <button onclick="exportAsExcel()" class="w-full flex items-center justify-between p-4 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg text-green-800">
+                        <div class="flex items-center">
+                            <i class="fas fa-file-excel mr-3 text-green-600"></i>
+                            <div class="text-left">
+                                <p class="font-semibold">Excel Spreadsheet</p>
+                                <p class="text-sm text-green-600">Complete data with formulas</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-green-600"></i>
+                    </button>
+
+                    <button onclick="exportAsCSV()" class="w-full flex items-center justify-between p-4 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg text-blue-800">
+                        <div class="flex items-center">
+                            <i class="fas fa-file-csv mr-3 text-blue-600"></i>
+                            <div class="text-left">
+                                <p class="font-semibold">CSV File</p>
+                                <p class="text-sm text-blue-600">Raw data for analysis</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-blue-600"></i>
+                    </button>
+
+                    <button onclick="exportAsPDF()" class="w-full flex items-center justify-between p-4 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg text-red-800">
+                        <div class="flex items-center">
+                            <i class="fas fa-file-pdf mr-3 text-red-600"></i>
+                            <div class="text-left">
+                                <p class="font-semibold">PDF Report</p>
+                                <p class="text-sm text-red-600">Formatted report</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-red-600"></i>
+                    </button>
+                </div>
+
+                <div class="flex space-x-3">
+                    <button onclick="closeModal()" class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Cancel</button>
+                </div>
+                `;
+                document.body.appendChild(modal);
+            }, 1000);
         }
 
         function freezeBudget(department) {
-            if (confirm(`Freeze ${department} budget? This is an emergency action.`)) {
-                alert(`${department} budget has been frozen.`);
-                // Implementation for emergency budget freeze
-            }
+            const modal = createModal();
+            modal.innerHTML = `
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Emergency Budget Freeze</h3>
+                    <p class="text-red-600 font-semibold">This is an emergency action that will immediately halt all spending</p>
+                </div>
+
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                    <h4 class="font-semibold text-red-800 mb-2">Freeze Details</h4>
+                    <ul class="text-sm text-red-700 space-y-1">
+                        <li>• Department: ${department.charAt(0).toUpperCase() + department.slice(1)}</li>
+                        <li>• Effective: Immediately</li>
+                        <li>• Duration: Until manually unfrozen</li>
+                        <li>• Impact: All new expenditures blocked</li>
+                    </ul>
+                </div>
+
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                    <h4 class="font-semibold text-yellow-800 mb-2">⚠️ Important Notice</h4>
+                    <p class="text-sm text-yellow-700">
+                        This action will prevent any new purchases, contracts, or expenses for the selected department.
+                        Only critical emergency expenditures will be allowed during the freeze period.
+                    </p>
+                </div>
+
+                <div class="flex space-x-3">
+                    <button onclick="closeModal()" class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Cancel</button>
+                    <button onclick="confirmFreeze('${department}')" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Confirm Freeze</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
         }
 
         // Navigation Functions
@@ -730,6 +1462,18 @@
 
         // Initialize tooltips and animations
         document.addEventListener('DOMContentLoaded', function() {
+            // Add event listeners for spent/budget toggle buttons
+            const spentBtn = document.getElementById('spentBtn');
+            const budgetBtn = document.getElementById('budgetBtn');
+            
+            if (spentBtn) {
+                spentBtn.addEventListener('click', () => toggleChartView('spent'));
+            }
+            
+            if (budgetBtn) {
+                budgetBtn.addEventListener('click', () => toggleChartView('budget'));
+            }
+            
             // Add keyboard shortcuts
             document.addEventListener('keydown', function(e) {
                 // Alt+B to navigate back to buyer dashboard
@@ -741,6 +1485,16 @@
                 if (e.ctrlKey && e.key === 'e') {
                     e.preventDefault();
                     exportBudgetReport();
+                }
+                // S key to toggle to spent view
+                if (e.key === 's' && !e.ctrlKey && !e.altKey) {
+                    e.preventDefault();
+                    toggleChartView('spent');
+                }
+                // B key to toggle to budget view
+                if (e.key === 'b' && !e.ctrlKey && !e.altKey) {
+                    e.preventDefault();
+                    toggleChartView('budget');
                 }
             });
 
@@ -770,14 +1524,584 @@
             });
         });
 
-        // Real-time budget updates (simulated)
-        function updateBudgetMetrics() {
-            // Simulate real-time updates
-            console.log('Budget metrics updated');
+        // Budget vs Spent Toggle Functionality
+        let currentView = 'spent'; // Default view
+        
+        // Data for spent and budget views
+        const chartData = {
+            spent: {
+                july: { amount: 10, height: 120, color: 'bg-blue-500', percentage: 60, status: '60% utilized • On track' },
+                august: { amount: 13, height: 156, color: 'bg-orange-500', percentage: 78, status: '78% utilized • Increasing' },
+                september: { amount: 13, height: 156, color: 'bg-red-500', percentage: 92, status: '92% utilized • Critical' }
+            },
+            budget: {
+                july: { amount: 16.7, height: 200, color: 'bg-green-500', percentage: 60, status: '₹16.7M allocated • On track' },
+                august: { amount: 16.7, height: 200, color: 'bg-green-500', percentage: 78, status: '₹16.7M allocated • Increasing' },
+                september: { amount: 14.1, height: 170, color: 'bg-yellow-500', percentage: 92, status: '₹14.1M allocated • Critical' }
+            }
+        };
+
+        function toggleChartView(view) {
+            if (currentView === view) return; // Already showing this view
+            
+            currentView = view;
+            
+            // Update button styles
+            const spentBtn = document.getElementById('spentBtn');
+            const budgetBtn = document.getElementById('budgetBtn');
+            
+            if (view === 'spent') {
+                spentBtn.classList.add('active');
+                spentBtn.classList.remove('bg-gray-100', 'text-gray-700');
+                spentBtn.classList.add('bg-blue-100', 'text-blue-700');
+                budgetBtn.classList.remove('active');
+                budgetBtn.classList.add('bg-gray-100', 'text-gray-700');
+                budgetBtn.classList.remove('bg-blue-100', 'text-blue-700');
+            } else {
+                budgetBtn.classList.add('active');
+                budgetBtn.classList.remove('bg-gray-100', 'text-gray-700');
+                budgetBtn.classList.add('bg-blue-100', 'text-blue-700');
+                spentBtn.classList.remove('active');
+                spentBtn.classList.add('bg-gray-100', 'text-gray-700');
+                spentBtn.classList.remove('bg-blue-100', 'text-blue-700');
+            }
+            
+            // Update chart bars
+            updateChartBars(view);
+            
+            // Update summary stats
+            updateSummaryStats(view);
+            
+            // Update trend analysis
+            updateTrendAnalysis(view);
         }
 
-        // Update every 30 seconds
-        setInterval(updateBudgetMetrics, 30000);
+        function updateChartBars(view) {
+            const months = ['july', 'august', 'september'];
+            
+            months.forEach(month => {
+                const data = chartData[view][month];
+                const barElement = document.querySelector(`.${month}-bar`);
+                const labelElement = document.querySelector(`.${month}-label`);
+                const percentElement = document.querySelector(`.${month}-percent`);
+                
+                if (barElement) {
+                    barElement.style.height = `${data.height}px`;
+                    barElement.className = `relative w-12 ${data.color} rounded-t-lg transition-all duration-1000`;
+                    barElement.title = `${month.charAt(0).toUpperCase() + month.slice(1)}: ₹${data.amount}M (${data.percentage}% utilized)`;
+                }
+                
+                if (labelElement) {
+                    labelElement.textContent = `₹${data.amount}M`;
+                }
+                
+                if (percentElement) {
+                    percentElement.textContent = `${data.percentage}%`;
+                    percentElement.className = `text-xs ${getPercentageColor(data.percentage)}`;
+                }
+            });
+        }
+
+        function updateSummaryStats(view) {
+            const summaryCards = document.querySelectorAll('.summary-card');
+            
+            summaryCards.forEach((card, index) => {
+                const months = ['july', 'august', 'september'];
+                const month = months[index];
+                const data = chartData[view][month];
+                
+                const amountElement = card.querySelector('.summary-amount');
+                const statusElement = card.querySelector('.summary-status');
+                
+                if (amountElement) {
+                    amountElement.textContent = `₹${data.amount}M`;
+                }
+                
+                if (statusElement) {
+                    statusElement.textContent = data.status;
+                }
+                
+                // Update card background based on view
+                if (view === 'budget') {
+                    card.className = `text-center p-3 ${getCardBackground(data.percentage)} rounded-lg`;
+                }
+            });
+        }
+
+        function updateTrendAnalysis(view) {
+            const trendElement = document.querySelector('.trend-analysis');
+            
+            if (trendElement) {
+                if (view === 'spent') {
+                    trendElement.innerHTML = `
+                        <div class="flex items-center">
+                            <i class="fas fa-chart-line text-yellow-600 mr-2"></i>
+                            <span class="text-sm font-medium text-yellow-800">Trend Analysis:</span>
+                        </div>
+                        <p class="text-sm text-yellow-700 mt-1">
+                            Budget utilization increased by 32% from July to September. Current trajectory suggests 
+                            potential overspend of ₹3-4M if trend continues into Q4.
+                        </p>
+                    `;
+                } else {
+                    trendElement.innerHTML = `
+                        <div class="flex items-center">
+                            <i class="fas fa-chart-line text-blue-600 mr-2"></i>
+                            <span class="text-sm font-medium text-blue-800">Budget Allocation Analysis:</span>
+                        </div>
+                        <p class="text-sm text-blue-700 mt-1">
+                            Budget allocation shows consistent quarterly distribution with September receiving 
+                            reduced allocation due to Q4 planning. Total annual budget: ₹47.5M.
+                        </p>
+                    `;
+                }
+            }
+        }
+
+        function getPercentageColor(percentage) {
+            if (percentage < 70) return 'text-green-600';
+            if (percentage < 85) return 'text-orange-600';
+            return 'text-red-600';
+        }
+
+        function getCardBackground(percentage) {
+            if (percentage < 70) return 'bg-green-50';
+            if (percentage < 85) return 'bg-orange-50';
+            return 'bg-red-50';
+        }
+
+        // Helper Functions for Enhanced Functionality
+        function createModal() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                    <div class="p-6">
+                        <!-- Modal content will be inserted here -->
+                    </div>
+                </div>
+            `;
+            modal.onclick = function(e) {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            };
+            return modal;
+        }
+
+        function closeModal() {
+            const modal = document.querySelector('.fixed.inset-0.bg-black');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        function takeAction(alertId) {
+            showNotification(`Taking action on ${alertId}...`, 'info');
+            closeModal();
+
+            setTimeout(() => {
+                showNotification('Action completed successfully!', 'success');
+            }, 2000);
+        }
+
+        function downloadExpenseReport(expenseId) {
+            showNotification('Downloading expense report...', 'info');
+            closeModal();
+
+            setTimeout(() => {
+                showNotification('Report downloaded successfully!', 'success');
+            }, 1500);
+        }
+
+        function optimizeCloudCosts() {
+            showNotification('Analyzing cloud cost optimization opportunities...', 'info');
+            closeModal();
+
+            setTimeout(() => {
+                const modal = createModal();
+                modal.innerHTML = `
+                    <div class="text-center mb-6">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-cogs text-green-600 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Cost Optimization Analysis</h3>
+                        <p class="text-gray-600">Identified ₹1.3M in potential annual savings</p>
+                    </div>
+
+                    <div class="space-y-4 mb-6">
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-green-800 mb-2">Recommended Actions</h4>
+                            <ul class="text-sm text-green-700 space-y-2">
+                                <li>• Switch to reserved instances: ₹800K savings</li>
+                                <li>• Optimize unused resources: ₹300K savings</li>
+                                <li>• Implement auto-scaling: ₹200K savings</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-3">
+                        <button onclick="closeModal()" class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Close</button>
+                        <button onclick="implementOptimizations()" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Implement Changes</button>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }, 2000);
+        }
+
+        function viewAssetDetails(expenseId) {
+            showNotification('Loading asset details...', 'info');
+            closeModal();
+
+            setTimeout(() => {
+                const modal = createModal();
+                modal.innerHTML = `
+                    <div class="text-center mb-6">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-laptop text-blue-600 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Asset Inventory</h3>
+                        <p class="text-gray-600">Office equipment upgrade - July 2025</p>
+                    </div>
+
+                    <div class="space-y-4 mb-6">
+                        <div class="bg-white border border-gray-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-gray-800 mb-3">Equipment Summary</h4>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="text-center">
+                                    <p class="text-2xl font-bold text-blue-600">120</p>
+                                    <p class="text-sm text-gray-600">Laptops</p>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-2xl font-bold text-green-600">150</p>
+                                    <p class="text-sm text-gray-600">Monitors</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white border border-gray-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-gray-800 mb-3">Asset Tracking</h4>
+                            <div class="space-y-2">
+                                <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                                    <span class="text-sm">Assigned to employees</span>
+                                    <span class="font-semibold text-green-600">95%</span>
+                                </div>
+                                <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                                    <span class="text-sm">In inventory</span>
+                                    <span class="font-semibold text-orange-600">5%</span>
+                                </div>
+                                <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                                    <span class="text-sm">Warranty coverage</span>
+                                    <span class="font-semibold text-blue-600">3 years</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-3">
+                        <button onclick="closeModal()" class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Close</button>
+                        <button onclick="exportAssetReport()" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Export Report</button>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }, 1000);
+        }
+
+        function viewTrainingReport(expenseId) {
+            showNotification('Generating training report...', 'info');
+            closeModal();
+
+            setTimeout(() => {
+                const modal = createModal();
+                modal.innerHTML = `
+                    <div class="text-center mb-6">
+                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-graduation-cap text-purple-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Training Program Report</h3>
+                    <p class="text-gray-600">Q3 2025 Training & Development Initiative</p>
+                </div>
+
+                <div class="space-y-4 mb-6">
+                    <div class="bg-white border border-gray-200 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-800 mb-3">Program Metrics</h4>
+                        <div class="grid grid-cols-3 gap-4 text-center">
+                            <div>
+                                <p class="text-xl font-bold text-purple-600">85%</p>
+                                <p class="text-sm text-gray-600">Completion Rate</p>
+                            </div>
+                            <div>
+                                <p class="text-xl font-bold text-green-600">4.2/5</p>
+                                <p class="text-sm text-gray-600">Satisfaction</p>
+                            </div>
+                            <div>
+                                <p class="text-xl font-bold text-blue-600">+20%</p>
+                                <p class="text-sm text-gray-600">Performance</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-800 mb-3">Program Breakdown</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Leadership Training</span>
+                                <div class="text-right">
+                                    <span class="font-semibold">92%</span>
+                                    <span class="text-xs text-green-600 ml-2">Complete</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Technical Skills</span>
+                                <div class="text-right">
+                                    <span class="font-semibold">78%</span>
+                                    <span class="text-xs text-orange-600 ml-2">In Progress</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Soft Skills</span>
+                                <div class="text-right">
+                                    <span class="font-semibold">88%</span>
+                                    <span class="text-xs text-green-600 ml-2">Complete</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex space-x-3">
+                    <button onclick="closeModal()" class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Close</button>
+                    <button onclick="downloadTrainingReport()" class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Download Report</button>
+                </div>
+                `;
+                document.body.appendChild(modal);
+            }, 1500);
+        }
+
+        function exportExpenseReport() {
+            showNotification('Generating expense report PDF...', 'info');
+            closeModal();
+
+            setTimeout(() => {
+                showNotification('Expense report downloaded successfully!', 'success');
+            }, 2000);
+        }
+
+        function downloadExpenseCSV() {
+            showNotification('Exporting expense data as CSV...', 'info');
+            closeModal();
+
+            setTimeout(() => {
+                showNotification('CSV file downloaded successfully!', 'success');
+            }, 1500);
+        }
+
+        function submitBudgetRequest(event, category) {
+            event.preventDefault();
+
+            const amount = document.getElementById('requestAmount').value;
+            const justification = document.getElementById('requestJustification').value;
+            const roi = document.getElementById('expectedROI').value;
+
+            showNotification('Submitting budget increase request...', 'info');
+            closeModal();
+
+            setTimeout(() => {
+                showNotification('Budget increase request submitted successfully! You will be notified once reviewed.', 'success');
+            }, 2000);
+        }
+
+        function downloadReport() {
+            showNotification('Downloading budget report...', 'info');
+            closeModal();
+
+            setTimeout(() => {
+                showNotification('Report downloaded successfully!', 'success');
+            }, 1500);
+        }
+
+        function submitAdjustmentRequest(event) {
+            event.preventDefault();
+
+            const type = document.getElementById('adjustmentType').value;
+            const department = document.getElementById('adjustmentDepartment').value;
+            const amount = document.getElementById('adjustmentAmount').value;
+            const reason = document.getElementById('adjustmentReason').value;
+
+            showNotification('Submitting budget adjustment request...', 'info');
+            closeModal();
+
+            setTimeout(() => {
+                showNotification('Budget adjustment request submitted successfully!', 'success');
+            }, 2000);
+        }
+
+        function exportForecast() {
+            showNotification('Exporting forecast analysis...', 'info');
+            closeModal();
+
+            setTimeout(() => {
+                showNotification('Forecast report exported successfully!', 'success');
+            }, 1500);
+        }
+
+        function saveAlertSettings(event) {
+            event.preventDefault();
+
+            showNotification('Saving alert settings...', 'info');
+            closeModal();
+
+            setTimeout(() => {
+                showNotification('Alert settings saved successfully!', 'success');
+            }, 1500);
+        }
+
+        function exportAsExcel() {
+            showNotification('Exporting data as Excel spreadsheet...', 'info');
+            closeModal();
+
+            setTimeout(() => {
+                showNotification('Excel file downloaded successfully!', 'success');
+            }, 2000);
+        }
+
+        function exportAsCSV() {
+            showNotification('Exporting data as CSV file...', 'info');
+            closeModal();
+
+            setTimeout(() => {
+                showNotification('CSV file downloaded successfully!', 'success');
+            }, 1500);
+        }
+
+        function exportAsPDF() {
+            showNotification('Generating PDF report...', 'info');
+            closeModal();
+
+            setTimeout(() => {
+                showNotification('PDF report downloaded successfully!', 'success');
+            }, 2500);
+        }
+
+        function confirmFreeze(department) {
+            showNotification(`Freezing ${department} budget...`, 'warning');
+            closeModal();
+
+            setTimeout(() => {
+                showNotification(`${department.charAt(0).toUpperCase() + department.slice(1)} budget has been frozen. All new expenditures are blocked.`, 'success');
+
+                // Update the freeze button
+                const freezeBtn = document.querySelector(`[onclick="freezeBudget('${department}')"]`);
+                if (freezeBtn) {
+                    freezeBtn.innerHTML = '<i class="fas fa-unlock mr-2"></i>Unfreeze Budget';
+                    freezeBtn.className = 'w-full flex items-center justify-center p-2 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg text-green-700 text-sm';
+                    freezeBtn.onclick = () => unfreezeBudget(department);
+                }
+            }, 2000);
+        }
+
+        function unfreezeBudget(department) {
+            showNotification(`Unfreezing ${department} budget...`, 'info');
+
+            setTimeout(() => {
+                showNotification(`${department.charAt(0).toUpperCase() + department.slice(1)} budget has been unfrozen. Normal operations resumed.`, 'success');
+
+                // Update the button back
+                const unfreezeBtn = document.querySelector(`[onclick="unfreezeBudget('${department}')"]`);
+                if (unfreezeBtn) {
+                    unfreezeBtn.innerHTML = '<i class="fas fa-pause mr-2"></i>Freeze Budget';
+                    unfreezeBtn.className = 'w-full flex items-center justify-center p-2 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg text-red-700 text-sm';
+                    unfreezeBtn.onclick = () => freezeBudget(department);
+                }
+            }, 1500);
+        }
+
+        function implementOptimizations() {
+            showNotification('Implementing cloud cost optimizations...', 'info');
+            closeModal();
+
+            setTimeout(() => {
+                showNotification('Cost optimization measures implemented! Expected annual savings: ₹1.3M', 'success');
+            }, 3000);
+        }
+
+        function exportAssetReport() {
+            showNotification('Generating asset report...', 'info');
+            closeModal();
+
+            setTimeout(() => {
+                showNotification('Asset report downloaded successfully!', 'success');
+            }, 1500);
+        }
+
+        function viewDetails(detailId) {
+            const modal = createModal();
+            let content = '';
+
+            switch(detailId) {
+                case 'marketing-optimization':
+                    content = `
+                        <div class="text-center mb-6">
+                            <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-chart-line text-yellow-600 text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Marketing Optimization Details</h3>
+                            <p class="text-gray-600">Analysis of current marketing spend and optimization opportunities</p>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-yellow-800 mb-2">Current Issues</h4>
+                                <ul class="text-sm text-yellow-700 space-y-1">
+                                    <li>• Campaign ROI decreased by 15% in Q3</li>
+                                    <li>• Digital ad spend increased by 25% with minimal conversion gains</li>
+                                    <li>• Social media engagement down 12% from Q2</li>
+                                </ul>
+                            </div>
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-blue-800 mb-2">Optimization Recommendations</h4>
+                                <ul class="text-sm text-blue-700 space-y-1">
+                                    <li>• Reallocate ₹1.2M from underperforming campaigns to high-ROI channels</li>
+                                    <li>• Implement A/B testing for ad creatives and landing pages</li>
+                                    <li>• Focus on retargeting campaigns with 35% higher conversion rates</li>
+                                    <li>• Reduce paid social spend by 20% and increase organic content</li>
+                                </ul>
+                            </div>
+                            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-green-800 mb-2">Expected Benefits</h4>
+                                <ul class="text-sm text-green-700 space-y-1">
+                                    <li>• Potential savings: ₹2.2M annually</li>
+                                    <li>• Improved ROI: +25% increase expected</li>
+                                    <li>• Better targeting and audience engagement</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="flex space-x-3 mt-6">
+                            <button onclick="closeModal()" class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Close</button>
+                            <button onclick="implementOptimizations()" class="flex-1 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700">Implement Changes</button>
+                        </div>
+                    `;
+                    break;
+                default:
+                    content = `
+                        <div class="text-center mb-6">
+                            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-info-circle text-blue-600 text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Details</h3>
+                            <p class="text-gray-600">Additional information for ${detailId}</p>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-gray-700">Detailed information for ${detailId} will be displayed here.</p>
+                        </div>
+                        <div class="flex justify-center mt-6">
+                            <button onclick="closeModal()" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Close</button>
+                        </div>
+                    `;
+            }
+
+            modal.innerHTML = content;
+            document.body.appendChild(modal);
+        }
     </script>
 </body>
 </html>

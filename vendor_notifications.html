@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <title>Notifications - OMVERRO Supply Chain Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      color: #1e293b;
+    }
+
+    .notification-card {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid #e2e8f0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(10px);
+    }
+
+    .notification-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      border-color: #8b5cf6;
+    }
+
+    .notification-card.unread {
+      border-left: 4px solid #8b5cf6;
+      background: linear-gradient(135deg, #fef7ff 0%, #f3e8ff 100%);
+    }
+
+    .notification-card.read {
+      opacity: 0.8;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .filter-btn {
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+    }
+
+    .filter-btn.active {
+      background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+      color: white;
+      border-color: #8b5cf6;
+    }
+
+    .filter-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .notification-type-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: white;
+    }
+
+    .type-rfq { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+    .type-order { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+    .type-payment { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+    .type-system { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+    .type-support { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+    .type-compliance { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); }
+
+    .status-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+    }
+
+    .status-unread { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
+    .status-read { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: white; }
+    .status-archived { background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%); color: white; }
+
+    .floating-decoration {
+      position: absolute;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+      filter: blur(1px);
+    }
+
+    .header-gradient {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border-bottom: 1px solid #e2e8f0;
+      backdrop-filter: blur(10px);
+    }
+
+    .search-input {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(10px);
+      border: 1px solid #e2e8f0;
+      transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+      border-color: #8b5cf6;
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    .bulk-action-btn {
+      transition: all 0.3s ease;
+      border: 2px solid #e2e8f0;
+    }
+
+    .bulk-action-btn:hover {
+      border-color: #8b5cf6;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      transform: translateY(-1px);
+    }
+
+    .notification-actions {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .notification-card:hover .notification-actions {
+      opacity: 1;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .notification-card {
+      animation: slideIn 0.5s ease-out;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen overflow-x-hidden">
+  <!-- Floating decorations -->
+  <div class="floating-decoration w-20 h-20 top-10 left-20 opacity-30"></div>
+  <div class="floating-decoration w-16 h-16 top-32 right-32 opacity-20"></div>
+  <div class="floating-decoration w-12 h-12 bottom-20 left-40 opacity-25"></div>
+
+  <!-- Header -->
+  <header class="header-gradient sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center py-6">
+        <div class="flex items-center gap-4">
+          <button onclick="window.location.href='vendor_dashboard_new.html'" class="p-2 rounded-xl hover:bg-purple-50 transition-all duration-300 group">
+            <i class="fas fa-arrow-left text-xl group-hover:text-purple-600"></i>
+          </button>
+          <div>
+            <h1 class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Notifications Center
+            </h1>
+            <p class="text-gray-600 text-sm">Stay updated with your business activities</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <div class="relative">
+            <input type="text" id="searchInput" placeholder="Search notifications..." class="search-input pl-10 pr-4 py-2 rounded-xl w-64">
+            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+          </div>
+          <button id="settingsBtn" class="p-3 rounded-xl hover:bg-purple-50 transition-all duration-300">
+            <i class="fas fa-cog text-xl text-gray-600 hover:text-purple-600"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div class="glass-card p-6 rounded-2xl shadow-lg">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-gradient-to-r from-red-500 to-pink-500 rounded-xl flex items-center justify-center text-white">
+            <i class="fas fa-bell"></i>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-gray-800" id="totalNotifications">24</p>
+            <p class="text-sm text-gray-600">Total Notifications</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card p-6 rounded-2xl shadow-lg">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center text-white">
+            <i class="fas fa-exclamation-circle"></i>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-gray-800" id="unreadCount">8</p>
+            <p class="text-sm text-gray-600">Unread</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card p-6 rounded-2xl shadow-lg">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center text-white">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-gray-800" id="todayCount">5</p>
+            <p class="text-sm text-gray-600">Today</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card p-6 rounded-2xl shadow-lg">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center text-white">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-gray-800" id="readCount">16</p>
+            <p class="text-sm text-gray-600">Read</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters and Actions -->
+    <div class="glass-card p-6 rounded-2xl shadow-lg mb-8">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <!-- Filter Buttons -->
+        <div class="flex flex-wrap gap-2">
+          <button class="filter-btn active px-4 py-2 rounded-xl text-sm font-medium" data-filter="all">
+            <i class="fas fa-list mr-2"></i>All
+          </button>
+          <button class="filter-btn px-4 py-2 rounded-xl text-sm font-medium" data-filter="unread">
+            <i class="fas fa-circle mr-2"></i>Unread
+          </button>
+          <button class="filter-btn px-4 py-2 rounded-xl text-sm font-medium" data-filter="rfq">
+            <i class="fas fa-clipboard-list mr-2"></i>RFQs
+          </button>
+          <button class="filter-btn px-4 py-2 rounded-xl text-sm font-medium" data-filter="order">
+            <i class="fas fa-shopping-cart mr-2"></i>Orders
+          </button>
+          <button class="filter-btn px-4 py-2 rounded-xl text-sm font-medium" data-filter="payment">
+            <i class="fas fa-credit-card mr-2"></i>Payments
+          </button>
+          <button class="filter-btn px-4 py-2 rounded-xl text-sm font-medium" data-filter="system">
+            <i class="fas fa-cog mr-2"></i>System
+          </button>
+        </div>
+
+        <!-- Bulk Actions -->
+        <div class="flex gap-2">
+          <button class="bulk-action-btn px-4 py-2 rounded-xl text-sm font-medium" id="markAllReadBtn">
+            <i class="fas fa-check-double mr-2"></i>Mark All Read
+          </button>
+          <button class="bulk-action-btn px-4 py-2 rounded-xl text-sm font-medium" id="archiveSelectedBtn">
+            <i class="fas fa-archive mr-2"></i>Archive Selected
+          </button>
+          <button class="bulk-action-btn px-4 py-2 rounded-xl text-sm font-medium" id="deleteSelectedBtn">
+            <i class="fas fa-trash mr-2"></i>Delete Selected
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notifications List -->
+    <div class="space-y-4" id="notificationsContainer">
+      <!-- Sample Notifications Data -->
+      <div class="notification-card unread p-6 rounded-2xl shadow-lg" data-type="rfq" data-read="false" data-id="1">
+        <div class="flex items-start gap-4">
+          <div class="notification-type-icon type-rfq">
+            <i class="fas fa-clipboard-list"></i>
+          </div>
+          <div class="flex-1">
+            <div class="flex items-start justify-between mb-2">
+              <div>
+                <h3 class="font-semibold text-gray-900 mb-1">New RFQ Available: Industrial Equipment Procurement</h3>
+                <p class="text-sm text-gray-600 mb-2">TechCorp Industries has posted a new RFQ for industrial equipment including CNC machines, conveyor systems, and automation tools. The total estimated value is ₹45 lakhs.</p>
+                <div class="flex items-center gap-4 text-xs text-gray-500">
+                  <span><i class="fas fa-calendar mr-1"></i>2 hours ago</span>
+                  <span><i class="fas fa-building mr-1"></i>TechCorp Industries</span>
+                  <span><i class="fas fa-rupee-sign mr-1"></i>₹4.5L</span>
+                </div>
+              </div>
+              <div class="notification-actions flex gap-2">
+                <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="markAsRead(1)">
+                  <i class="fas fa-check text-green-600"></i>
+                </button>
+                <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="archiveNotification(1)">
+                  <i class="fas fa-archive text-blue-600"></i>
+                </button>
+                <button class="p-2 rounded-lg hover:bg-red-100 transition-colors" onclick="deleteNotification(1)">
+                  <i class="fas fa-trash text-red-600"></i>
+                </button>
+              </div>
+            </div>
+            <div class="flex gap-2 mt-3">
+              <button class="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 transition-colors">
+                View RFQ Details
+              </button>
+              <button class="px-4 py-2 border border-purple-600 text-purple-600 rounded-lg text-sm hover:bg-purple-50 transition-colors">
+                Submit Quote
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="notification-card unread p-6 rounded-2xl shadow-lg" data-type="order" data-read="false" data-id="2">
+        <div class="flex items-start gap-4">
+          <div class="notification-type-icon type-order">
+            <i class="fas fa-shopping-cart"></i>
+          </div>
+          <div class="flex-1">
+            <div class="flex items-start justify-between mb-2">
+              <div>
+                <h3 class="font-semibold text-gray-900 mb-1">Order Confirmation: #ORD-2025-001</h3>
+                <p class="text-sm text-gray-600 mb-2">Your quotation for Office Equipment Package has been accepted by Manufacturing Plus. Order value: ₹2.8 lakhs. Expected delivery: September 15, 2025.</p>
+                <div class="flex items-center gap-4 text-xs text-gray-500">
+                  <span><i class="fas fa-calendar mr-1"></i>4 hours ago</span>
+                  <span><i class="fas fa-building mr-1"></i>Manufacturing Plus</span>
+                  <span><i class="fas fa-rupee-sign mr-1"></i>₹2.8L</span>
+                </div>
+              </div>
+              <div class="notification-actions flex gap-2">
+                <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="markAsRead(2)">
+                  <i class="fas fa-check text-green-600"></i>
+                </button>
+                <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="archiveNotification(2)">
+                  <i class="fas fa-archive text-blue-600"></i>
+                </button>
+                <button class="p-2 rounded-lg hover:bg-red-100 transition-colors" onclick="deleteNotification(2)">
+                  <i class="fas fa-trash text-red-600"></i>
+                </button>
+              </div>
+            </div>
+            <div class="flex gap-2 mt-3">
+              <button class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition-colors">
+                View Order Details
+              </button>
+              <button class="px-4 py-2 border border-green-600 text-green-600 rounded-lg text-sm hover:bg-green-50 transition-colors">
+                Create ASN
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="notification-card unread p-6 rounded-2xl shadow-lg" data-type="payment" data-read="false" data-id="3">
+        <div class="flex items-start gap-4">
+          <div class="notification-type-icon type-payment">
+            <i class="fas fa-credit-card"></i>
+          </div>
+          <div class="flex-1">
+            <div class="flex items-start justify-between mb-2">
+              <div>
+                <h3 class="font-semibold text-gray-900 mb-1">Payment Reminder: Invoice #INV-2025-089</h3>
+                <p class="text-sm text-gray-600 mb-2">Payment of ₹1.2 lakhs for Invoice #INV-2025-089 is due in 3 days. Please ensure timely payment to maintain good standing with ElectroTech Solutions.</p>
+                <div class="flex items-center gap-4 text-xs text-gray-500">
+                  <span><i class="fas fa-calendar mr-1"></i>6 hours ago</span>
+                  <span><i class="fas fa-building mr-1"></i>ElectroTech Solutions</span>
+                  <span><i class="fas fa-rupee-sign mr-1"></i>₹1.2L</span>
+                </div>
+              </div>
+              <div class="notification-actions flex gap-2">
+                <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="markAsRead(3)">
+                  <i class="fas fa-check text-green-600"></i>
+                </button>
+                <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="archiveNotification(3)">
+                  <i class="fas fa-archive text-blue-600"></i>
+                </button>
+                <button class="p-2 rounded-lg hover:bg-red-100 transition-colors" onclick="deleteNotification(3)">
+                  <i class="fas fa-trash text-red-600"></i>
+                </button>
+              </div>
+            </div>
+            <div class="flex gap-2 mt-3">
+              <button class="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm hover:bg-orange-700 transition-colors">
+                View Invoice
+              </button>
+              <button class="px-4 py-2 border border-orange-600 text-orange-600 rounded-lg text-sm hover:bg-orange-50 transition-colors">
+                Make Payment
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="notification-card read p-6 rounded-2xl shadow-lg" data-type="system" data-read="true" data-id="4">
+        <div class="flex items-start gap-4">
+          <div class="notification-type-icon type-system">
+            <i class="fas fa-cog"></i>
+          </div>
+          <div class="flex-1">
+            <div class="flex items-start justify-between mb-2">
+              <div>
+                <h3 class="font-semibold text-gray-900 mb-1">System Maintenance Scheduled</h3>
+                <p class="text-sm text-gray-600 mb-2">OMVERRO platform will undergo scheduled maintenance on September 5, 2025 from 2:00 AM to 4:00 AM IST. Some services may be temporarily unavailable during this period.</p>
+                <div class="flex items-center gap-4 text-xs text-gray-500">
+                  <span><i class="fas fa-calendar mr-1"></i>1 day ago</span>
+                  <span><i class="fas fa-cog mr-1"></i>System Update</span>
+                </div>
+              </div>
+              <div class="notification-actions flex gap-2">
+                <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="archiveNotification(4)">
+                  <i class="fas fa-archive text-blue-600"></i>
+                </button>
+                <button class="p-2 rounded-lg hover:bg-red-100 transition-colors" onclick="deleteNotification(4)">
+                  <i class="fas fa-trash text-red-600"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="notification-card read p-6 rounded-2xl shadow-lg" data-type="support" data-read="true" data-id="5">
+        <div class="flex items-start gap-4">
+          <div class="notification-type-icon type-support">
+            <i class="fas fa-headset"></i>
+          </div>
+          <div class="flex-1">
+            <div class="flex items-start justify-between mb-2">
+              <div>
+                <h3 class="font-semibold text-gray-900 mb-1">Support Ticket Resolved: #SUP-2025-445</h3>
+                <p class="text-sm text-gray-600 mb-2">Your support ticket regarding ASN creation issues has been resolved. The technical team has implemented the necessary fixes and your ASN functionality should now work properly.</p>
+                <div class="flex items-center gap-4 text-xs text-gray-500">
+                  <span><i class="fas fa-calendar mr-1"></i>2 days ago</span>
+                  <span><i class="fas fa-headset mr-1"></i>Support Team</span>
+                </div>
+              </div>
+              <div class="notification-actions flex gap-2">
+                <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="archiveNotification(5)">
+                  <i class="fas fa-archive text-blue-600"></i>
+                </button>
+                <button class="p-2 rounded-lg hover:bg-red-100 transition-colors" onclick="deleteNotification(5)">
+                  <i class="fas fa-trash text-red-600"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="notification-card unread p-6 rounded-2xl shadow-lg" data-type="rfq" data-read="false" data-id="6">
+        <div class="flex items-start gap-4">
+          <div class="notification-type-icon type-rfq">
+            <i class="fas fa-clipboard-list"></i>
+          </div>
+          <div class="flex-1">
+            <div class="flex items-start justify-between mb-2">
+              <div>
+                <h3 class="font-semibold text-gray-900 mb-1">RFQ Deadline Approaching: Chemical Processing Equipment</h3>
+                <p class="text-sm text-gray-600 mb-2">The RFQ for Chemical Processing Equipment from PharmaCorp expires in 24 hours. Don't miss this opportunity with an estimated value of ₹8.5 lakhs.</p>
+                <div class="flex items-center gap-4 text-xs text-gray-500">
+                  <span><i class="fas fa-calendar mr-1"></i>8 hours ago</span>
+                  <span><i class="fas fa-building mr-1"></i>PharmaCorp</span>
+                  <span><i class="fas fa-rupee-sign mr-1"></i>₹8.5L</span>
+                </div>
+              </div>
+              <div class="notification-actions flex gap-2">
+                <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="markAsRead(6)">
+                  <i class="fas fa-check text-green-600"></i>
+                </button>
+                <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="archiveNotification(6)">
+                  <i class="fas fa-archive text-blue-600"></i>
+                </button>
+                <button class="p-2 rounded-lg hover:bg-red-100 transition-colors" onclick="deleteNotification(6)">
+                  <i class="fas fa-trash text-red-600"></i>
+                </button>
+              </div>
+            </div>
+            <div class="flex gap-2 mt-3">
+              <button class="px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 transition-colors">
+                <i class="fas fa-clock mr-1"></i>Submit Quote Now
+              </button>
+              <button class="px-4 py-2 border border-red-600 text-red-600 rounded-lg text-sm hover:bg-red-50 transition-colors">
+                View RFQ Details
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="notification-card read p-6 rounded-2xl shadow-lg" data-type="order" data-read="true" data-id="7">
+        <div class="flex items-start gap-4">
+          <div class="notification-type-icon type-order">
+            <i class="fas fa-shopping-cart"></i>
+          </div>
+          <div class="flex-1">
+            <div class="flex items-start justify-between mb-2">
+              <div>
+                <h3 class="font-semibold text-gray-900 mb-1">Order Shipped: #ORD-2025-002</h3>
+                <p class="text-sm text-gray-600 mb-2">Your order #ORD-2025-002 has been shipped successfully. Tracking number: TN2025001234. Expected delivery: September 10, 2025.</p>
+                <div class="flex items-center gap-4 text-xs text-gray-500">
+                  <span><i class="fas fa-calendar mr-1"></i>3 days ago</span>
+                  <span><i class="fas fa-building mr-1"></i>Global Manufacturing</span>
+                  <span><i class="fas fa-truck mr-1"></i>TN2025001234</span>
+                </div>
+              </div>
+              <div class="notification-actions flex gap-2">
+                <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="archiveNotification(7)">
+                  <i class="fas fa-archive text-blue-600"></i>
+                </button>
+                <button class="p-2 rounded-lg hover:bg-red-100 transition-colors" onclick="deleteNotification(7)">
+                  <i class="fas fa-trash text-red-600"></i>
+                </button>
+              </div>
+            </div>
+            <div class="flex gap-2 mt-3">
+              <button class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors">
+                Track Shipment
+              </button>
+              <button class="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg text-sm hover:bg-blue-50 transition-colors">
+                View Order
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="notification-card unread p-6 rounded-2xl shadow-lg" data-type="compliance" data-read="false" data-id="8">
+        <div class="flex items-start gap-4">
+          <div class="notification-type-icon type-compliance">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <div class="flex-1">
+            <div class="flex items-start justify-between mb-2">
+              <div>
+                <h3 class="font-semibold text-gray-900 mb-1">Compliance Document Required</h3>
+                <p class="text-sm text-gray-600 mb-2">Please upload your updated ISO 9001:2015 certification. The current certificate expires on October 15, 2025. Ensure compliance requirements are met.</p>
+                <div class="flex items-center gap-4 text-xs text-gray-500">
+                  <span><i class="fas fa-calendar mr-1"></i>12 hours ago</span>
+                  <span><i class="fas fa-shield-alt mr-1"></i>Compliance Team</span>
+                </div>
+              </div>
+              <div class="notification-actions flex gap-2">
+                <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="markAsRead(8)">
+                  <i class="fas fa-check text-green-600"></i>
+                </button>
+                <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="archiveNotification(8)">
+                  <i class="fas fa-archive text-blue-600"></i>
+                </button>
+                <button class="p-2 rounded-lg hover:bg-red-100 transition-colors" onclick="deleteNotification(8)">
+                  <i class="fas fa-trash text-red-600"></i>
+                </button>
+              </div>
+            </div>
+            <div class="flex gap-2 mt-3">
+              <button class="px-4 py-2 bg-cyan-600 text-white rounded-lg text-sm hover:bg-cyan-700 transition-colors">
+                Upload Document
+              </button>
+              <button class="px-4 py-2 border border-cyan-600 text-cyan-600 rounded-lg text-sm hover:bg-cyan-50 transition-colors">
+                View Requirements
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Load More Button -->
+    <div class="text-center mt-8">
+      <button class="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+        <i class="fas fa-plus mr-2"></i>Load More Notifications
+      </button>
+    </div>
+  </main>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-xl font-semibold text-gray-900">Notification Settings</h3>
+          <button onclick="closeSettingsModal()" class="p-2 rounded-lg hover:bg-gray-100">
+            <i class="fas fa-times text-gray-600"></i>
+          </button>
+        </div>
+
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="font-medium text-gray-900">Email Notifications</p>
+              <p class="text-sm text-gray-600">Receive notifications via email</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" class="sr-only peer" checked>
+              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+            </label>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="font-medium text-gray-900">Push Notifications</p>
+              <p class="text-sm text-gray-600">Browser push notifications</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" class="sr-only peer" checked>
+              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+            </label>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="font-medium text-gray-900">RFQ Alerts</p>
+              <p class="text-sm text-gray-600">New RFQ notifications</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" class="sr-only peer" checked>
+              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+            </label>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="font-medium text-gray-900">Order Updates</p>
+              <p class="text-sm text-gray-600">Order status changes</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" class="sr-only peer" checked>
+              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+            </label>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="font-medium text-gray-900">Payment Reminders</p>
+              <p class="text-sm text-gray-600">Payment due notifications</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" class="sr-only peer" checked>
+              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+            </label>
+          </div>
+        </div>
+
+        <div class="mt-6 flex gap-3">
+          <button class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors">
+            Cancel
+          </button>
+          <button class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+            Save Settings
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Notification data and state management
+    let notifications = [
+      { id: 1, type: 'rfq', read: false, title: 'New RFQ Available: Industrial Equipment Procurement', content: 'TechCorp Industries has posted a new RFQ for industrial equipment including CNC machines, conveyor systems, and automation tools. The total estimated value is ₹45 lakhs.', time: '2 hours ago', company: 'TechCorp Industries', value: '₹4.5L' },
+      { id: 2, type: 'order', read: false, title: 'Order Confirmation: #ORD-2025-001', content: 'Your quotation for Office Equipment Package has been accepted by Manufacturing Plus. Order value: ₹2.8 lakhs. Expected delivery: September 15, 2025.', time: '4 hours ago', company: 'Manufacturing Plus', value: '₹2.8L' },
+      { id: 3, type: 'payment', read: false, title: 'Payment Reminder: Invoice #INV-2025-089', content: 'Payment of ₹1.2 lakhs for Invoice #INV-2025-089 is due in 3 days. Please ensure timely payment to maintain good standing with ElectroTech Solutions.', time: '6 hours ago', company: 'ElectroTech Solutions', value: '₹1.2L' },
+      { id: 4, type: 'system', read: true, title: 'System Maintenance Scheduled', content: 'OMVERRO platform will undergo scheduled maintenance on September 5, 2025 from 2:00 AM to 4:00 AM IST. Some services may be temporarily unavailable during this period.', time: '1 day ago', company: 'System Update' },
+      { id: 5, type: 'support', read: true, title: 'Support Ticket Resolved: #SUP-2025-445', content: 'Your support ticket regarding ASN creation issues has been resolved. The technical team has implemented the necessary fixes and your ASN functionality should now work properly.', time: '2 days ago', company: 'Support Team' },
+      { id: 6, type: 'rfq', read: false, title: 'RFQ Deadline Approaching: Chemical Processing Equipment', content: 'The RFQ for Chemical Processing Equipment from PharmaCorp expires in 24 hours. Don\'t miss this opportunity with an estimated value of ₹8.5 lakhs.', time: '8 hours ago', company: 'PharmaCorp', value: '₹8.5L' },
+      { id: 7, type: 'order', read: true, title: 'Order Shipped: #ORD-2025-002', content: 'Your order #ORD-2025-002 has been shipped successfully. Tracking number: TN2025001234. Expected delivery: September 10, 2025.', time: '3 days ago', company: 'Global Manufacturing', tracking: 'TN2025001234' },
+      { id: 8, type: 'compliance', read: false, title: 'Compliance Document Required', content: 'Please upload your updated ISO 9001:2015 certification. The current certificate expires on October 15, 2025. Ensure compliance requirements are met.', time: '12 hours ago', company: 'Compliance Team' }
+    ];
+
+    let currentFilter = 'all';
+    let selectedNotifications = new Set();
+
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', function() {
+      updateStats();
+      setupEventListeners();
+      renderNotifications();
+    });
+
+    // Setup event listeners
+    function setupEventListeners() {
+      // Filter buttons
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          currentFilter = this.dataset.filter;
+          filterNotifications();
+        });
+      });
+
+      // Search functionality
+      document.getElementById('searchInput').addEventListener('input', function() {
+        searchNotifications(this.value);
+      });
+
+      // Bulk actions
+      document.getElementById('markAllReadBtn').addEventListener('click', markAllAsRead);
+      document.getElementById('archiveSelectedBtn').addEventListener('click', archiveSelected);
+      document.getElementById('deleteSelectedBtn').addEventListener('click', deleteSelected);
+
+      // Settings modal
+      document.getElementById('settingsBtn').addEventListener('click', openSettingsModal);
+    }
+
+    // Update statistics
+    function updateStats() {
+      const total = notifications.length;
+      const unread = notifications.filter(n => !n.read).length;
+      const today = notifications.filter(n => n.time.includes('hour')).length;
+      const read = total - unread;
+
+      document.getElementById('totalNotifications').textContent = total;
+      document.getElementById('unreadCount').textContent = unread;
+      document.getElementById('todayCount').textContent = today;
+      document.getElementById('readCount').textContent = read;
+    }
+
+    // Render notifications
+    function renderNotifications() {
+      const container = document.getElementById('notificationsContainer');
+      container.innerHTML = '';
+
+      notifications.forEach(notification => {
+        const card = createNotificationCard(notification);
+        container.appendChild(card);
+      });
+    }
+
+    // Create notification card
+    function createNotificationCard(notification) {
+      const card = document.createElement('div');
+      card.className = `notification-card ${notification.read ? 'read' : 'unread'} p-6 rounded-2xl shadow-lg`;
+      card.dataset.type = notification.type;
+      card.dataset.read = notification.read;
+      card.dataset.id = notification.id;
+
+      const typeIcon = getTypeIcon(notification.type);
+      const actions = notification.read ? getReadActions(notification.id) : getUnreadActions(notification.id);
+
+      card.innerHTML = `
+        <div class="flex items-start gap-4">
+          <div class="notification-type-icon type-${notification.type}">
+            <i class="${typeIcon}"></i>
+          </div>
+          <div class="flex-1">
+            <div class="flex items-start justify-between mb-2">
+              <div>
+                <h3 class="font-semibold text-gray-900 mb-1">${notification.title}</h3>
+                <p class="text-sm text-gray-600 mb-2">${notification.content}</p>
+                <div class="flex items-center gap-4 text-xs text-gray-500">
+                  <span><i class="fas fa-calendar mr-1"></i>${notification.time}</span>
+                  <span><i class="fas fa-building mr-1"></i>${notification.company}</span>
+                  ${notification.value ? `<span><i class="fas fa-rupee-sign mr-1"></i>${notification.value}</span>` : ''}
+                  ${notification.tracking ? `<span><i class="fas fa-truck mr-1"></i>${notification.tracking}</span>` : ''}
+                </div>
+              </div>
+              <div class="notification-actions flex gap-2">
+                ${actions}
+              </div>
+            </div>
+            ${getActionButtons(notification)}
+          </div>
+        </div>
+      `;
+
+      return card;
+    }
+
+    // Get type icon
+    function getTypeIcon(type) {
+      const icons = {
+        rfq: 'fas fa-clipboard-list',
+        order: 'fas fa-shopping-cart',
+        payment: 'fas fa-credit-card',
+        system: 'fas fa-cog',
+        support: 'fas fa-headset',
+        compliance: 'fas fa-shield-alt'
+      };
+      return icons[type] || 'fas fa-bell';
+    }
+
+    // Get action buttons for read notifications
+    function getReadActions(id) {
+      return `
+        <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="archiveNotification(${id})">
+          <i class="fas fa-archive text-blue-600"></i>
+        </button>
+        <button class="p-2 rounded-lg hover:bg-red-100 transition-colors" onclick="deleteNotification(${id})">
+          <i class="fas fa-trash text-red-600"></i>
+        </button>
+      `;
+    }
+
+    // Get action buttons for unread notifications
+    function getUnreadActions(id) {
+      return `
+        <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="markAsRead(${id})">
+          <i class="fas fa-check text-green-600"></i>
+        </button>
+        <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="archiveNotification(${id})">
+          <i class="fas fa-archive text-blue-600"></i>
+        </button>
+        <button class="p-2 rounded-lg hover:bg-red-100 transition-colors" onclick="deleteNotification(${id})">
+          <i class="fas fa-trash text-red-600"></i>
+        </button>
+      `;
+    }
+
+    // Get action buttons based on notification type
+    function getActionButtons(notification) {
+      const buttons = {
+        rfq: `
+          <div class="flex gap-2 mt-3">
+            <button class="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 transition-colors" onclick="viewRFQ(${notification.id})">
+              View RFQ Details
+            </button>
+            <button class="px-4 py-2 border border-purple-600 text-purple-600 rounded-lg text-sm hover:bg-purple-50 transition-colors" onclick="submitQuote(${notification.id})">
+              Submit Quote
+            </button>
+          </div>
+        `,
+        order: `
+          <div class="flex gap-2 mt-3">
+            <button class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition-colors" onclick="viewOrder(${notification.id})">
+              View Order Details
+            </button>
+            <button class="px-4 py-2 border border-green-600 text-green-600 rounded-lg text-sm hover:bg-green-50 transition-colors" onclick="createASN(${notification.id})">
+              Create ASN
+            </button>
+          </div>
+        `,
+        payment: `
+          <div class="flex gap-2 mt-3">
+            <button class="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm hover:bg-orange-700 transition-colors" onclick="viewInvoice(${notification.id})">
+              View Invoice
+            </button>
+            <button class="px-4 py-2 border border-orange-600 text-orange-600 rounded-lg text-sm hover:bg-orange-50 transition-colors" onclick="makePayment(${notification.id})">
+              Make Payment
+            </button>
+          </div>
+        `,
+        system: '',
+        support: '',
+        compliance: `
+          <div class="flex gap-2 mt-3">
+            <button class="px-4 py-2 bg-cyan-600 text-white rounded-lg text-sm hover:bg-cyan-700 transition-colors" onclick="uploadDocument(${notification.id})">
+              Upload Document
+            </button>
+            <button class="px-4 py-2 border border-cyan-600 text-cyan-600 rounded-lg text-sm hover:bg-cyan-50 transition-colors" onclick="viewRequirements(${notification.id})">
+              View Requirements
+            </button>
+          </div>
+        `
+      };
+      return buttons[notification.type] || '';
+    }
+
+    // Filter notifications
+    function filterNotifications() {
+      const cards = document.querySelectorAll('.notification-card');
+
+      cards.forEach(card => {
+        const type = card.dataset.type;
+        const read = card.dataset.read === 'true';
+
+        let show = false;
+
+        switch(currentFilter) {
+          case 'all':
+            show = true;
+            break;
+          case 'unread':
+            show = !read;
+            break;
+          default:
+            show = type === currentFilter;
+        }
+
+        card.style.display = show ? 'block' : 'none';
+      });
+    }
+
+    // Search notifications
+    function searchNotifications(query) {
+      const cards = document.querySelectorAll('.notification-card');
+      const searchTerm = query.toLowerCase();
+
+      cards.forEach(card => {
+        const title = card.querySelector('h3').textContent.toLowerCase();
+        const content = card.querySelector('p').textContent.toLowerCase();
+        const company = card.querySelector('.fa-building').parentElement.textContent.toLowerCase();
+
+        const matches = title.includes(searchTerm) || content.includes(searchTerm) || company.includes(searchTerm);
+        card.style.display = matches ? 'block' : 'none';
+      });
+    }
+
+    // Mark notification as read
+    function markAsRead(id) {
+      const notification = notifications.find(n => n.id === id);
+      if (notification) {
+        notification.read = true;
+        updateStats();
+        renderNotifications();
+        showToast('Notification marked as read', 'success');
+      }
+    }
+
+    // Mark all as read
+    function markAllAsRead() {
+      notifications.forEach(n => n.read = true);
+      updateStats();
+      renderNotifications();
+      showToast('All notifications marked as read', 'success');
+    }
+
+    // Archive notification
+    function archiveNotification(id) {
+      const index = notifications.findIndex(n => n.id === id);
+      if (index > -1) {
+        notifications.splice(index, 1);
+        updateStats();
+        renderNotifications();
+        showToast('Notification archived', 'info');
+      }
+    }
+
+    // Delete notification
+    function deleteNotification(id) {
+      const index = notifications.findIndex(n => n.id === id);
+      if (index > -1) {
+        notifications.splice(index, 1);
+        updateStats();
+        renderNotifications();
+        showToast('Notification deleted', 'error');
+      }
+    }
+
+    // Bulk actions
+    function archiveSelected() {
+      if (selectedNotifications.size === 0) {
+        showToast('No notifications selected', 'warning');
+        return;
+      }
+
+      selectedNotifications.forEach(id => archiveNotification(id));
+      selectedNotifications.clear();
+      showToast(`${selectedNotifications.size} notifications archived`, 'info');
+    }
+
+    function deleteSelected() {
+      if (selectedNotifications.size === 0) {
+        showToast('No notifications selected', 'warning');
+        return;
+      }
+
+      selectedNotifications.forEach(id => deleteNotification(id));
+      selectedNotifications.clear();
+      showToast(`${selectedNotifications.size} notifications deleted`, 'error');
+    }
+
+    // Action button handlers
+    function viewRFQ(id) { showToast('Opening RFQ details...', 'info'); }
+    function submitQuote(id) { showToast('Opening quote submission form...', 'info'); }
+    function viewOrder(id) { showToast('Opening order details...', 'info'); }
+    function createASN(id) { showToast('Opening ASN creation form...', 'info'); }
+    function viewInvoice(id) { showToast('Opening invoice details...', 'info'); }
+    function makePayment(id) { showToast('Opening payment gateway...', 'info'); }
+    function uploadDocument(id) { showToast('Opening document upload...', 'info'); }
+    function viewRequirements(id) { showToast('Opening requirements...', 'info'); }
+
+    // Settings modal
+    function openSettingsModal() {
+      document.getElementById('settingsModal').classList.remove('hidden');
+    }
+
+    function closeSettingsModal() {
+      document.getElementById('settingsModal').classList.add('hidden');
+    }
+
+    // Toast notification system
+    function showToast(message, type = 'info') {
+      const existingToasts = document.querySelectorAll('.toast-notification');
+      existingToasts.forEach(toast => toast.remove());
+
+      const toast = document.createElement('div');
+      const bgColor = type === 'success' ? 'bg-green-500' :
+                     type === 'error' ? 'bg-red-500' :
+                     type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500';
+
+      const iconClass = type === 'success' ? 'check-circle' :
+                       type === 'error' ? 'times-circle' :
+                       type === 'warning' ? 'exclamation-triangle' : 'info-circle';
+
+      toast.className = `toast-notification fixed top-4 right-4 ${bgColor} text-white px-6 py-4 rounded-xl shadow-2xl z-50 transform translate-x-full transition-all duration-300 max-w-sm`;
+      toast.innerHTML = `
+        <div class="flex items-center gap-3">
+          <i class="fas fa-${iconClass} text-lg flex-shrink-0"></i>
+          <div class="flex-1">
+            <p class="font-medium text-sm leading-tight">${message}</p>
+          </div>
+          <button class="toast-close ml-2 text-white/70 hover:text-white transition-colors" onclick="this.parentElement.parentElement.remove()">
+            <i class="fas fa-times text-sm"></i>
+          </button>
+        </div>
+        <div class="w-full bg-white/20 h-1 mt-3 rounded-full overflow-hidden">
+          <div class="h-full bg-white/60 rounded-full animate-pulse"></div>
+        </div>
+      `;
+
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.transform = 'translateX(0) scale(1)';
+        toast.style.opacity = '1';
+      }, 100);
+
+      setTimeout(() => {
+        toast.style.transform = 'translateX(100%) scale(0.95)';
+        toast.style.opacity = '0';
+        setTimeout(() => {
+          if (toast.parentElement) {
+            toast.remove();
+          }
+        }, 300);
+      }, 4000);
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeSettingsModal();
+      }
+      if (e.ctrlKey && e.key === 'k') {
+        e.preventDefault();
+        document.getElementById('searchInput').focus();
+      }
+    });
+  </script>
+</body>
+</html>

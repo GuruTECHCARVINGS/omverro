@@ -1,12 +1,41 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const cors = require('cors');
+const mongoose = require('mongoose');
 require('dotenv').config();
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Import routes
+const prRoutes = require('./routes/prRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
+
+// Middleware
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json({ limit: '50mb' })); // Increased limit for file uploads
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// MongoDB Connection
+const connectDB = async () => {
+  try {
+    const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/vendor_portal';
+    await mongoose.connect(mongoURI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log('MongoDB connected successfully');
+  } catch (error) {
+    console.error('MongoDB connection error:', error);
+    process.exit(1);
+  }
+};
+
+// Connect to MongoDB
+connectDB();
+
+// Routes
+app.use('/api/prs', prRoutes);
+app.use('/api', dashboardRoutes);
 
 // Dummy users with roles (buyer or vendor)
 const users = [
@@ -35,6 +64,34 @@ app.post('/login', (req, res) => {
   }
 });
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    mongodb: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'
+  });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(500).json({
+    success: false,
+    message: 'Internal server error',
+    error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+  });
+});
+
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: 'Route not found'
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`MongoDB URI: ${process.env.MONGODB_URI || 'mongodb://localhost:27017/vendor_portal'}`);
 });

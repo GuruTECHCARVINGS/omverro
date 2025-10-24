@@ -119,129 +119,168 @@
     </div>
 
     <!-- Key Metrics -->
-    <section class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+    <section class="grid grid-cols-2 md:grid-cols-5 gap-6 mb-8">
       <div class="metric-card p-6 reveal">
         <div class="flex items-center justify-between mb-4">
-          <div class="text-sm text-gray-500">Avg PR TAT</div>
-          <i class="fas fa-clock text-blue-500 text-xl"></i>
+          <div class="text-sm text-gray-500">Total Spend (YTD)</div>
+          <i class="fas fa-rupee-sign text-blue-500 text-xl"></i>
         </div>
-        <div class="text-2xl font-bold text-blue-700">4.2 days</div>
-        <div class="text-xs text-green-600 mt-1">↓ 12% from last month</div>
+        <div class="text-2xl font-bold text-blue-700">₹43.2M</div>
+        <div class="text-xs text-green-600 mt-1">↑ 12% vs last year</div>
       </div>
       <div class="metric-card p-6 reveal">
         <div class="flex items-center justify-between mb-4">
-          <div class="text-sm text-gray-500">Total Savings</div>
-          <i class="fas fa-rupee-sign text-green-500 text-xl"></i>
+          <div class="text-sm text-gray-500">Cost Savings</div>
+          <i class="fas fa-piggy-bank text-green-500 text-xl"></i>
         </div>
-        <div class="text-2xl font-bold text-green-700">₹2.4M</div>
-        <div class="text-xs text-green-600 mt-1">↑ 8% from last month</div>
+        <div class="text-2xl font-bold text-green-700">₹3.8M</div>
+        <div class="text-xs text-green-600 mt-1">8.8% savings rate</div>
       </div>
       <div class="metric-card p-6 reveal">
         <div class="flex items-center justify-between mb-4">
-          <div class="text-sm text-gray-500">Vendor Performance</div>
-          <i class="fas fa-star text-yellow-500 text-xl"></i>
+          <div class="text-sm text-gray-500">Active Suppliers</div>
+          <i class="fas fa-truck text-purple-500 text-xl"></i>
         </div>
-        <div class="text-2xl font-bold text-yellow-700">4.6/5</div>
-        <div class="text-xs text-green-600 mt-1">↑ 0.2 from last month</div>
+        <div class="text-2xl font-bold text-purple-700">127</div>
+        <div class="text-xs text-blue-600 mt-1">95% on-time delivery</div>
       </div>
       <div class="metric-card p-6 reveal">
         <div class="flex items-center justify-between mb-4">
-          <div class="text-sm text-gray-500">Budget Utilization</div>
-          <i class="fas fa-chart-pie text-purple-500 text-xl"></i>
+          <div class="text-sm text-gray-500">PO Cycle Time</div>
+          <i class="fas fa-clock text-orange-500 text-xl"></i>
         </div>
-        <div class="text-2xl font-bold text-purple-700">78%</div>
-        <div class="text-xs text-orange-600 mt-1">+5% from last month</div>
+        <div class="text-2xl font-bold text-orange-700">3.2 days</div>
+        <div class="text-xs text-green-600 mt-1">↓ 18% improvement</div>
+      </div>
+      <div class="metric-card p-6 reveal">
+        <div class="flex items-center justify-between mb-4">
+          <div class="text-sm text-gray-500">Compliance Score</div>
+          <i class="fas fa-shield-alt text-indigo-500 text-xl"></i>
+        </div>
+        <div class="text-2xl font-bold text-indigo-700">96%</div>
+        <div class="text-xs text-green-600 mt-1">Excellent rating</div>
       </div>
     </section>
 
     <!-- Report Categories -->
-    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <div class="report-card p-6 reveal" onclick="showReport('tat')">
+    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <!-- Spend Analysis Report -->
+      <div class="report-card p-6 reveal" onclick="showReport('spend')">
         <div class="flex items-center gap-4 mb-4">
           <div class="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
-            <i class="fas fa-clock text-blue-600 text-xl"></i>
+            <i class="fas fa-chart-line text-blue-600 text-xl"></i>
           </div>
           <div>
-            <h3 class="text-lg font-semibold text-gray-800">TAT Reports</h3>
-            <p class="text-sm text-gray-600">Turn Around Time Analysis</p>
+            <h3 class="text-lg font-semibold text-gray-800">Spend Analysis</h3>
+            <p class="text-sm text-gray-600">Category & Supplier Spending</p>
           </div>
         </div>
         <div class="space-y-2">
           <div class="flex justify-between text-sm">
-            <span>PR Processing</span>
-            <span class="font-semibold">4.2 days</span>
+            <span>Total YTD Spend</span>
+            <span class="font-semibold">₹43.2M</span>
           </div>
           <div class="flex justify-between text-sm">
-            <span>PO Approval</span>
-            <span class="font-semibold">2.8 days</span>
+            <span>Top Category</span>
+            <span class="font-semibold">IT Hardware</span>
           </div>
           <div class="flex justify-between text-sm">
-            <span>Invoice Processing</span>
-            <span class="font-semibold">3.1 days</span>
+            <span>Growth Rate</span>
+            <span class="font-semibold text-green-600">+12%</span>
           </div>
         </div>
       </div>
 
-      <div class="report-card p-6 reveal" onclick="showReport('procurement')">
+      <!-- Supplier Performance Report -->
+      <div class="report-card p-6 reveal" onclick="showReport('supplier')">
         <div class="flex items-center gap-4 mb-4">
           <div class="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center">
-            <i class="fas fa-shopping-cart text-green-600 text-xl"></i>
+            <i class="fas fa-truck text-green-600 text-xl"></i>
           </div>
           <div>
-            <h3 class="text-lg font-semibold text-gray-800">Procurement Performance</h3>
-            <p class="text-sm text-gray-600">Efficiency & Cost Analysis</p>
+            <h3 class="text-lg font-semibold text-gray-800">Supplier Performance</h3>
+            <p class="text-sm text-gray-600">Delivery & Quality Metrics</p>
           </div>
         </div>
         <div class="space-y-2">
-          <div class="flex justify-between text-sm">
-            <span>Total PRs</span>
-            <span class="font-semibold">156</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span>Approved POs</span>
-            <span class="font-semibold">142</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span>Success Rate</span>
-            <span class="font-semibold text-green-600">91%</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="report-card p-6 reveal" onclick="showReport('vendor')">
-        <div class="flex items-center gap-4 mb-4">
-          <div class="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center">
-            <i class="fas fa-truck text-purple-600 text-xl"></i>
-          </div>
-          <div>
-            <h3 class="text-lg font-semibold text-gray-800">Vendor Performance</h3>
-            <p class="text-sm text-gray-600">Supplier Analytics</p>
-          </div>
-        </div>
-        <div class="space-y-2">
-          <div class="flex justify-between text-sm">
-            <span>Active Vendors</span>
-            <span class="font-semibold">48</span>
-          </div>
           <div class="flex justify-between text-sm">
             <span>On-Time Delivery</span>
-            <span class="font-semibold text-green-600">94%</span>
+            <span class="font-semibold text-green-600">95%</span>
           </div>
           <div class="flex justify-between text-sm">
             <span>Quality Score</span>
             <span class="font-semibold">4.6/5</span>
           </div>
+          <div class="flex justify-between text-sm">
+            <span>Active Suppliers</span>
+            <span class="font-semibold">127</span>
+          </div>
         </div>
       </div>
 
+      <!-- Purchase Order Analytics -->
+      <div class="report-card p-6 reveal" onclick="showReport('po')">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center">
+            <i class="fas fa-file-invoice text-purple-600 text-xl"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold text-gray-800">PO Analytics</h3>
+            <p class="text-sm text-gray-600">Purchase Order Insights</p>
+          </div>
+        </div>
+        <div class="space-y-2">
+          <div class="flex justify-between text-sm">
+            <span>Total POs</span>
+            <span class="font-semibold">1,247</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span>Average Cycle Time</span>
+            <span class="font-semibold">3.2 days</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span>Success Rate</span>
+            <span class="font-semibold text-green-600">97%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cost Savings Report -->
+      <div class="report-card p-6 reveal" onclick="showReport('savings')">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="w-12 h-12 rounded-lg bg-teal-100 flex items-center justify-center">
+            <i class="fas fa-piggy-bank text-teal-600 text-xl"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold text-gray-800">Cost Savings</h3>
+            <p class="text-sm text-gray-600">Negotiation & Optimization</p>
+          </div>
+        </div>
+        <div class="space-y-2">
+          <div class="flex justify-between text-sm">
+            <span>Total Savings</span>
+            <span class="font-semibold">₹3.8M</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span>Savings Rate</span>
+            <span class="font-semibold text-green-600">8.8%</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span>Best Method</span>
+            <span class="font-semibold">Negotiation</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Budget vs Actual -->
       <div class="report-card p-6 reveal" onclick="showReport('budget')">
         <div class="flex items-center gap-4 mb-4">
           <div class="w-12 h-12 rounded-lg bg-orange-100 flex items-center justify-center">
             <i class="fas fa-wallet text-orange-600 text-xl"></i>
           </div>
           <div>
-            <h3 class="text-lg font-semibold text-gray-800">Budget vs Actual</h3>
-            <p class="text-sm text-gray-600">Spend Analysis</p>
+            <h3 class="text-lg font-semibold text-gray-800">Budget Analysis</h3>
+            <p class="text-sm text-gray-600">Budget vs Actual Spend</p>
           </div>
         </div>
         <div class="space-y-2">
@@ -251,323 +290,38 @@
           </div>
           <div class="flex justify-between text-sm">
             <span>Actual Spend</span>
-            <span class="font-semibold">₹39M</span>
+            <span class="font-semibold">₹43.2M</span>
           </div>
           <div class="flex justify-between text-sm">
-            <span>Variance</span>
-            <span class="font-semibold text-green-600">-22%</span>
+            <span>Utilization</span>
+            <span class="font-semibold text-green-600">86.4%</span>
           </div>
         </div>
       </div>
 
-      <div class="report-card p-6 reveal" onclick="showReport('savings')">
-        <div class="flex items-center gap-4 mb-4">
-          <div class="w-12 h-12 rounded-lg bg-teal-100 flex items-center justify-center">
-            <i class="fas fa-piggy-bank text-teal-600 text-xl"></i>
-          </div>
-          <div>
-            <h3 class="text-lg font-semibold text-gray-800">Savings Analysis</h3>
-            <p class="text-sm text-gray-600">Cost Reduction Insights</p>
-          </div>
-        </div>
-        <div class="space-y-2">
-          <div class="flex justify-between text-sm">
-            <span>Total Savings</span>
-            <span class="font-semibold">₹2.4M</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span>Through Negotiation</span>
-            <span class="font-semibold">₹1.8M</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span>Through Auctions</span>
-            <span class="font-semibold">₹0.6M</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="report-card p-6 reveal" onclick="showReport('category')">
-        <div class="flex items-center gap-4 mb-4">
-          <div class="w-12 h-12 rounded-lg bg-indigo-100 flex items-center justify-center">
-            <i class="fas fa-tags text-indigo-600 text-xl"></i>
-          </div>
-          <div>
-            <h3 class="text-lg font-semibold text-gray-800">Category Analysis</h3>
-            <p class="text-sm text-gray-600">Spend by Category</p>
-          </div>
-        </div>
-        <div class="space-y-2">
-          <div class="flex justify-between text-sm">
-            <span>IT Hardware</span>
-            <span class="font-semibold">₹12M</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span>Software</span>
-            <span class="font-semibold">₹8M</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span>Services</span>
-            <span class="font-semibold">₹6M</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="report-card p-6 reveal" onclick="showReport('risk')">
-        <div class="flex items-center gap-4 mb-4">
-          <div class="w-12 h-12 rounded-lg bg-red-100 flex items-center justify-center">
-            <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
-          </div>
-          <div>
-            <h3 class="text-lg font-semibold text-gray-800">Risk Analysis</h3>
-            <p class="text-sm text-gray-600">Procurement Risk Assessment</p>
-          </div>
-        </div>
-        <div class="space-y-2">
-          <div class="flex justify-between text-sm">
-            <span>High Risk Vendors</span>
-            <span class="font-semibold text-red-600">3</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span>Delayed Deliveries</span>
-            <span class="font-semibold">8</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span>Compliance Issues</span>
-            <span class="font-semibold text-orange-600">2</span>
-          </div>
-        </div>
-      </div>
-
+      <!-- Compliance & Risk -->
       <div class="report-card p-6 reveal" onclick="showReport('compliance')">
         <div class="flex items-center gap-4 mb-4">
-          <div class="w-12 h-12 rounded-lg bg-cyan-100 flex items-center justify-center">
-            <i class="fas fa-shield-alt text-cyan-600 text-xl"></i>
+          <div class="w-12 h-12 rounded-lg bg-red-100 flex items-center justify-center">
+            <i class="fas fa-shield-alt text-red-600 text-xl"></i>
           </div>
           <div>
-            <h3 class="text-lg font-semibold text-gray-800">Compliance Reports</h3>
-            <p class="text-sm text-gray-600">Regulatory Compliance</p>
+            <h3 class="text-lg font-semibold text-gray-800">Compliance & Risk</h3>
+            <p class="text-sm text-gray-600">Regulatory & Policy Compliance</p>
           </div>
         </div>
         <div class="space-y-2">
           <div class="flex justify-between text-sm">
-            <span>GST Compliance</span>
-            <span class="font-semibold text-green-600">98%</span>
+            <span>Compliance Score</span>
+            <span class="font-semibold text-green-600">96%</span>
           </div>
           <div class="flex justify-between text-sm">
-            <span>Contract Compliance</span>
-            <span class="font-semibold text-green-600">95%</span>
+            <span>Risk Issues</span>
+            <span class="font-semibold text-orange-600">3</span>
           </div>
           <div class="flex justify-between text-sm">
-            <span>Policy Adherence</span>
-            <span class="font-semibold text-yellow-600">87%</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="report-card p-6 reveal" onclick="showReport('payment')">
-        <div class="flex items-center gap-4 mb-4">
-          <div class="w-12 h-12 rounded-lg bg-emerald-100 flex items-center justify-center">
-            <i class="fas fa-credit-card text-emerald-600 text-xl"></i>
-          </div>
-          <div>
-            <h3 class="text-lg font-semibold text-gray-800">Payment Terms</h3>
-            <p class="text-sm text-gray-600">Payment Analysis</p>
-          </div>
-        </div>
-        <div class="space-y-2">
-          <div class="flex justify-between text-sm">
-            <span>Avg Payment Terms</span>
-            <span class="font-semibold">45 days</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span>Early Payments</span>
-            <span class="font-semibold text-green-600">23</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span>Discounts Availed</span>
-            <span class="font-semibold">₹180K</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="report-card p-6 reveal" onclick="showReport('diversity')">
-        <div class="flex items-center gap-4 mb-4">
-          <div class="w-12 h-12 rounded-lg bg-pink-100 flex items-center justify-center">
-            <i class="fas fa-users text-pink-600 text-xl"></i>
-          </div>
-          <div>
-            <h3 class="text-lg font-semibold text-gray-800">Supplier Diversity</h3>
-            <p class="text-sm text-gray-600">Diversity & Inclusion</p>
-          </div>
-        </div>
-        <div class="space-y-2">
-          <div class="flex justify-between text-sm">
-            <span>MSMEs</span>
-            <span class="font-semibold">35%</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span>Women-owned</span>
-            <span class="font-semibold">18%</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span>Minority-owned</span>
-            <span class="font-semibold">12%</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="report-card p-6 reveal" onclick="showReport('costcenter')">
-        <div class="flex items-center gap-4 mb-4">
-          <div class="w-12 h-12 rounded-lg bg-amber-100 flex items-center justify-center">
-            <i class="fas fa-building text-amber-600 text-xl"></i>
-          </div>
-          <div>
-            <h3 class="text-lg font-semibold text-gray-800">Cost Center Analysis</h3>
-            <p class="text-sm text-gray-600">Department-wise Spend</p>
-          </div>
-        </div>
-        <div class="space-y-2">
-          <div class="flex justify-between text-sm">
-            <span>IT Department</span>
-            <span class="font-semibold">₹15M</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span>Marketing</span>
-            <span class="font-semibold">₹8M</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span>Operations</span>
-            <span class="font-semibold">₹12M</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="report-card p-6 reveal" onclick="showReport('approval')">
-        <div class="flex items-center gap-4 mb-4">
-          <div class="w-12 h-12 rounded-lg bg-violet-100 flex items-center justify-center">
-            <i class="fas fa-check-circle text-violet-600 text-xl"></i>
-          </div>
-          <div>
-            <h3 class="text-lg font-semibold text-gray-800">Approval Workflow</h3>
-            <p class="text-sm text-gray-600">Approval Process Analysis</p>
-          </div>
-        </div>
-        <div class="space-y-2">
-          <div class="flex justify-between text-sm">
-            <span>Avg Approval Time</span>
-            <span class="font-semibold">2.3 days</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span>Auto-approved</span>
-            <span class="font-semibold text-green-600">68%</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span>Escalations</span>
-            <span class="font-semibold text-orange-600">5</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="report-card p-6 reveal" onclick="showReport('contract')">
-        <div class="flex items-center gap-4 mb-4">
-          <div class="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center">
-            <i class="fas fa-file-contract text-slate-600 text-xl"></i>
-          </div>
-          <div>
-            <h3 class="text-lg font-semibold text-gray-800">Contract Management</h3>
-            <p class="text-sm text-gray-600">Contract Analytics</p>
-          </div>
-        </div>
-        <div class="space-y-2">
-          <div class="flex justify-between text-sm">
-            <span>Active Contracts</span>
-            <span class="font-semibold">89</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span>Expiring Soon</span>
-            <span class="font-semibold text-orange-600">12</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span>Renewal Rate</span>
-            <span class="font-semibold text-green-600">82%</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="report-card p-6 reveal" onclick="showReport('inventory')">
-        <div class="flex items-center gap-4 mb-4">
-          <div class="w-12 h-12 rounded-lg bg-lime-100 flex items-center justify-center">
-            <i class="fas fa-boxes text-lime-600 text-xl"></i>
-          </div>
-          <div>
-            <h3 class="text-lg font-semibold text-gray-800">Inventory Analysis</h3>
-            <p class="text-sm text-gray-600">Stock & Inventory Metrics</p>
-          </div>
-        </div>
-        <div class="space-y-2">
-          <div class="flex justify-between text-sm">
-            <span>Stock Turnover</span>
-            <span class="font-semibold">4.2x</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span>Out of Stock</span>
-            <span class="font-semibold text-red-600">3 items</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span>Overstock Value</span>
-            <span class="font-semibold">₹450K</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="report-card p-6 reveal" onclick="showReport('forecast')">
-        <div class="flex items-center gap-4 mb-4">
-          <div class="w-12 h-12 rounded-lg bg-rose-100 flex items-center justify-center">
-            <i class="fas fa-chart-line text-rose-600 text-xl"></i>
-          </div>
-          <div>
-            <h3 class="text-lg font-semibold text-gray-800">Spend Forecasting</h3>
-            <p class="text-sm text-gray-600">Future Spend Prediction</p>
-          </div>
-        </div>
-        <div class="space-y-2">
-          <div class="flex justify-between text-sm">
-            <span>Next Quarter</span>
-            <span class="font-semibold">₹18M</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span>Annual Projection</span>
-            <span class="font-semibold">₹72M</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span>Growth Rate</span>
-            <span class="font-semibold text-green-600">+15%</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="report-card p-6 reveal" onclick="showReport('audit')">
-        <div class="flex items-center gap-4 mb-4">
-          <div class="w-12 h-12 rounded-lg bg-stone-100 flex items-center justify-center">
-            <i class="fas fa-search text-stone-600 text-xl"></i>
-          </div>
-          <div>
-            <h3 class="text-lg font-semibold text-gray-800">Audit Trail</h3>
-            <p class="text-sm text-gray-600">Transaction History</p>
-          </div>
-        </div>
-        <div class="space-y-2">
-          <div class="flex justify-between text-sm">
-            <span>Total Transactions</span>
-            <span class="font-semibold">1,247</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span>Flagged Items</span>
-            <span class="font-semibold text-orange-600">7</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span>Audit Compliance</span>
-            <span class="font-semibold text-green-600">99.2%</span>
+            <span>Audit Status</span>
+            <span class="font-semibold text-green-600">Passed</span>
           </div>
         </div>
       </div>
@@ -593,21 +347,74 @@
 
       <!-- Report Tabs -->
       <div class="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
-        <button id="tab-pr" class="tab-active px-4 py-2 rounded-md text-sm font-medium transition-all">PR TAT</button>
-        <button id="tab-po" class="tab-inactive px-4 py-2 rounded-md text-sm font-medium transition-all">PO TAT</button>
-        <button id="tab-invoice" class="tab-inactive px-4 py-2 rounded-md text-sm font-medium transition-all">Invoice TAT</button>
-        <button id="tab-overall" class="tab-inactive px-4 py-2 rounded-md text-sm font-medium transition-all">Overall</button>
+        <button id="tab-trends" class="tab-active px-4 py-2 rounded-md text-sm font-medium transition-all">Trends</button>
+        <button id="tab-breakdown" class="tab-inactive px-4 py-2 rounded-md text-sm font-medium transition-all">Breakdown</button>
+        <button id="tab-comparison" class="tab-inactive px-4 py-2 rounded-md text-sm font-medium transition-all">Comparison</button>
+        <button id="tab-insights" class="tab-inactive px-4 py-2 rounded-md text-sm font-medium transition-all">Insights</button>
+      </div>
+
+      <!-- Chart Type Selector -->
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-4">
+          <span class="text-sm font-medium text-gray-700">Chart Type:</span>
+          <div class="flex gap-2">
+            <button id="chart-line" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-md text-sm hover:bg-blue-200 transition-colors">
+              <i class="fas fa-chart-line mr-1"></i>Line
+            </button>
+            <button id="chart-bar" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-md text-sm hover:bg-gray-200 transition-colors">
+              <i class="fas fa-chart-bar mr-1"></i>Bar
+            </button>
+            <button id="chart-pie" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-md text-sm hover:bg-gray-200 transition-colors">
+              <i class="fas fa-chart-pie mr-1"></i>Pie
+            </button>
+            <button id="chart-doughnut" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-md text-sm hover:bg-gray-200 transition-colors">
+              <i class="fas fa-chart-pie mr-1"></i>Doughnut
+            </button>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="refreshCharts()" class="px-3 py-1 bg-green-100 text-green-700 rounded-md text-sm hover:bg-green-200 transition-colors">
+            <i class="fas fa-sync-alt mr-1"></i>Refresh
+          </button>
+          <button onclick="printReport()" class="px-3 py-1 bg-purple-100 text-purple-700 rounded-md text-sm hover:bg-purple-200 transition-colors">
+            <i class="fas fa-print mr-1"></i>Print
+          </button>
+        </div>
       </div>
 
       <!-- Charts Container -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <div class="box-white p-4">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">TAT Trends</h3>
-          <canvas id="tatChart" width="400" height="200"></canvas>
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Primary Chart</h3>
+            <div class="flex gap-2">
+              <button onclick="downloadChart('primary')" class="text-gray-500 hover:text-blue-600 text-sm">
+                <i class="fas fa-download"></i>
+              </button>
+              <button onclick="fullscreenChart('primary')" class="text-gray-500 hover:text-blue-600 text-sm">
+                <i class="fas fa-expand"></i>
+              </button>
+            </div>
+          </div>
+          <div class="relative" style="height: 350px; width: 100%; min-height: 350px;">
+            <canvas id="primaryChart" width="400" height="350" style="max-width: 100%; height: auto;"></canvas>
+          </div>
         </div>
-        <div class="box-white p-4">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">TAT Distribution</h3>
-          <canvas id="tatDistributionChart" width="400" height="200"></canvas>
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Secondary Chart</h3>
+            <div class="flex gap-2">
+              <button onclick="downloadChart('secondary')" class="text-gray-500 hover:text-blue-600 text-sm">
+                <i class="fas fa-download"></i>
+              </button>
+              <button onclick="fullscreenChart('secondary')" class="text-gray-500 hover:text-blue-600 text-sm">
+                <i class="fas fa-expand"></i>
+              </button>
+            </div>
+          </div>
+          <div class="relative" style="height: 350px; width: 100%;">
+            <canvas id="secondaryChart" width="400" height="350"></canvas>
+          </div>
         </div>
       </div>
 
@@ -681,7 +488,11 @@
     document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 
     // Report functions
+    let currentReportType = 'spend';
+    let currentChartType = 'line';
+
     function showReport(type) {
+      currentReportType = type;
       const reportDetail = document.getElementById('reportDetail');
       const reportTitle = document.getElementById('reportTitle');
       const reportDescription = document.getElementById('reportDescription');
@@ -689,75 +500,39 @@
       reportDetail.classList.remove('hidden');
       reportDetail.scrollIntoView({ behavior: 'smooth' });
 
-      switch(type) {
-        case 'tat':
-          reportTitle.textContent = 'TAT Reports';
-          reportDescription.textContent = 'Detailed analysis of processing times and efficiency metrics';
-          break;
-        case 'procurement':
-          reportTitle.textContent = 'Procurement Performance';
-          reportDescription.textContent = 'Comprehensive analysis of procurement operations and KPIs';
-          break;
-        case 'vendor':
-          reportTitle.textContent = 'Vendor Performance';
-          reportDescription.textContent = 'Supplier performance metrics and analytics';
-          break;
-        case 'budget':
-          reportTitle.textContent = 'Budget vs Actual';
-          reportDescription.textContent = 'Budget utilization and variance analysis';
-          break;
-        case 'savings':
-          reportTitle.textContent = 'Savings Analysis';
-          reportDescription.textContent = 'Cost reduction and savings optimization insights';
-          break;
-        case 'category':
-          reportTitle.textContent = 'Category Analysis';
-          reportDescription.textContent = 'Spend analysis by procurement categories';
-          break;
-        case 'risk':
-          reportTitle.textContent = 'Risk Analysis';
-          reportDescription.textContent = 'Procurement risk assessment and mitigation strategies';
-          break;
-        case 'compliance':
-          reportTitle.textContent = 'Compliance Reports';
-          reportDescription.textContent = 'Regulatory compliance and policy adherence analysis';
-          break;
-        case 'payment':
-          reportTitle.textContent = 'Payment Terms Analysis';
-          reportDescription.textContent = 'Payment terms, discounts, and cash flow optimization';
-          break;
-        case 'diversity':
-          reportTitle.textContent = 'Supplier Diversity';
-          reportDescription.textContent = 'Supplier diversity and inclusion metrics';
-          break;
-        case 'costcenter':
-          reportTitle.textContent = 'Cost Center Analysis';
-          reportDescription.textContent = 'Department-wise spend analysis and budget tracking';
-          break;
-        case 'approval':
-          reportTitle.textContent = 'Approval Workflow';
-          reportDescription.textContent = 'Approval process efficiency and bottleneck analysis';
-          break;
-        case 'contract':
-          reportTitle.textContent = 'Contract Management';
-          reportDescription.textContent = 'Contract lifecycle management and renewal analytics';
-          break;
-        case 'inventory':
-          reportTitle.textContent = 'Inventory Analysis';
-          reportDescription.textContent = 'Stock levels, turnover rates, and inventory optimization';
-          break;
-        case 'forecast':
-          reportTitle.textContent = 'Spend Forecasting';
-          reportDescription.textContent = 'Predictive analytics for future procurement spend';
-          break;
-        case 'audit':
-          reportTitle.textContent = 'Audit Trail';
-          reportDescription.textContent = 'Transaction history and audit compliance tracking';
-          break;
-      }
+      const reportConfig = {
+        spend: {
+          title: 'Spend Analysis Report',
+          description: 'Comprehensive analysis of spending patterns across categories, suppliers, and time periods'
+        },
+        supplier: {
+          title: 'Supplier Performance Report',
+          description: 'Detailed evaluation of supplier delivery, quality, and compliance metrics'
+        },
+        po: {
+          title: 'Purchase Order Analytics',
+          description: 'In-depth analysis of PO processing times, success rates, and workflow efficiency'
+        },
+        savings: {
+          title: 'Cost Savings Report',
+          description: 'Analysis of cost reduction initiatives and savings opportunities'
+        },
+        budget: {
+          title: 'Budget Analysis Report',
+          description: 'Budget allocation, utilization, and variance analysis across departments'
+        },
+        compliance: {
+          title: 'Compliance & Risk Report',
+          description: 'Regulatory compliance status and risk assessment across procurement activities'
+        }
+      };
 
-      // Initialize charts
-      initializeCharts(type);
+      const config = reportConfig[type] || reportConfig.spend;
+      reportTitle.textContent = config.title;
+      reportDescription.textContent = config.description;
+
+      // Initialize charts immediately
+      initializeCharts();
     }
 
     function closeReport() {
@@ -765,484 +540,144 @@
     }
 
     function exportReport() {
-      alert('Export functionality would be implemented here');
+      const reportTitle = document.getElementById('reportTitle').textContent;
+      showNotification(`Exporting ${reportTitle} to PDF...`, 'info');
+      setTimeout(() => {
+        showNotification('Report exported successfully!', 'success');
+      }, 2000);
     }
 
-    // Chart initialization
-    function initializeCharts(type) {
-      // Clear existing charts
-      const tatChartCanvas = document.getElementById('tatChart');
-      const distributionChartCanvas = document.getElementById('tatDistributionChart');
+    function refreshCharts() {
+      showNotification('Refreshing charts with latest data...', 'info');
+      initializeCharts(currentReportType);
+      setTimeout(() => {
+        showNotification('Charts refreshed successfully!', 'success');
+      }, 1000);
+    }
 
-      // Destroy existing charts if they exist
-      if (window.tatChart) window.tatChart.destroy();
-      if (window.distributionChart) window.distributionChart.destroy();
+    function printReport() {
+      showNotification('Preparing report for printing...', 'info');
+      setTimeout(() => {
+        window.print();
+      }, 500);
+    }
 
-      // Update data table based on report type
-      updateDataTable(type);
+    function downloadChart(chartType) {
+      showNotification(`Downloading ${chartType} chart...`, 'info');
+      setTimeout(() => {
+        showNotification('Chart downloaded successfully!', 'success');
+      }, 1000);
+    }
 
-      // TAT Trends Chart
-      const tatCtx = tatChartCanvas.getContext('2d');
-      let chartData = getChartData(type);
+    function fullscreenChart(chartType) {
+      showNotification(`Opening ${chartType} chart in fullscreen...`, 'info');
+    }
 
-      window.tatChart = new Chart(tatCtx, {
-        type: 'line',
-        data: chartData.trends,
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              position: 'top',
-            }
-          }
-        }
+    function showNotification(message, type) {
+      const notification = document.createElement('div');
+      notification.className = `fixed top-4 right-4 px-4 py-2 rounded-lg shadow-lg z-50 transition-all duration-300 ${
+        type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' :
+        type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' :
+        'bg-blue-100 text-blue-800 border border-blue-200'
+      }`;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.remove();
+      }, 3000);
+    }
+
+    // Sample data for all chart types
+const sampleData = {
+  primary: {
+    line: {
+      labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+      datasets: [{ label: 'Trend', data: [10,20,15,25,22,30], borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.2)' }]
+    },
+    bar: {
+      labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+      datasets: [{ label: 'Trend', data: [10,20,15,25,22,30], backgroundColor: '#3b82f6' }]
+    },
+    pie: {
+      labels: ['A','B','C'],
+      datasets: [{ data: [30,50,20], backgroundColor: ['#3b82f6','#10b981','#f59e0b'] }]
+    },
+    doughnut: {
+      labels: ['A','B','C'],
+      datasets: [{ data: [30,50,20], backgroundColor: ['#3b82f6','#10b981','#f59e0b'] }]
+    }
+  },
+  secondary: {
+    line: {
+      labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+      datasets: [{ label: 'Metric', data: [5,15,10,20,18,25], borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.2)' }]
+    },
+    bar: {
+      labels: ['A','B','C','D'],
+      datasets: [{ label: 'Metric', data: [5,15,10,20], backgroundColor: '#10b981' }]
+    },
+    pie: {
+      labels: ['X','Y','Z'],
+      datasets: [{ data: [40,30,30], backgroundColor: ['#10b981','#3b82f6','#f59e0b'] }]
+    },
+    doughnut: {
+      labels: ['X','Y','Z'],
+      datasets: [{ data: [40,30,30], backgroundColor: ['#10b981','#3b82f6','#f59e0b'] }]
+    }
+  }
+};
+
+    // Chart initialization - Simplified and robust
+    function initializeCharts() {
+      if (window.primaryChart) window.primaryChart.destroy();
+      if (window.secondaryChart) window.secondaryChart.destroy();
+
+      const pData = sampleData.primary[currentChartType];
+      const pCtx = document.getElementById('primaryChart').getContext('2d');
+      window.primaryChart = new Chart(pCtx, {
+        type: currentChartType,
+        data: { labels: pData.labels, datasets: pData.datasets },
+        options: { responsive: true }
       });
 
-      // Distribution Chart
-      const distributionCtx = distributionChartCanvas.getContext('2d');
-      window.distributionChart = new Chart(distributionCtx, {
-        type: chartData.distribution.type,
-        data: chartData.distribution.data,
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              position: 'bottom',
-            }
-          }
-        }
+      const sData = sampleData.secondary[currentChartType];
+      const sCtx = document.getElementById('secondaryChart').getContext('2d');
+      window.secondaryChart = new Chart(sCtx, {
+        type: currentChartType,
+        data: { labels: sData.labels, datasets: sData.datasets },
+        options: { responsive: true }
       });
     }
 
-    function getChartData(type) {
-      const chartConfigs = {
-        tat: {
-          trends: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-            datasets: [{
-              label: 'PR TAT (days)',
-              data: [4.8, 4.5, 4.2, 4.1, 4.3, 4.2],
-              borderColor: '#3b82f6',
-              backgroundColor: '#3b82f640',
-              tension: 0.4
-            }, {
-              label: 'PO TAT (days)',
-              data: [3.2, 2.9, 2.8, 2.7, 2.9, 2.8],
-              borderColor: '#10b981',
-              backgroundColor: '#10b98140',
-              tension: 0.4
-            }]
-          },
-          distribution: {
-            type: 'doughnut',
-            data: {
-              labels: ['0-2 days', '3-5 days', '6-10 days', '10+ days'],
-              datasets: [{
-                data: [35, 45, 15, 5],
-                backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444']
-              }]
-            }
-          }
-        },
-        procurement: {
-          trends: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-            datasets: [{
-              label: 'Total PRs',
-              data: [120, 135, 142, 138, 156, 148],
-              borderColor: '#3b82f6',
-              backgroundColor: '#3b82f640',
-              tension: 0.4
-            }, {
-              label: 'Approved POs',
-              data: [110, 128, 135, 132, 142, 138],
-              borderColor: '#10b981',
-              backgroundColor: '#10b98140',
-              tension: 0.4
-            }]
-          },
-          distribution: {
-            type: 'bar',
-            data: {
-              labels: ['Approved', 'Pending', 'Rejected', 'Draft'],
-              datasets: [{
-                label: 'PR Status',
-                data: [142, 8, 4, 2],
-                backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#6b7280']
-              }]
-            }
-          }
-        },
-        vendor: {
-          trends: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-            datasets: [{
-              label: 'On-Time Delivery %',
-              data: [88, 92, 94, 91, 94, 93],
-              borderColor: '#10b981',
-              backgroundColor: '#10b98140',
-              tension: 0.4
-            }, {
-              label: 'Quality Score',
-              data: [4.2, 4.4, 4.6, 4.5, 4.6, 4.5],
-              borderColor: '#f59e0b',
-              backgroundColor: '#f59e0b40',
-              tension: 0.4
-            }]
-          },
-          distribution: {
-            type: 'doughnut',
-            data: {
-              labels: ['Excellent (4.5-5)', 'Good (3.5-4.4)', 'Average (2.5-3.4)', 'Poor (<2.5)'],
-              datasets: [{
-                data: [48, 32, 15, 5],
-                backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444']
-              }]
-            }
-          }
-        },
-        budget: {
-          trends: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-            datasets: [{
-              label: 'Budget (₹M)',
-              data: [50, 50, 50, 50, 50, 50],
-              borderColor: '#ef4444',
-              backgroundColor: '#ef444440',
-              tension: 0.4
-            }, {
-              label: 'Actual Spend (₹M)',
-              data: [38, 41, 39, 42, 39, 39],
-              borderColor: '#10b981',
-              backgroundColor: '#10b98140',
-              tension: 0.4
-            }]
-          },
-          distribution: {
-            type: 'bar',
-            data: {
-              labels: ['IT Hardware', 'Software', 'Services', 'Marketing', 'Operations'],
-              datasets: [{
-                label: 'Budget vs Actual (₹M)',
-                data: [12, 8, 6, 8, 5],
-                backgroundColor: '#3b82f6'
-              }, {
-                label: 'Actual Spend (₹M)',
-                data: [15, 8, 6, 6, 4],
-                backgroundColor: '#10b981'
-              }]
-            }
-          }
-        },
-        savings: {
-          trends: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-            datasets: [{
-              label: 'Monthly Savings (₹M)',
-              data: [0.18, 0.22, 0.19, 0.24, 0.21, 0.20],
-              borderColor: '#10b981',
-              backgroundColor: '#10b98140',
-              tension: 0.4
-            }]
-          },
-          distribution: {
-            type: 'pie',
-            data: {
-              labels: ['Through Negotiation', 'Through Auctions', 'Bulk Purchase', 'Long-term Contracts'],
-              datasets: [{
-                data: [1.8, 0.6, 0.4, 0.2],
-                backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6']
-              }]
-            }
-          }
-        }
-      };
+    // Single initialization and chart-type button binding
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeCharts();
+      document.querySelectorAll('[id^="chart-"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentChartType = btn.id.replace('chart-','');
+          // Update active class
+          document.querySelectorAll('[id^="chart-"]').forEach(b => b.classList.remove('bg-blue-100','text-blue-700'));
+          btn.classList.add('bg-blue-100','text-blue-700');
 
-      return chartConfigs[type] || chartConfigs.tat;
-    }
+          // Update primary chart
+          const pData = sampleData.primary[currentChartType];
+          window.primaryChart.config.type = currentChartType;
+          window.primaryChart.config.data.labels = pData.labels;
+          window.primaryChart.config.data.datasets = pData.datasets;
+          // Remove scales for pie/doughnut
+          window.primaryChart.config.options.scales = (currentChartType==='bar') ? { y:{beginAtZero:true} } : {};
+          window.primaryChart.update();
 
-    function updateDataTable(type) {
-      const tableBody = document.querySelector('#reportDetail table tbody');
-      const tableHeader = document.getElementById('tableHeader');
-      let tableContent = '';
-      let headerContent = '';
-
-      switch(type) {
-        case 'tat':
-          headerContent = `
-            <tr>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Process</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Average TAT</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Min TAT</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Max TAT</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Target</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Status</th>
-            </tr>
-          `;
-          tableContent = `
-            <tr>
-              <td class="px-4 py-3">PR Creation to Approval</td>
-              <td class="px-4 py-3">4.2 days</td>
-              <td class="px-4 py-3">1 day</td>
-              <td class="px-4 py-3">12 days</td>
-              <td class="px-4 py-3">5 days</td>
-              <td class="px-4 py-3"><span class="badge bg-green-100 text-green-800">On Target</span></td>
-            </tr>
-            <tr>
-              <td class="px-4 py-3">PO Creation to Approval</td>
-              <td class="px-4 py-3">2.8 days</td>
-              <td class="px-4 py-3">0.5 days</td>
-              <td class="px-4 py-3">8 days</td>
-              <td class="px-4 py-3">3 days</td>
-              <td class="px-4 py-3"><span class="badge bg-green-100 text-green-800">On Target</span></td>
-            </tr>
-            <tr>
-              <td class="px-4 py-3">Invoice Submission to Payment</td>
-              <td class="px-4 py-3">3.1 days</td>
-              <td class="px-4 py-3">1 day</td>
-              <td class="px-4 py-3">10 days</td>
-              <td class="px-4 py-3">7 days</td>
-              <td class="px-4 py-3"><span class="badge bg-green-100 text-green-800">Excellent</span></td>
-            </tr>
-            <tr>
-              <td class="px-4 py-3">Vendor Onboarding</td>
-              <td class="px-4 py-3">5.7 days</td>
-              <td class="px-4 py-3">2 days</td>
-              <td class="px-4 py-3">15 days</td>
-              <td class="px-4 py-3">7 days</td>
-              <td class="px-4 py-3"><span class="badge bg-yellow-100 text-yellow-800">Slight Delay</span></td>
-            </tr>
-          `;
-          break;
-        case 'procurement':
-          headerContent = `
-            <tr>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Process</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Total</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Completed</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Success Rate</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Target</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Status</th>
-            </tr>
-          `;
-          tableContent = `
-            <tr>
-              <td class="px-4 py-3">Total PRs Created</td>
-              <td class="px-4 py-3">156</td>
-              <td class="px-4 py-3">142</td>
-              <td class="px-4 py-3">91%</td>
-              <td class="px-4 py-3">Target: 90%</td>
-              <td class="px-4 py-3"><span class="badge bg-green-100 text-green-800">Excellent</span></td>
-            </tr>
-            <tr>
-              <td class="px-4 py-3">POs Processed</td>
-              <td class="px-4 py-3">142</td>
-              <td class="px-4 py-3">138</td>
-              <td class="px-4 py-3">97%</td>
-              <td class="px-4 py-3">Target: 95%</td>
-              <td class="px-4 py-3"><span class="badge bg-green-100 text-green-800">On Target</span></td>
-            </tr>
-            <tr>
-              <td class="px-4 py-3">Invoice Processing</td>
-              <td class="px-4 py-3">138</td>
-              <td class="px-4 py-3">134</td>
-              <td class="px-4 py-3">97%</td>
-              <td class="px-4 py-3">Target: 95%</td>
-              <td class="px-4 py-3"><span class="badge bg-green-100 text-green-800">On Target</span></td>
-            </tr>
-            <tr>
-              <td class="px-4 py-3">Payment Processing</td>
-              <td class="px-4 py-3">134</td>
-              <td class="px-4 py-3">132</td>
-              <td class="px-4 py-3">99%</td>
-              <td class="px-4 py-3">Target: 98%</td>
-              <td class="px-4 py-3"><span class="badge bg-green-100 text-green-800">Excellent</span></td>
-            </tr>
-          `;
-          break;
-        case 'vendor':
-          headerContent = `
-            <tr>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Vendor Name</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Quality Score</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">On-Time %</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Total Value</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Payment Terms</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Status</th>
-            </tr>
-          `;
-          tableContent = `
-            <tr>
-              <td class="px-4 py-3">ABC Suppliers Ltd</td>
-              <td class="px-4 py-3">4.8/5</td>
-              <td class="px-4 py-3">96%</td>
-              <td class="px-4 py-3">₹2.4M</td>
-              <td class="px-4 py-3">45 days</td>
-              <td class="px-4 py-3"><span class="badge bg-green-100 text-green-800">Excellent</span></td>
-            </tr>
-            <tr>
-              <td class="px-4 py-3">XYZ Technologies</td>
-              <td class="px-4 py-3">4.6/5</td>
-              <td class="px-4 py-3">92%</td>
-              <td class="px-4 py-3">₹1.8M</td>
-              <td class="px-4 py-3">30 days</td>
-              <td class="px-4 py-3"><span class="badge bg-green-100 text-green-800">Good</span></td>
-            </tr>
-            <tr>
-              <td class="px-4 py-3">Global Solutions Inc</td>
-              <td class="px-4 py-3">4.2/5</td>
-              <td class="px-4 py-3">88%</td>
-              <td class="px-4 py-3">₹950K</td>
-              <td class="px-4 py-3">60 days</td>
-              <td class="px-4 py-3"><span class="badge bg-yellow-100 text-yellow-800">Average</span></td>
-            </tr>
-            <tr>
-              <td class="px-4 py-3">TechCorp Ltd</td>
-              <td class="px-4 py-3">3.8/5</td>
-              <td class="px-4 py-3">85%</td>
-              <td class="px-4 py-3">₹720K</td>
-              <td class="px-4 py-3">75 days</td>
-              <td class="px-4 py-3"><span class="badge bg-orange-100 text-orange-800">Needs Attention</span></td>
-            </tr>
-          `;
-          break;
-        case 'budget':
-          headerContent = `
-            <tr>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Category</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Budget</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Actual</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Variance</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Utilization %</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Status</th>
-            </tr>
-          `;
-          tableContent = `
-            <tr>
-              <td class="px-4 py-3">IT Hardware</td>
-              <td class="px-4 py-3">₹12M</td>
-              <td class="px-4 py-3">₹15M</td>
-              <td class="px-4 py-3">₹3M</td>
-              <td class="px-4 py-3">125%</td>
-              <td class="px-4 py-3"><span class="badge bg-red-100 text-red-800">Over Budget</span></td>
-            </tr>
-            <tr>
-              <td class="px-4 py-3">Software</td>
-              <td class="px-4 py-3">₹8M</td>
-              <td class="px-4 py-3">₹8M</td>
-              <td class="px-4 py-3">₹0M</td>
-              <td class="px-4 py-3">100%</td>
-              <td class="px-4 py-3"><span class="badge bg-green-100 text-green-800">On Budget</span></td>
-            </tr>
-            <tr>
-              <td class="px-4 py-3">Services</td>
-              <td class="px-4 py-3">₹6M</td>
-              <td class="px-4 py-3">₹6M</td>
-              <td class="px-4 py-3">₹0M</td>
-              <td class="px-4 py-3">100%</td>
-              <td class="px-4 py-3"><span class="badge bg-green-100 text-green-800">On Budget</span></td>
-            </tr>
-            <tr>
-              <td class="px-4 py-3">Marketing</td>
-              <td class="px-4 py-3">₹8M</td>
-              <td class="px-4 py-3">₹6M</td>
-              <td class="px-4 py-3">-₹2M</td>
-              <td class="px-4 py-3">75%</td>
-              <td class="px-4 py-3"><span class="badge bg-green-100 text-green-800">Under Budget</span></td>
-            </tr>
-          `;
-          break;
-        case 'savings':
-          headerContent = `
-            <tr>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Savings Method</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Amount Saved</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Total Spend</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Savings %</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Target</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Status</th>
-            </tr>
-          `;
-          tableContent = `
-            <tr>
-              <td class="px-4 py-3">Through Negotiation</td>
-              <td class="px-4 py-3">₹1.8M</td>
-              <td class="px-4 py-3">₹15M</td>
-              <td class="px-4 py-3">12%</td>
-              <td class="px-4 py-3">Target: 10%</td>
-              <td class="px-4 py-3"><span class="badge bg-green-100 text-green-800">Exceeded</span></td>
-            </tr>
-            <tr>
-              <td class="px-4 py-3">Through Auctions</td>
-              <td class="px-4 py-3">₹0.6M</td>
-              <td class="px-4 py-3">₹8M</td>
-              <td class="px-4 py-3">7.5%</td>
-              <td class="px-4 py-3">Target: 5%</td>
-              <td class="px-4 py-3"><span class="badge bg-green-100 text-green-800">Good</span></td>
-            </tr>
-            <tr>
-              <td class="px-4 py-3">Bulk Purchase Discount</td>
-              <td class="px-4 py-3">₹0.4M</td>
-              <td class="px-4 py-3">₹12M</td>
-              <td class="px-4 py-3">3.3%</td>
-              <td class="px-4 py-3">Target: 3%</td>
-              <td class="px-4 py-3"><span class="badge bg-green-100 text-green-800">On Target</span></td>
-            </tr>
-            <tr>
-              <td class="px-4 py-3">Long-term Contracts</td>
-              <td class="px-4 py-3">₹0.2M</td>
-              <td class="px-4 py-3">₹6M</td>
-              <td class="px-4 py-3">3.3%</td>
-              <td class="px-4 py-3">Target: 2%</td>
-              <td class="px-4 py-3"><span class="badge bg-green-100 text-green-800">Good</span></td>
-            </tr>
-          `;
-          break;
-        default:
-          headerContent = `
-            <tr>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Item</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Value 1</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Value 2</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Value 3</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Value 4</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-800">Status</th>
-            </tr>
-          `;
-          tableContent = `
-            <tr>
-              <td class="px-4 py-3">No data available</td>
-              <td class="px-4 py-3">-</td>
-              <td class="px-4 py-3">-</td>
-              <td class="px-4 py-3">-</td>
-              <td class="px-4 py-3">-</td>
-              <td class="px-4 py-3"><span class="badge bg-gray-100 text-gray-800">N/A</span></td>
-            </tr>
-          `;
-      }
-
-      tableHeader.innerHTML = headerContent;
-      tableBody.innerHTML = tableContent;
-    }
-
-    // Tab switching
-    document.querySelectorAll('[id^="tab-"]').forEach(tab => {
-      tab.addEventListener('click', function() {
-        // Remove active class from all tabs
-        document.querySelectorAll('[id^="tab-"]').forEach(t => {
-          t.classList.remove('tab-active');
-          t.classList.add('tab-inactive');
+          // Update secondary chart
+          const sData = sampleData.secondary[currentChartType];
+          window.secondaryChart.config.type = currentChartType;
+          window.secondaryChart.config.data.labels = sData.labels;
+          window.secondaryChart.config.data.datasets = sData.datasets;
+          window.secondaryChart.config.options.scales = {};
+          window.secondaryChart.update();
         });
-
-        // Add active class to clicked tab
-        this.classList.remove('tab-inactive');
-        this.classList.add('tab-active');
       });
-    });
-
-    // Export button functionality
-    document.getElementById('exportButton').addEventListener('click', () => {
-      alert('Export functionality would generate PDF/Excel reports');
     });
   </script>
 </body>

@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAP ME47 - Maintain Quotation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .sap-header {
+            background: linear-gradient(135deg, #003366 0%, #0066cc 100%);
+        }
+        .sap-button {
+            background: #007cba;
+            border: 1px solid #005a9e;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .sap-button:hover {
+            background: #005a9e;
+        }
+        .sap-button-secondary {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            color: #495057;
+        }
+        .sap-button-secondary:hover {
+            background: #e9ecef;
+        }
+        .sap-button-success {
+            background: #28a745;
+            border: 1px solid #1e7e34;
+            color: white;
+        }
+        .sap-button-success:hover {
+            background: #1e7e34;
+        }
+        .sap-button-danger {
+            background: #dc3545;
+            border: 1px solid #bd2130;
+            color: white;
+        }
+        .sap-button-danger:hover {
+            background: #bd2130;
+        }
+        .sap-input {
+            border: 1px solid #ced4da;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .sap-input:focus {
+            border-color: #007cba;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 124, 186, 0.25);
+        }
+        .sap-select {
+            border: 1px solid #ced4da;
+            padding: 6px 12px;
+            border-radius: 4px;
+            background: white;
+            font-size: 14px;
+        }
+        .sap-card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .sap-tab {
+            border-bottom: 2px solid transparent;
+            padding: 12px 24px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .sap-tab.active {
+            border-bottom-color: #007cba;
+            color: #007cba;
+        }
+        .status-accepted { background: #d4edda; color: #155724; }
+        .status-rejected { background: #f8d7da; color: #721c24; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-awarded { background: #d1ecf1; color: #0c5460; }
+        .comparison-table th, .comparison-table td {
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            text-align: center;
+        }
+        .comparison-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        .best-price {
+            background: #d4edda !important;
+            font-weight: bold;
+        }
+        .selected-quote {
+            background: #cce7ff !important;
+            border: 2px solid #007cba !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- SAP Header -->
+    <header class="sap-header text-white p-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <i class="fas fa-file-invoice-dollar text-2xl"></i>
+                <div>
+                    <h1 class="text-xl font-bold">SAP ME47 - Maintain Quotation</h1>
+                    <p class="text-sm opacity-90">Quotation Processing and Award Management</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-sm">User: BUYER01</span>
+                <span class="text-sm">Company: 1000</span>
+                <button class="sap-button-secondary" onclick="logout()">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="flex">
+        <!-- Sidebar Navigation -->
+        <nav class="w-64 bg-white border-r border-gray-200 min-h-screen">
+            <div class="p-4">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">Quotation Management</h2>
+                <ul class="space-y-2">
+                    <li>
+                        <button onclick="showTab('list')" class="sap-tab active w-full text-left">
+                            <i class="fas fa-list mr-2"></i>Quotation List
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="showTab('compare')" class="sap-tab w-full text-left">
+                            <i class="fas fa-balance-scale mr-2"></i>Compare Quotations
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="showTab('evaluate')" class="sap-tab w-full text-left">
+                            <i class="fas fa-search mr-2"></i>Evaluate & Award
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="showTab('award')" class="sap-tab w-full text-left">
+                            <i class="fas fa-trophy mr-2"></i>Award Management
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="showTab('po')" class="sap-tab w-full text-left">
+                            <i class="fas fa-shopping-cart mr-2"></i>Create Purchase Order
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 p-6">
+            <!-- Quotation List Tab -->
+            <div id="listTab" class="tab-content">
+                <div class="sap-card p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Quotation List (ME47)</h2>
+
+                    <!-- Filters -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">RFQ Number</label>
+                            <input type="text" id="filterRFQNumber" class="sap-input w-full" placeholder="Search RFQ...">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Vendor</label>
+                            <input type="text" id="filterVendor" class="sap-input w-full" placeholder="Vendor name/code">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                            <select id="filterStatus" class="sap-select w-full">
+                                <option value="">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="accepted">Accepted</option>
+                                <option value="rejected">Rejected</option>
+                                <option value="awarded">Awarded</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+                            <input type="date" id="filterDateFrom" class="sap-input w-full">
+                        </div>
+                    </div>
+
+                    <!-- Quotation List -->
+                    <div id="quotationList" class="space-y-4">
+                        <!-- Quotations will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compare Quotations Tab -->
+            <div id="compareTab" class="tab-content hidden">
+                <div class="sap-card p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Compare Quotations</h2>
+
+                    <!-- RFQ Selection -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Select RFQ for Comparison</label>
+                        <select id="compareRFQSelect" class="sap-select w-full" onchange="loadQuotationsForComparison()">
+                            <option value="">Choose RFQ...</option>
+                            <!-- RFQ options will be loaded here -->
+                        </select>
+                    </div>
+
+                    <!-- Comparison Table -->
+                    <div id="comparisonContainer" class="hidden">
+                        <div class="mb-4 flex justify-between items-center">
+                            <h3 class="text-lg font-semibold">Quotation Comparison</h3>
+                            <div class="space-x-2">
+                                <button onclick="selectBestPrices()" class="sap-button-secondary">
+                                    <i class="fas fa-star mr-2"></i>Highlight Best Prices
+                                </button>
+                                <button onclick="exportComparison()" class="sap-button">
+                                    <i class="fas fa-download mr-2"></i>Export
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table id="comparisonTable" class="comparison-table w-full">
+                                <!-- Comparison table will be generated here -->
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Evaluate & Award Tab -->
+            <div id="evaluateTab" class="tab-content hidden">
+                <div class="sap-card p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Evaluate Quotations</h2>
+
+                    <!-- Evaluation Criteria -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Price Weight (%)</label>
+                            <input type="number" id="priceWeight" class="sap-input w-full" value="40" min="0" max="100">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Quality Weight (%)</label>
+                            <input type="number" id="qualityWeight" class="sap-input w-full" value="30" min="0" max="100">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Delivery Weight (%)</label>
+                            <input type="number" id="deliveryWeight" class="sap-input w-full" value="20" min="0" max="100">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Service Weight (%)</label>
+                            <input type="number" id="serviceWeight" class="sap-input w-full" value="10" min="0" max="100">
+                        </div>
+                    </div>
+
+                    <!-- Evaluation Results -->
+                    <div id="evaluationResults" class="space-y-4">
+                        <!-- Evaluation results will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Award Management Tab -->
+            <div id="awardTab" class="tab-content hidden">
+                <div class="sap-card p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Award Management</h2>
+
+                    <!-- Award Form -->
+                    <div id="awardForm" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">RFQ Number</label>
+                                <input type="text" id="awardRFQNumber" class="sap-input w-full" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Award Date</label>
+                                <input type="date" id="awardDate" class="sap-input w-full">
+                            </div>
+                        </div>
+
+                        <!-- Award Items -->
+                        <div>
+                            <h3 class="text-lg font-semibold mb-4">Award Items</h3>
+                            <div id="awardItems" class="space-y-4">
+                                <!-- Award items will be loaded here -->
+                            </div>
+                        </div>
+
+                        <!-- Award Actions -->
+                        <div class="flex justify-end space-x-4">
+                            <button onclick="saveAward()" class="sap-button-secondary">
+                                <i class="fas fa-save mr-2"></i>Save Award
+                            </button>
+                            <button onclick="processAward()" class="sap-button-success">
+                                <i class="fas fa-trophy mr-2"></i>Process Award
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Purchase Order Tab -->
+            <div id="poTab" class="tab-content hidden">
+                <div class="sap-card p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Create Purchase Order from Quotation</h2>
+
+                    <!-- PO Creation Form -->
+                    <div id="poForm" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Purchase Order Number</label>
+                                <input type="text" id="poNumber" class="sap-input w-full" placeholder="Auto-generated">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Vendor</label>
+                                <input type="text" id="poVendor" class="sap-input w-full" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Purchase Organization</label>
+                                <select id="poPurchOrg" class="sap-select w-full">
+                                    <option value="1000">1000 - Main Purchasing Org</option>
+                                    <option value="2000">2000 - Regional Purchasing</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Purchase Group</label>
+                                <select id="poPurchGroup" class="sap-select w-full">
+                                    <option value="001">001 - Strategic Sourcing</option>
+                                    <option value="002">002 - Direct Materials</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Currency</label>
+                                <input type="text" id="poCurrency" class="sap-input w-full" value="INR" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Payment Terms</label>
+                                <select id="poPaymentTerms" class="sap-select w-full">
+                                    <option value="0001">0001 - Immediate</option>
+                                    <option value="0002">0002 - 30 days</option>
+                                    <option value="0003">0003 - 60 days</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- PO Items -->
+                        <div>
+                            <h3 class="text-lg font-semibold mb-4">Purchase Order Items</h3>
+                            <div id="poItems" class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Material</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Unit</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Unit Price</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Delivery Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="poItemsBody" class="bg-white divide-y divide-gray-200">
+                                        <!-- PO items will be loaded here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- PO Actions -->
+                        <div class="flex justify-end space-x-4">
+                            <button onclick="savePODraft()" class="sap-button-secondary">
+                                <i class="fas fa-save mr-2"></i>Save as Draft
+                            </button>
+                            <button onclick="createPurchaseOrder()" class="sap-button-success">
+                                <i class="fas fa-shopping-cart mr-2"></i>Create Purchase Order
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Quotation Details Modal -->
+    <div id="quotationModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold">Quotation Details</h3>
+                        <button onclick="closeQuotationModal()" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+
+                    <div id="quotationDetails">
+                        <!-- Quotation details will be loaded here -->
+                    </div>
+
+                    <div class="flex justify-end space-x-4 mt-6">
+                        <button onclick="rejectQuotation()" class="sap-button-danger">
+                            <i class="fas fa-times mr-2"></i>Reject
+                        </button>
+                        <button onclick="acceptQuotation()" class="sap-button-success">
+                            <i class="fas fa-check mr-2"></i>Accept
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let quotations = [
+            {
+                id: 'QTN001',
+                rfqNumber: 'RFQ2025001',
+                vendorId: 'SUP001',
+                vendorName: 'ABC Manufacturing Ltd',
+                status: 'pending',
+                submittedDate: '2025-09-12',
+                validUntil: '2025-10-12',
+                currency: 'INR',
+                totalValue: 1450000,
+                items: [
+                    {
+                        itemNumber: '00010',
+                        materialCode: 'MAT001',
+                        description: 'Industrial Pump Assembly',
+                        quantity: 5,
+                        unit: 'EA',
+                        unitPrice: 280000,
+                        totalPrice: 1400000,
+                        deliveryDate: '2025-11-15',
+                        deliveryTerms: 'FOB'
+                    },
+                    {
+                        itemNumber: '00020',
+                        materialCode: 'MAT002',
+                        description: 'Spare Parts Kit',
+                        quantity: 10,
+                        unit: 'BOX',
+                        unitPrice: 5000,
+                        totalPrice: 50000,
+                        deliveryDate: '2025-11-10',
+                        deliveryTerms: 'DDP'
+                    }
+                ],
+                terms: {
+                    paymentTerms: '0002',
+                    incoterms: 'FOB',
+                    deliveryLocation: '1000'
+                },
+                notes: 'Standard warranty applies. Technical support included.'
+            },
+            {
+                id: 'QTN002',
+                rfqNumber: 'RFQ2025001',
+                vendorId: 'SUP002',
+                vendorName: 'XYZ Supplies Inc',
+                status: 'pending',
+                submittedDate: '2025-09-13',
+                validUntil: '2025-10-15',
+                currency: 'INR',
+                totalValue: 1520000,
+                items: [
+                    {
+                        itemNumber: '00010',
+                        materialCode: 'MAT001',
+                        description: 'Industrial Pump Assembly',
+                        quantity: 5,
+                        unit: 'EA',
+                        unitPrice: 295000,
+                        totalPrice: 1475000,
+                        deliveryDate: '2025-11-20',
+                        deliveryTerms: 'CIF'
+                    },
+                    {
+                        itemNumber: '00020',
+                        materialCode: 'MAT002',
+                        description: 'Spare Parts Kit',
+                        quantity: 10,
+                        unit: 'BOX',
+                        unitPrice: 4500,
+                        totalPrice: 45000,
+                        deliveryDate: '2025-11-12',
+                        deliveryTerms: 'DDP'
+                    }
+                ],
+                terms: {
+                    paymentTerms: '0003',
+                    incoterms: 'CIF',
+                    deliveryLocation: '1000'
+                },
+                notes: 'Extended warranty available. On-site installation included.'
+            },
+            {
+                id: 'QTN003',
+                rfqNumber: 'RFQ2025001',
+                vendorId: 'SUP003',
+                vendorName: 'Global Tech Solutions',
+                status: 'accepted',
+                submittedDate: '2025-09-14',
+                validUntil: '2025-10-20',
+                currency: 'INR',
+                totalValue: 1380000,
+                items: [
+                    {
+                        itemNumber: '00010',
+                        materialCode: 'MAT001',
+                        description: 'Industrial Pump Assembly',
+                        quantity: 5,
+                        unit: 'EA',
+                        unitPrice: 265000,
+                        totalPrice: 1325000,
+                        deliveryDate: '2025-11-12',
+                        deliveryTerms: 'FOB'
+                    },
+                    {
+                        itemNumber: '00020',
+                        materialCode: 'MAT002',
+                        description: 'Spare Parts Kit',
+                        quantity: 10,
+                        unit: 'BOX',
+                        unitPrice: 5500,
+                        totalPrice: 55000,
+                        deliveryDate: '2025-11-08',
+                        deliveryTerms: 'DDP'
+                    }
+                ],
+                terms: {
+                    paymentTerms: '0002',
+                    incoterms: 'FOB',
+                    deliveryLocation: '1000'
+                },
+                notes: 'Best value proposition. Fastest delivery available.'
+            }
+        ];
+
+        let rfqs = [
+            { number: 'RFQ2025001', description: 'Industrial Pumps Procurement', status: 'open' },
+            { number: 'RFQ2025002', description: 'IT Equipment Tender', status: 'closed' }
+        ];
+
+        let selectedQuotations = [];
+        let awardData = {};
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadQuotationList();
+            loadRFQOptions();
+            setDefaultAwardDate();
+        });
+
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+
+            // Remove active class from all tabs
+            document.querySelectorAll('.sap-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.remove('hidden');
+
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        // Load quotation list
+        function loadQuotationList() {
+            const quotationList = document.getElementById('quotationList');
+            quotationList.innerHTML = '';
+
+            quotations.forEach(quotation => {
+                const quotationCard = document.createElement('div');
+                quotationCard.className = 'sap-card p-4';
+                quotationCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h3 class="text-lg font-semibold">${quotation.id}</h3>
+                            <p class="text-sm text-gray-600">RFQ: ${quotation.rfqNumber} • Vendor: ${quotation.vendorName}</p>
+                        </div>
+                        <span class="status-${quotation.status} px-3 py-1 rounded-full text-sm font-medium">
+                            ${quotation.status.charAt(0).toUpperCase() + quotation.status.slice(1)}
+                        </span>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
+                        <div>
+                            <span class="text-sm text-gray-500">Submitted</span>
+                            <div class="font-medium">${quotation.submittedDate}</div>
+                        </div>
+                        <div>
+                            <span class="text-sm text-gray-500">Valid Until</span>
+                            <div class="font-medium">${quotation.validUntil}</div>
+                        </div>
+                        <div>
+                            <span class="text-sm text-gray-500">Items</span>
+                            <div class="font-medium">${quotation.items.length}</div>
+                        </div>
+                        <div>
+                            <span class="text-sm text-gray-500">Total Value</span>
+                            <div class="font-medium">${quotation.currency} ${quotation.totalValue.toLocaleString()}</div>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-2">
+                        <button onclick="viewQuotation('${quotation.id}')" class="sap-button-secondary text-sm">
+                            <i class="fas fa-eye mr-1"></i>View Details
+                        </button>
+                        <button onclick="compareQuotation('${quotation.id}')" class="sap-button text-sm">
+                            <i class="fas fa-balance-scale mr-1"></i>Compare
+                        </button>
+                        ${quotation.status === 'pending' ? `
+                            <button onclick="acceptQuotation('${quotation.id}')" class="sap-button-success text-sm">
+                                <i class="fas fa-check mr-1"></i>Accept
+                            </button>
+                            <button onclick="rejectQuotation('${quotation.id}')" class="sap-button-danger text-sm">
+                                <i class="fas fa-times mr-1"></i>Reject
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+                quotationList.appendChild(quotationCard);
+            });
+        }
+
+        // Load RFQ options for comparison
+        function loadRFQOptions() {
+            const select = document.getElementById('compareRFQSelect');
+            select.innerHTML = '<option value="">Choose RFQ...</option>';
+
+            rfqs.forEach(rfq => {
+                const option = document.createElement('option');
+                option.value = rfq.number;
+                option.textContent = `${rfq.number} - ${rfq.description}`;
+                select.appendChild(option);
+            });
+        }
+
+        // Load quotations for comparison
+        function loadQuotationsForComparison() {
+            const rfqNumber = document.getElementById('compareRFQSelect').value;
+            if (!rfqNumber) {
+                document.getElementById('comparisonContainer').classList.add('hidden');
+                return;
+            }
+
+            const rfqQuotations = quotations.filter(q => q.rfqNumber === rfqNumber);
+            if (rfqQuotations.length === 0) {
+                alert('No quotations found for this RFQ');
+                return;
+            }
+
+            generateComparisonTable(rfqQuotations);
+            document.getElementById('comparisonContainer').classList.remove('hidden');
+        }
+
+        // Generate comparison table
+        function generateComparisonTable(quotes) {
+            const table = document.getElementById('comparisonTable');
+            let html = '<thead><tr><th>Vendor</th><th>Status</th>';
+
+            // Add item columns
+            quotes[0].items.forEach(item => {
+                html += `<th>${item.description}<br><small>${item.materialCode}</small></th>`;
+            });
+
+            html += '<th>Total Value</th><th>Delivery Terms</th><th>Actions</th></tr></thead><tbody>';
+
+            quotes.forEach(quote => {
+                html += `
+                    <tr class="quotation-row" data-quote-id="${quote.id}">
+                        <td class="font-medium">${quote.vendorName}</td>
+                        <td><span class="status-${quote.status} px-2 py-1 rounded text-xs">${quote.status}</span></td>
+                `;
+
+                quote.items.forEach(item => {
+                    html += `<td>${quote.currency} ${item.unitPrice.toLocaleString()}<br><small>${item.deliveryDate}</small></td>`;
+                });
+
+                html += `
+                        <td class="font-bold">${quote.currency} ${quote.totalValue.toLocaleString()}</td>
+                        <td>${quote.terms.incoterms}</td>
+                        <td>
+                            <button onclick="selectForAward('${quote.id}')" class="sap-button-success text-xs">
+                                <i class="fas fa-trophy mr-1"></i>Select
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody>';
+            table.innerHTML = html;
+        }
+
+        // Select best prices
+        function selectBestPrices() {
+            const rows = document.querySelectorAll('.quotation-row');
+            const itemCount = quotations[0].items.length;
+
+            // Reset highlighting
+            rows.forEach(row => {
+                row.classList.remove('best-price');
+            });
+
+            // Find best price for each item
+            for (let i = 0; i < itemCount; i++) {
+                let bestPrice = Infinity;
+                let bestRow = null;
+
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    const priceText = cells[i + 2].textContent.split(' ')[1].replace(/,/g, '');
+                    const price = parseFloat(priceText);
+
+                    if (price < bestPrice) {
+                        bestPrice = price;
+                        bestRow = row;
+                    }
+                });
+
+                if (bestRow) {
+                    bestRow.classList.add('best-price');
+                }
+            }
+        }
+
+        // View quotation details
+        function viewQuotation(quotationId) {
+            const quotation = quotations.find(q => q.id === quotationId);
+            if (!quotation) return;
+
+            const modal = document.getElementById('quotationModal');
+            const details = document.getElementById('quotationDetails');
+
+            details.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <h4 class="font-semibold mb-3">Quotation Header</h4>
+                        <div class="space-y-2 text-sm">
+                            <div><span class="font-medium">Quotation ID:</span> ${quotation.id}</div>
+                            <div><span class="font-medium">RFQ Number:</span> ${quotation.rfqNumber}</div>
+                            <div><span class="font-medium">Vendor:</span> ${quotation.vendorName}</div>
+                            <div><span class="font-medium">Status:</span> <span class="status-${quotation.status} px-2 py-1 rounded text-xs">${quotation.status}</span></div>
+                            <div><span class="font-medium">Submitted:</span> ${quotation.submittedDate}</div>
+                            <div><span class="font-medium">Valid Until:</span> ${quotation.validUntil}</div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-3">Terms & Conditions</h4>
+                        <div class="space-y-2 text-sm">
+                            <div><span class="font-medium">Currency:</span> ${quotation.currency}</div>
+                            <div><span class="font-medium">Total Value:</span> ${quotation.currency} ${quotation.totalValue.toLocaleString()}</div>
+                            <div><span class="font-medium">Payment Terms:</span> ${quotation.terms.paymentTerms}</div>
+                            <div><span class="font-medium">Incoterms:</span> ${quotation.terms.incoterms}</div>
+                            <div><span class="font-medium">Delivery Location:</span> ${quotation.terms.deliveryLocation}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h4 class="font-semibold mb-3">Quotation Items</h4>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Material</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Qty</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Unit</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Unit Price</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Delivery Date</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                ${quotation.items.map(item => `
+                                    <tr>
+                                        <td class="px-4 py-2 text-sm font-medium text-gray-900">${item.itemNumber}</td>
+                                        <td class="px-4 py-2 text-sm text-gray-900">${item.materialCode}</td>
+                                        <td class="px-4 py-2 text-sm text-gray-900">${item.description}</td>
+                                        <td class="px-4 py-2 text-sm text-gray-900">${item.quantity}</td>
+                                        <td class="px-4 py-2 text-sm text-gray-900">${item.unit}</td>
+                                        <td class="px-4 py-2 text-sm text-gray-900">${quotation.currency} ${item.unitPrice.toLocaleString()}</td>
+                                        <td class="px-4 py-2 text-sm font-medium text-gray-900">${quotation.currency} ${item.totalPrice.toLocaleString()}</td>
+                                        <td class="px-4 py-2 text-sm text-gray-900">${item.deliveryDate}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                ${quotation.notes ? `
+                    <div>
+                        <h4 class="font-semibold mb-3">Vendor Notes</h4>
+                        <p class="text-sm text-gray-600 bg-gray-50 p-3 rounded">${quotation.notes}</p>
+                    </div>
+                ` : ''}
+            `;
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeQuotationModal() {
+            document.getElementById('quotationModal').classList.add('hidden');
+        }
+
+        // Accept/Reject quotations
+        function acceptQuotation(quotationId) {
+            const quotation = quotations.find(q => q.id === quotationId);
+            if (quotation) {
+                quotation.status = 'accepted';
+                loadQuotationList();
+                alert(`Quotation ${quotationId} has been accepted.`);
+                closeQuotationModal();
+            }
+        }
+
+        function rejectQuotation(quotationId) {
+            const quotation = quotations.find(q => q.id === quotationId);
+            if (quotation) {
+                quotation.status = 'rejected';
+                loadQuotationList();
+                alert(`Quotation ${quotationId} has been rejected.`);
+                closeQuotationModal();
+            }
+        }
+
+        // Select for award
+        function selectForAward(quotationId) {
+            const quotation = quotations.find(q => q.id === quotationId);
+            if (!quotation) return;
+
+            // Remove previous selection
+            document.querySelectorAll('.quotation-row').forEach(row => {
+                row.classList.remove('selected-quote');
+            });
+
+            // Add selection to current row
+            const selectedRow = document.querySelector(`[data-quote-id="${quotationId}"]`);
+            if (selectedRow) {
+                selectedRow.classList.add('selected-quote');
+            }
+
+            // Load award data
+            loadAwardData(quotation);
+        }
+
+        // Load award data
+        function loadAwardData(quotation) {
+            document.getElementById('awardRFQNumber').value = quotation.rfqNumber;
+            document.getElementById('awardDate').value = new Date().toISOString().split('T')[0];
+
+            const awardItems = document.getElementById('awardItems');
+            awardItems.innerHTML = '';
+
+            quotation.items.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'sap-card p-4';
+                itemDiv.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Item Number</label>
+                            <input type="text" class="sap-input w-full" value="${item.itemNumber}" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Material</label>
+                            <input type="text" class="sap-input w-full" value="${item.materialCode}" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Award Quantity</label>
+                            <input type="number" class="sap-input w-full award-quantity" value="${item.quantity}" min="0" max="${item.quantity}">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Award Amount</label>
+                            <input type="number" class="sap-input w-full award-amount" value="${item.totalPrice}" readonly>
+                        </div>
+                    </div>
+                `;
+                awardItems.appendChild(itemDiv);
+            });
+
+            awardData = {
+                quotation: quotation,
+                items: quotation.items.map(item => ({
+                    ...item,
+                    awardQuantity: item.quantity,
+                    awardAmount: item.totalPrice
+                }))
+            };
+        }
+
+        // Save/process award
+        function saveAward() {
+            alert('Award saved as draft successfully!');
+        }
+
+        function processAward() {
+            const quotation = awardData.quotation;
+            quotation.status = 'awarded';
+            loadQuotationList();
+            alert(`Award processed successfully for quotation ${quotation.id}!`);
+        }
+
+        // Create Purchase Order
+        function createPurchaseOrder() {
+            const poNumber = document.getElementById('poNumber').value || generatePONumber();
+            document.getElementById('poNumber').value = poNumber;
+
+            // In real SAP, this would create the PO
+            alert(`Purchase Order ${poNumber} created successfully!`);
+        }
+
+        function generatePONumber() {
+            const timestamp = new Date().getTime();
+            return `PO${timestamp.toString().slice(-8)}`;
+        }
+
+        function savePODraft() {
+            alert('Purchase Order saved as draft!');
+        }
+
+        // Export comparison
+        function exportComparison() {
+            alert('Comparison exported successfully!');
+        }
+
+        // Set default award date
+        function setDefaultAwardDate() {
+            document.getElementById('awardDate').value = new Date().toISOString().split('T')[0];
+        }
+
+        // Utility functions
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                alert('Logged out successfully!');
+            }
+        }
+
+        // Compare quotation (from list view)
+        function compareQuotation(quotationId) {
+            showTab('compare');
+            document.getElementById('compareRFQSelect').value = quotations.find(q => q.id === quotationId).rfqNumber;
+            loadQuotationsForComparison();
+        }
+    </script>
+</body>
+</html>

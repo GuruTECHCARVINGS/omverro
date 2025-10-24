@@ -1,0 +1,1702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <title>Messages - OMVERRO Supply Chain Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      color: #1e293b;
+    }
+
+    .message-card {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid #e2e8f0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(10px);
+    }
+
+    .message-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      border-color: #8b5cf6;
+    }
+
+    .message-card.unread {
+      border-left: 4px solid #8b5cf6;
+      background: linear-gradient(135deg, #fef7ff 0%, #f3e8ff 100%);
+    }
+
+    .message-card.read {
+      opacity: 0.9;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .tab-btn {
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+      color: white;
+      border-color: #8b5cf6;
+    }
+
+    .tab-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 600;
+      color: white;
+    }
+
+    .status-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+    }
+
+    .status-unread { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
+    .status-read { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: white; }
+    .status-replied { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
+
+    .floating-decoration {
+      position: absolute;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+      filter: blur(1px);
+    }
+
+    .header-gradient {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border-bottom: 1px solid #e2e8f0;
+      backdrop-filter: blur(10px);
+    }
+
+    .search-input {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(10px);
+      border: 1px solid #e2e8f0;
+      transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+      border-color: #8b5cf6;
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    .compose-modal {
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(5px);
+    }
+
+    .message-thread {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .message-bubble {
+      max-width: 70%;
+      padding: 0.75rem 1rem;
+      border-radius: 1rem;
+      margin-bottom: 0.5rem;
+      position: relative;
+    }
+
+    .message-bubble.sent {
+      background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+      color: white;
+      margin-left: auto;
+      border-bottom-right-radius: 0.25rem;
+    }
+
+    .message-bubble.received {
+      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+      color: #1e293b;
+      margin-right: auto;
+      border-bottom-left-radius: 0.25rem;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message-card {
+      animation: slideIn 0.5s ease-out;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen overflow-x-hidden">
+  <!-- Floating decorations -->
+  <div class="floating-decoration w-20 h-20 top-10 left-20 opacity-30"></div>
+  <div class="floating-decoration w-16 h-16 top-32 right-32 opacity-20"></div>
+  <div class="floating-decoration w-12 h-12 bottom-20 left-40 opacity-25"></div>
+
+  <!-- Header -->
+  <header class="header-gradient sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center py-6">
+        <div class="flex items-center gap-4">
+          <button onclick="window.location.href='vendor_dashboard_new.html'" class="p-2 rounded-xl hover:bg-purple-50 transition-all duration-300 group">
+            <i class="fas fa-arrow-left text-xl group-hover:text-purple-600"></i>
+          </button>
+          <div>
+            <h1 class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Messages Center
+            </h1>
+            <p class="text-gray-600 text-sm">Communicate with your buyers and partners</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <div class="relative">
+            <input type="text" id="searchInput" placeholder="Search messages..." class="search-input pl-10 pr-4 py-2 rounded-xl w-64">
+            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="openQuickCompose()" class="px-4 py-2 border border-purple-500 text-purple-600 rounded-xl hover:bg-purple-50 transition-all font-medium">
+              <i class="fas fa-edit mr-2"></i>Quick Reply
+            </button>
+            <button onclick="showTemplates()" class="px-4 py-2 border border-blue-500 text-blue-600 rounded-xl hover:bg-blue-50 transition-all font-medium">
+              <i class="fas fa-file-alt mr-2"></i>Templates
+            </button>
+          </div>
+          <button id="composeBtn" class="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+            <i class="fas fa-plus mr-2"></i>Compose
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div class="glass-card p-6 rounded-2xl shadow-lg">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center text-white">
+            <i class="fas fa-envelope"></i>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-gray-800" id="totalMessages">24</p>
+            <p class="text-sm text-gray-600">Total Messages</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card p-6 rounded-2xl shadow-lg">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-gradient-to-r from-red-500 to-pink-500 rounded-xl flex items-center justify-center text-white">
+            <i class="fas fa-circle"></i>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-gray-800" id="unreadCount">8</p>
+            <p class="text-sm text-gray-600">Unread</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card p-6 rounded-2xl shadow-lg">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center text-white">
+            <i class="fas fa-reply"></i>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-gray-800" id="repliedCount">12</p>
+            <p class="text-sm text-gray-600">Replied</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card p-6 rounded-2xl shadow-lg">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center text-white">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-gray-800" id="pendingCount">4</p>
+            <p class="text-sm text-gray-600">Pending Reply</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs and Filters -->
+    <div class="glass-card p-6 rounded-2xl shadow-lg mb-8">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <!-- Message Tabs -->
+        <div class="flex flex-wrap gap-2">
+          <button class="tab-btn active px-4 py-2 rounded-xl text-sm font-medium" data-tab="inbox">
+            <i class="fas fa-inbox mr-2"></i>Inbox
+          </button>
+          <button class="tab-btn px-4 py-2 rounded-xl text-sm font-medium" data-tab="sent">
+            <i class="fas fa-paper-plane mr-2"></i>Sent
+          </button>
+          <button class="tab-btn px-4 py-2 rounded-xl text-sm font-medium" data-tab="drafts">
+            <i class="fas fa-file-alt mr-2"></i>Drafts
+          </button>
+          <button class="tab-btn px-4 py-2 rounded-xl text-sm font-medium" data-tab="archived">
+            <i class="fas fa-archive mr-2"></i>Archived
+          </button>
+        </div>
+
+        <!-- Filter Options -->
+        <div class="flex gap-2">
+          <select id="sortSelect" class="px-4 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="unread">Unread First</option>
+            <option value="sender">By Sender</option>
+          </select>
+          <button class="px-4 py-2 border border-gray-300 rounded-xl text-sm hover:bg-gray-50 transition-colors">
+            <i class="fas fa-filter mr-2"></i>Filter
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Messages List -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Messages List -->
+      <div class="lg:col-span-2">
+        <div class="space-y-4" id="messagesContainer">
+          <!-- Sample Messages Data -->
+          <div class="message-card unread p-6 rounded-2xl shadow-lg cursor-pointer" data-id="1" data-read="false" onclick="openMessage(1)">
+            <div class="flex items-start gap-4">
+              <div class="avatar bg-gradient-to-r from-blue-500 to-blue-600">
+                BT
+              </div>
+              <div class="flex-1">
+                <div class="flex items-start justify-between mb-2">
+                  <div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Buyer Team - TechCorp Industries</h3>
+                    <p class="text-sm text-gray-600 mb-2 line-clamp-2">Order #ORD-2025-001 has been confirmed and is ready for processing. Please provide ASN details for shipment scheduling. The order includes 25 ergonomic office chairs and 15 standing desks.</p>
+                    <div class="flex items-center gap-4 text-xs text-gray-500">
+                      <span><i class="fas fa-calendar mr-1"></i>2 hours ago</span>
+                      <span><i class="fas fa-tag mr-1"></i>Order Confirmation</span>
+                      <span class="status-badge status-unread">Unread</span>
+                    </div>
+                  </div>
+                  <div class="flex gap-2">
+                    <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="event.stopPropagation(); markAsRead(1)">
+                      <i class="fas fa-check text-green-600"></i>
+                    </button>
+                    <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="event.stopPropagation(); archiveMessage(1)">
+                      <i class="fas fa-archive text-blue-600"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="message-card read p-6 rounded-2xl shadow-lg cursor-pointer" data-id="2" data-read="true" onclick="openMessage(2)">
+            <div class="flex items-start gap-4">
+              <div class="avatar bg-gradient-to-r from-green-500 to-green-600">
+                SP
+              </div>
+              <div class="flex-1">
+                <div class="flex items-start justify-between mb-2">
+                  <div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Support Team - OMVERRO</h3>
+                    <p class="text-sm text-gray-600 mb-2 line-clamp-2">Your support ticket #SUP-2025-445 regarding ASN creation has been resolved. The technical team has implemented the necessary fixes and your ASN functionality should now work properly.</p>
+                    <div class="flex items-center gap-4 text-xs text-gray-500">
+                      <span><i class="fas fa-calendar mr-1"></i>Yesterday</span>
+                      <span><i class="fas fa-tag mr-1"></i>Support</span>
+                      <span class="status-badge status-replied">Replied</span>
+                    </div>
+                  </div>
+                  <div class="flex gap-2">
+                    <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="event.stopPropagation(); archiveMessage(2)">
+                      <i class="fas fa-archive text-blue-600"></i>
+                    </button>
+                    <button class="p-2 rounded-lg hover:bg-red-100 transition-colors" onclick="event.stopPropagation(); deleteMessage(2)">
+                      <i class="fas fa-trash text-red-600"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="message-card unread p-6 rounded-2xl shadow-lg cursor-pointer" data-id="3" data-read="false" onclick="openMessage(3)">
+            <div class="flex items-start gap-4">
+              <div class="avatar bg-gradient-to-r from-purple-500 to-purple-600">
+                AC
+              </div>
+              <div class="flex-1">
+                <div class="flex items-start justify-between mb-2">
+                  <div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Accounts Team - ElectroTech Solutions</h3>
+                    <p class="text-sm text-gray-600 mb-2 line-clamp-2">Invoice #INV-2025-088 payment of ₹1.2 lakhs has been received successfully. Thank you for your prompt payment. Your account is now up to date.</p>
+                    <div class="flex items-center gap-4 text-xs text-gray-500">
+                      <span><i class="fas fa-calendar mr-1"></i>3 hours ago</span>
+                      <span><i class="fas fa-tag mr-1"></i>Payment</span>
+                      <span class="status-badge status-unread">Unread</span>
+                    </div>
+                  </div>
+                  <div class="flex gap-2">
+                    <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="event.stopPropagation(); markAsRead(3)">
+                      <i class="fas fa-check text-green-600"></i>
+                    </button>
+                    <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="event.stopPropagation(); archiveMessage(3)">
+                      <i class="fas fa-archive text-blue-600"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="message-card read p-6 rounded-2xl shadow-lg cursor-pointer" data-id="4" data-read="true" onclick="openMessage(4)">
+            <div class="flex items-start gap-4">
+              <div class="avatar bg-gradient-to-r from-orange-500 to-orange-600">
+                MP
+              </div>
+              <div class="flex-1">
+                <div class="flex items-start justify-between mb-2">
+                  <div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Procurement Manager - Manufacturing Plus</h3>
+                    <p class="text-sm text-gray-600 mb-2 line-clamp-2">We need to discuss the delivery timeline for Order #ORD-2025-002. Can we schedule a call for tomorrow at 2 PM IST? The current ETA of September 15th needs to be reviewed.</p>
+                    <div class="flex items-center gap-4 text-xs text-gray-500">
+                      <span><i class="fas fa-calendar mr-1"></i>5 hours ago</span>
+                      <span><i class="fas fa-tag mr-1"></i>Delivery</span>
+                      <span class="status-badge status-replied">Replied</span>
+                    </div>
+                  </div>
+                  <div class="flex gap-2">
+                    <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="event.stopPropagation(); archiveMessage(4)">
+                      <i class="fas fa-archive text-blue-600"></i>
+                    </button>
+                    <button class="p-2 rounded-lg hover:bg-red-100 transition-colors" onclick="event.stopPropagation(); deleteMessage(4)">
+                      <i class="fas fa-trash text-red-600"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="message-card unread p-6 rounded-2xl shadow-lg cursor-pointer" data-id="5" data-read="false" onclick="openMessage(5)">
+            <div class="flex items-start gap-4">
+              <div class="avatar bg-gradient-to-r from-cyan-500 to-cyan-600">
+                QC
+              </div>
+              <div class="flex-1">
+                <div class="flex items-start justify-between mb-2">
+                  <div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Quality Control - PharmaCorp</h3>
+                    <p class="text-sm text-gray-600 mb-2 line-clamp-2">Quality inspection for Batch #QC-2025-089 has been completed. All parameters meet our specifications. Certificate of Analysis will be attached to the delivery documentation.</p>
+                    <div class="flex items-center gap-4 text-xs text-gray-500">
+                      <span><i class="fas fa-calendar mr-1"></i>1 day ago</span>
+                      <span><i class="fas fa-tag mr-1"></i>Quality</span>
+                      <span class="status-badge status-unread">Unread</span>
+                    </div>
+                  </div>
+                  <div class="flex gap-2">
+                    <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="event.stopPropagation(); markAsRead(5)">
+                      <i class="fas fa-check text-green-600"></i>
+                    </button>
+                    <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="event.stopPropagation(); archiveMessage(5)">
+                      <i class="fas fa-archive text-blue-600"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="message-card read p-6 rounded-2xl shadow-lg cursor-pointer" data-id="6" data-read="true" onclick="openMessage(6)">
+            <div class="flex items-start gap-4">
+              <div class="avatar bg-gradient-to-r from-pink-500 to-pink-600">
+                LM
+              </div>
+              <div class="flex-1">
+                <div class="flex items-start justify-between mb-2">
+                  <div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Logistics Manager - Global Manufacturing</h3>
+                    <p class="text-sm text-gray-600 mb-2 line-clamp-2">Shipping arrangements for Order #ORD-2025-003 have been finalized. Container will depart from Mumbai port on September 10th. Tracking details will be provided once shipment is loaded.</p>
+                    <div class="flex items-center gap-4 text-xs text-gray-500">
+                      <span><i class="fas fa-calendar mr-1"></i>2 days ago</span>
+                      <span><i class="fas fa-tag mr-1"></i>Shipping</span>
+                      <span class="status-badge status-replied">Replied</span>
+                    </div>
+                  </div>
+                  <div class="flex gap-2">
+                    <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="event.stopPropagation(); archiveMessage(6)">
+                      <i class="fas fa-archive text-blue-600"></i>
+                    </button>
+                    <button class="p-2 rounded-lg hover:bg-red-100 transition-colors" onclick="event.stopPropagation(); deleteMessage(6)">
+                      <i class="fas fa-trash text-red-600"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Load More Button -->
+        <div class="text-center mt-8">
+          <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <button id="loadMoreBtn" onclick="loadMoreMessages()" class="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+              <i class="fas fa-plus mr-2"></i>Load More Messages
+            </button>
+            <button onclick="refreshMessages()" class="px-6 py-3 border border-purple-500 text-purple-600 rounded-xl hover:bg-purple-50 transition-all font-medium">
+              <i class="fas fa-sync-alt mr-2"></i>Refresh
+            </button>
+            <div class="flex gap-2">
+              <button onclick="toggleViewMode()" id="viewModeBtn" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" title="Toggle View Mode">
+                <i class="fas fa-th-list"></i>
+              </button>
+              <button onclick="showBulkActions()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" title="Bulk Actions">
+                <i class="fas fa-tasks"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message Details Panel -->
+      <div class="lg:col-span-1">
+        <div id="messageDetails" class="glass-card p-6 rounded-2xl shadow-lg">
+          <div class="text-center text-gray-500 py-12">
+            <i class="fas fa-envelope-open text-4xl mb-4 text-gray-300"></i>
+            <p class="text-lg font-medium">Select a message to view details</p>
+            <p class="text-sm">Click on any message from the list to see the full conversation</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Floating Action Button for Quick Compose -->
+  <button onclick="openComposeModal()" class="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 z-40 group">
+    <i class="fas fa-plus text-xl"></i>
+    <div class="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white text-sm px-3 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+      Compose New Message
+    </div>
+  </button>
+
+  <!-- Compose Message Modal -->
+  <div id="composeModal" class="fixed inset-0 compose-modal hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+        <div class="flex justify-between items-center p-6 border-b border-gray-200">
+          <h3 class="text-xl font-semibold text-gray-900">Compose New Message</h3>
+          <button onclick="closeComposeModal()" class="p-2 rounded-lg hover:bg-gray-100">
+            <i class="fas fa-times text-gray-600"></i>
+          </button>
+        </div>
+
+        <div class="p-6 space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Recipient</label>
+            <select class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500">
+              <option value="">Select recipient...</option>
+              <option value="techcorp">TechCorp Industries - Buyer Team</option>
+              <option value="electro">ElectroTech Solutions - Accounts Team</option>
+              <option value="pharma">PharmaCorp - Quality Control</option>
+              <option value="global">Global Manufacturing - Logistics Manager</option>
+              <option value="support">OMVERRO Support Team</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+            <input type="text" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Enter message subject...">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+            <select class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500">
+              <option value="general">General Inquiry</option>
+              <option value="order">Order Related</option>
+              <option value="payment">Payment Related</option>
+              <option value="shipping">Shipping & Delivery</option>
+              <option value="quality">Quality & Compliance</option>
+              <option value="support">Technical Support</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Message</label>
+            <textarea rows="6" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none" placeholder="Type your message here..."></textarea>
+          </div>
+
+          <div class="flex items-center gap-4">
+            <label class="flex items-center">
+              <input type="checkbox" class="mr-2">
+              <span class="text-sm text-gray-600">Send me a copy</span>
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" class="mr-2">
+              <span class="text-sm text-gray-600">High Priority</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 p-6 border-t border-gray-200">
+          <button onclick="closeComposeModal()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+            Cancel
+          </button>
+          <button onclick="sendMessage()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+            <i class="fas fa-paper-plane mr-2"></i>Send Message
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Message data and state management
+    let messages = [
+      {
+        id: 1,
+        sender: 'Buyer Team - TechCorp Industries',
+        senderInitials: 'BT',
+        senderColor: 'from-blue-500 to-blue-600',
+        subject: 'Order Confirmation #ORD-2025-001',
+        content: 'Order #ORD-2025-001 has been confirmed and is ready for processing. Please provide ASN details for shipment scheduling. The order includes 25 ergonomic office chairs and 15 standing desks.',
+        time: '2 hours ago',
+        category: 'Order Confirmation',
+        read: false,
+        replied: false,
+        thread: [
+          {
+            sender: 'Buyer Team',
+            content: 'Order #ORD-2025-001 has been confirmed and is ready for processing. Please provide ASN details for shipment scheduling.',
+            time: '2 hours ago',
+            type: 'received'
+          }
+        ]
+      },
+      {
+        id: 2,
+        sender: 'Support Team - OMVERRO',
+        senderInitials: 'SP',
+        senderColor: 'from-green-500 to-green-600',
+        subject: 'Support Ticket #SUP-2025-445 Resolved',
+        content: 'Your support ticket #SUP-2025-445 regarding ASN creation has been resolved. The technical team has implemented the necessary fixes.',
+        time: 'Yesterday',
+        category: 'Support',
+        read: true,
+        replied: true,
+        thread: [
+          {
+            sender: 'Support Team',
+            content: 'Your support ticket #SUP-2025-445 regarding ASN creation has been resolved.',
+            time: 'Yesterday',
+            type: 'received'
+          },
+          {
+            sender: 'You',
+            content: 'Thank you for resolving the issue. I can now create ASNs successfully.',
+            time: 'Yesterday',
+            type: 'sent'
+          }
+        ]
+      },
+      {
+        id: 3,
+        sender: 'Accounts Team - ElectroTech Solutions',
+        senderInitials: 'AC',
+        senderColor: 'from-purple-500 to-purple-600',
+        subject: 'Payment Confirmation #INV-2025-088',
+        content: 'Invoice #INV-2025-088 payment of ₹1.2 lakhs has been received successfully. Thank you for your prompt payment.',
+        time: '3 hours ago',
+        category: 'Payment',
+        read: false,
+        replied: false,
+        thread: [
+          {
+            sender: 'Accounts Team',
+            content: 'Invoice #INV-2025-088 payment of ₹1.2 lakhs has been received successfully.',
+            time: '3 hours ago',
+            type: 'received'
+          }
+        ]
+      },
+      {
+        id: 4,
+        sender: 'Procurement Manager - Manufacturing Plus',
+        senderInitials: 'MP',
+        senderColor: 'from-orange-500 to-orange-600',
+        subject: 'Delivery Timeline Discussion',
+        content: 'We need to discuss the delivery timeline for Order #ORD-2025-002. Can we schedule a call for tomorrow at 2 PM IST?',
+        time: '5 hours ago',
+        category: 'Delivery',
+        read: true,
+        replied: true,
+        thread: [
+          {
+            sender: 'Procurement Manager',
+            content: 'We need to discuss the delivery timeline for Order #ORD-2025-002.',
+            time: '5 hours ago',
+            type: 'received'
+          },
+          {
+            sender: 'You',
+            content: 'I\'m available tomorrow at 2 PM IST. Please let me know the best way to connect.',
+            time: '4 hours ago',
+            type: 'sent'
+          },
+          {
+            sender: 'Procurement Manager',
+            content: 'Great! I\'ll send you a meeting invite via email.',
+            time: '4 hours ago',
+            type: 'received'
+          }
+        ]
+      },
+      {
+        id: 5,
+        sender: 'Quality Control - PharmaCorp',
+        senderInitials: 'QC',
+        senderColor: 'from-cyan-500 to-cyan-600',
+        subject: 'Quality Inspection Results',
+        content: 'Quality inspection for Batch #QC-2025-089 has been completed. All parameters meet our specifications.',
+        time: '1 day ago',
+        category: 'Quality',
+        read: false,
+        replied: false,
+        thread: [
+          {
+            sender: 'Quality Control',
+            content: 'Quality inspection for Batch #QC-2025-089 has been completed.',
+            time: '1 day ago',
+            type: 'received'
+          }
+        ]
+      },
+      {
+        id: 6,
+        sender: 'Logistics Manager - Global Manufacturing',
+        senderInitials: 'LM',
+        senderColor: 'from-pink-500 to-pink-600',
+        subject: 'Shipping Arrangements Finalized',
+        content: 'Shipping arrangements for Order #ORD-2025-003 have been finalized. Container will depart from Mumbai port on September 10th.',
+        time: '2 days ago',
+        category: 'Shipping',
+        read: true,
+        replied: true,
+        thread: [
+          {
+            sender: 'Logistics Manager',
+            content: 'Shipping arrangements for Order #ORD-2025-003 have been finalized.',
+            time: '2 days ago',
+            type: 'received'
+          },
+          {
+            sender: 'You',
+            content: 'Thank you for the update. I\'ll monitor the shipment progress.',
+            time: '2 days ago',
+            type: 'sent'
+          }
+        ]
+      }
+    ];
+
+    let currentTab = 'inbox';
+    let selectedMessageId = null;
+
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', function() {
+      updateStats();
+      setupEventListeners();
+      renderMessages();
+    });
+
+    // Setup event listeners
+    function setupEventListeners() {
+      // Tab buttons
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          currentTab = this.dataset.tab;
+          filterMessages();
+        });
+      });
+
+      // Search functionality
+      document.getElementById('searchInput').addEventListener('input', function() {
+        searchMessages(this.value);
+      });
+
+      // Sort functionality
+      document.getElementById('sortSelect').addEventListener('change', function() {
+        sortMessages(this.value);
+      });
+
+      // Compose modal
+      document.getElementById('composeBtn').addEventListener('click', openComposeModal);
+    }
+
+    // Update statistics
+    function updateStats() {
+      const total = messages.length;
+      const unread = messages.filter(m => !m.read).length;
+      const replied = messages.filter(m => m.replied).length;
+      const pending = total - replied;
+
+      document.getElementById('totalMessages').textContent = total;
+      document.getElementById('unreadCount').textContent = unread;
+      document.getElementById('repliedCount').textContent = replied;
+      document.getElementById('pendingCount').textContent = pending;
+    }
+
+    // Render messages
+    function renderMessages() {
+      const container = document.getElementById('messagesContainer');
+      container.innerHTML = '';
+
+      messages.forEach(message => {
+        const card = createMessageCard(message);
+        container.appendChild(card);
+      });
+    }
+
+    // Create message card
+    function createMessageCard(message) {
+      const card = document.createElement('div');
+      card.className = `message-card ${message.read ? 'read' : 'unread'} p-6 rounded-2xl shadow-lg cursor-pointer`;
+      card.dataset.id = message.id;
+      card.dataset.read = message.read;
+      card.onclick = () => openMessage(message.id);
+
+      const statusClass = message.read ? (message.replied ? 'status-replied' : 'status-read') : 'status-unread';
+      const statusText = message.read ? (message.replied ? 'Replied' : 'Read') : 'Unread';
+
+      card.innerHTML = `
+        <div class="flex items-start gap-4">
+          <div class="avatar bg-gradient-to-r ${message.senderColor}">
+            ${message.senderInitials}
+          </div>
+          <div class="flex-1">
+            <div class="flex items-start justify-between mb-2">
+              <div>
+                <h3 class="font-semibold text-gray-900 mb-1">${message.sender}</h3>
+                <p class="text-sm text-gray-600 mb-2 line-clamp-2">${message.content}</p>
+                <div class="flex items-center gap-4 text-xs text-gray-500">
+                  <span><i class="fas fa-calendar mr-1"></i>${message.time}</span>
+                  <span><i class="fas fa-tag mr-1"></i>${message.category}</span>
+                  <span class="status-badge ${statusClass}">${statusText}</span>
+                </div>
+              </div>
+              <div class="flex gap-2">
+                ${!message.read ? `<button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="event.stopPropagation(); markAsRead(${message.id})">
+                  <i class="fas fa-check text-green-600"></i>
+                </button>` : ''}
+                <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="event.stopPropagation(); archiveMessage(${message.id})">
+                  <i class="fas fa-archive text-blue-600"></i>
+                </button>
+                <button class="p-2 rounded-lg hover:bg-red-100 transition-colors" onclick="event.stopPropagation(); deleteMessage(${message.id})">
+                  <i class="fas fa-trash text-red-600"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      return card;
+    }
+
+    // Open message details
+    function openMessage(id) {
+      const message = messages.find(m => m.id === id);
+      if (!message) return;
+
+      selectedMessageId = id;
+
+      // Mark as read if not already
+      if (!message.read) {
+        markAsRead(id);
+      }
+
+      const detailsPanel = document.getElementById('messageDetails');
+
+      detailsPanel.innerHTML = `
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center gap-4">
+            <div class="avatar bg-gradient-to-r ${message.senderColor}">
+              ${message.senderInitials}
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-900">${message.sender}</h3>
+              <p class="text-sm text-gray-600">${message.category} • ${message.time}</p>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="replyToMessage(${id})">
+              <i class="fas fa-reply text-blue-600"></i>
+            </button>
+            <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="archiveMessage(${id})">
+              <i class="fas fa-archive text-blue-600"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="mb-6">
+          <h4 class="font-semibold text-gray-900 mb-4">Subject: ${message.subject}</h4>
+        </div>
+
+        <div class="message-thread space-y-4 mb-6">
+          ${message.thread.map(msg => `
+            <div class="message-bubble ${msg.type === 'sent' ? 'sent' : 'received'}">
+              <div class="text-sm mb-1">
+                <strong>${msg.sender}</strong> • ${msg.time}
+              </div>
+              <div class="text-sm">${msg.content}</div>
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="border-t border-gray-200 pt-4">
+          <div class="flex gap-2">
+            <button onclick="replyToMessage(${id})" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+              <i class="fas fa-reply mr-2"></i>Reply
+            </button>
+            <button onclick="forwardMessage(${id})" class="px-4 py-2 border border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50 transition-colors">
+              <i class="fas fa-share mr-2"></i>Forward
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    // Filter messages by tab
+    function filterMessages() {
+      const cards = document.querySelectorAll('.message-card');
+
+      cards.forEach(card => {
+        const read = card.dataset.read === 'true';
+        let show = false;
+
+        switch(currentTab) {
+          case 'inbox':
+            show = true;
+            break;
+          case 'sent':
+            show = read; // Assuming sent messages are read
+            break;
+          case 'drafts':
+            show = false; // No drafts in sample data
+            break;
+          case 'archived':
+            show = false; // No archived in sample data
+            break;
+        }
+
+        card.style.display = show ? 'block' : 'none';
+      });
+    }
+
+    // Search messages
+    function searchMessages(query) {
+      const cards = document.querySelectorAll('.message-card');
+      const searchTerm = query.toLowerCase();
+
+      cards.forEach(card => {
+        const sender = card.querySelector('h3').textContent.toLowerCase();
+        const content = card.querySelector('p').textContent.toLowerCase();
+        const category = card.querySelector('.fa-tag').parentElement.textContent.toLowerCase();
+
+        const matches = sender.includes(searchTerm) || content.includes(searchTerm) || category.includes(searchTerm);
+        card.style.display = matches ? 'block' : 'none';
+      });
+    }
+
+    // Sort messages
+    function sortMessages(sortBy) {
+      // This would typically sort the messages array and re-render
+      // For demo purposes, we'll just show a toast
+      showToast(`Sorted by ${sortBy}`, 'info');
+    }
+
+    // Mark message as read
+    function markAsRead(id) {
+      const message = messages.find(m => m.id === id);
+      if (message && !message.read) {
+        message.read = true;
+        updateStats();
+        renderMessages();
+        showToast('Message marked as read', 'success');
+      }
+    }
+
+    // Archive message
+    function archiveMessage(id) {
+      const index = messages.findIndex(m => m.id === id);
+      if (index > -1) {
+        messages.splice(index, 1);
+        updateStats();
+        renderMessages();
+        showToast('Message archived', 'info');
+
+        // Clear details panel if archived message was selected
+        if (selectedMessageId === id) {
+          document.getElementById('messageDetails').innerHTML = `
+            <div class="text-center text-gray-500 py-12">
+              <i class="fas fa-envelope-open text-4xl mb-4 text-gray-300"></i>
+              <p class="text-lg font-medium">Select a message to view details</p>
+              <p class="text-sm">Click on any message from the list to see the full conversation</p>
+            </div>
+          `;
+        }
+      }
+    }
+
+    // Delete message
+    function deleteMessage(id) {
+      const index = messages.findIndex(m => m.id === id);
+      if (index > -1) {
+        messages.splice(index, 1);
+        updateStats();
+        renderMessages();
+        showToast('Message deleted', 'error');
+
+        // Clear details panel if deleted message was selected
+        if (selectedMessageId === id) {
+          document.getElementById('messageDetails').innerHTML = `
+            <div class="text-center text-gray-500 py-12">
+              <i class="fas fa-envelope-open text-4xl mb-4 text-gray-300"></i>
+              <p class="text-lg font-medium">Select a message to view details</p>
+              <p class="text-sm">Click on any message from the list to see the full conversation</p>
+            </div>
+          `;
+        }
+      }
+    }
+
+    // Reply to message
+    function replyToMessage(id) {
+      const message = messages.find(m => m.id === id);
+      if (message) {
+        openComposeModal();
+        // Pre-fill recipient and subject for reply
+        setTimeout(() => {
+          const recipientSelect = document.querySelector('#composeModal select');
+          const subjectInput = document.querySelector('#composeModal input[type="text"]');
+          const categorySelect = document.querySelector('#composeModal select:nth-of-type(2)');
+
+          // This would normally match the sender
+          recipientSelect.value = 'techcorp'; // Example
+          subjectInput.value = `Re: ${message.subject}`;
+          categorySelect.value = 'general';
+        }, 100);
+      }
+    }
+
+    // Forward message
+    function forwardMessage(id) {
+      const message = messages.find(m => m.id === id);
+      if (message) {
+        openComposeModal();
+        setTimeout(() => {
+          const subjectInput = document.querySelector('#composeModal input[type="text"]');
+          const messageTextarea = document.querySelector('#composeModal textarea');
+
+          subjectInput.value = `Fwd: ${message.subject}`;
+          messageTextarea.value = `\n\n--- Forwarded Message ---\nFrom: ${message.sender}\nSubject: ${message.subject}\n\n${message.content}`;
+        }, 100);
+      }
+    }
+
+    // Compose modal functions
+    function openComposeModal() {
+      document.getElementById('composeModal').classList.remove('hidden');
+    }
+
+    function closeComposeModal() {
+      document.getElementById('composeModal').classList.add('hidden');
+    }
+
+    function sendMessage() {
+      // Simulate sending message
+      showToast('Message sent successfully!', 'success');
+      closeComposeModal();
+
+      // Add to sent messages (would normally be handled by backend)
+      setTimeout(() => {
+        // This would typically refresh the messages list
+        showToast('Message added to Sent folder', 'info');
+      }, 1000);
+    }
+
+    // Toast notification system
+    function showToast(message, type = 'info') {
+      const existingToasts = document.querySelectorAll('.toast-notification');
+      existingToasts.forEach(toast => toast.remove());
+
+      const toast = document.createElement('div');
+      const bgColor = type === 'success' ? 'bg-green-500' :
+                     type === 'error' ? 'bg-red-500' :
+                     type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500';
+
+      const iconClass = type === 'success' ? 'check-circle' :
+                       type === 'error' ? 'times-circle' :
+                       type === 'warning' ? 'exclamation-triangle' : 'info-circle';
+
+      toast.className = `toast-notification fixed top-4 right-4 ${bgColor} text-white px-6 py-4 rounded-xl shadow-2xl z-50 transform translate-x-full transition-all duration-300 max-w-sm`;
+      toast.innerHTML = `
+        <div class="flex items-center gap-3">
+          <i class="fas fa-${iconClass} text-lg flex-shrink-0"></i>
+          <div class="flex-1">
+            <p class="font-medium text-sm leading-tight">${message}</p>
+          </div>
+          <button class="toast-close ml-2 text-white/70 hover:text-white transition-colors" onclick="this.parentElement.parentElement.remove()">
+            <i class="fas fa-times text-sm"></i>
+          </button>
+        </div>
+        <div class="w-full bg-white/20 h-1 mt-3 rounded-full overflow-hidden">
+          <div class="h-full bg-white/60 rounded-full animate-pulse"></div>
+        </div>
+      `;
+
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.transform = 'translateX(0) scale(1)';
+        toast.style.opacity = '1';
+      }, 100);
+
+      setTimeout(() => {
+        toast.style.transform = 'translateX(100%) scale(0.95)';
+        toast.style.opacity = '0';
+        setTimeout(() => {
+          if (toast.parentElement) {
+            toast.remove();
+          }
+        }, 300);
+      }, 4000);
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeComposeModal();
+      }
+      if (e.ctrlKey && e.key === 'k') {
+        e.preventDefault();
+        document.getElementById('searchInput').focus();
+      }
+      if (e.ctrlKey && e.key === 'n') {
+        e.preventDefault();
+        openComposeModal();
+      }
+    });
+
+    // Enhanced message loading functionality
+    let messagePage = 1;
+    let isLoading = false;
+    let viewMode = 'list'; // 'list' or 'compact'
+    let selectedMessages = new Set();
+
+    // Load more messages with pagination
+    function loadMoreMessages() {
+      if (isLoading) return;
+
+      const loadBtn = document.getElementById('loadMoreBtn');
+      const originalText = loadBtn.innerHTML;
+
+      isLoading = true;
+      loadBtn.disabled = true;
+      loadBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Loading...';
+
+      // Simulate API call delay
+      setTimeout(() => {
+        messagePage++;
+        const newMessages = generateMoreMessages(messagePage);
+
+        // Add new messages to the array
+        messages.push(...newMessages);
+
+        // Render new messages
+        const container = document.getElementById('messagesContainer');
+        newMessages.forEach(message => {
+          const card = createMessageCard(message);
+          container.appendChild(card);
+
+          // Animate new messages
+          setTimeout(() => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+              card.style.transition = 'all 0.5s ease';
+              card.style.opacity = '1';
+              card.style.transform = 'translateY(0)';
+            }, 100);
+          }, 100);
+        });
+
+        // Update stats
+        updateStats();
+
+        // Reset button
+        isLoading = false;
+        loadBtn.disabled = false;
+        loadBtn.innerHTML = originalText;
+
+        // Show success message
+        showToast(`Loaded ${newMessages.length} more messages`, 'success');
+
+        // Hide load more button after certain pages
+        if (messagePage >= 5) {
+          loadBtn.style.display = 'none';
+          showToast('All messages loaded', 'info');
+        }
+      }, 1500);
+    }
+
+    // Generate more sample messages
+    function generateMoreMessages(page) {
+      const sampleSenders = [
+        { name: 'Supply Chain Manager - TechSolutions', initials: 'TS', color: 'from-indigo-500 to-purple-500', category: 'Supply Chain' },
+        { name: 'Finance Team - Global Corp', initials: 'FG', color: 'from-emerald-500 to-teal-500', category: 'Finance' },
+        { name: 'Operations Manager - IndusTech', initials: 'OI', color: 'from-amber-500 to-orange-500', category: 'Operations' },
+        { name: 'Compliance Officer - SafeManufacturing', initials: 'CS', color: 'from-rose-500 to-pink-500', category: 'Compliance' },
+        { name: 'IT Support - TechHub', initials: 'TI', color: 'from-cyan-500 to-blue-500', category: 'IT Support' },
+        { name: 'Vendor Relations - PrimeBuyers', initials: 'VP', color: 'from-violet-500 to-purple-500', category: 'Vendor Relations' }
+      ];
+
+      const sampleSubjects = [
+        'Order Update for PO-2025-00' + (page * 10 + Math.floor(Math.random() * 10)),
+        'Quality Inspection Results - Batch QC-2025-0' + (page * 10 + Math.floor(Math.random() * 10)),
+        'Payment Confirmation - INV-2025-0' + (page * 10 + Math.floor(Math.random() * 10)),
+        'Shipping Schedule Update',
+        'Contract Renewal Discussion',
+        'New Product Requirements',
+        'Performance Review Meeting',
+        'Compliance Documentation Request'
+      ];
+
+      const newMessages = [];
+      const messagesToGenerate = 6;
+
+      for (let i = 0; i < messagesToGenerate; i++) {
+        const sender = sampleSenders[Math.floor(Math.random() * sampleSenders.length)];
+        const subject = sampleSubjects[Math.floor(Math.random() * sampleSubjects.length)];
+        const id = messages.length + i + 1;
+        const isRead = Math.random() > 0.6;
+        const hoursAgo = Math.floor(Math.random() * 72) + 1;
+
+        newMessages.push({
+          id: id,
+          sender: sender.name,
+          senderInitials: sender.initials,
+          senderColor: sender.color,
+          subject: subject,
+          content: `This is an automated message regarding ${subject.toLowerCase()}. Please review the details and take appropriate action.`,
+          time: hoursAgo < 24 ? `${hoursAgo} hours ago` : `${Math.floor(hoursAgo/24)} days ago`,
+          category: sender.category,
+          read: isRead,
+          replied: isRead && Math.random() > 0.5,
+          thread: [
+            {
+              sender: sender.name.split(' - ')[0],
+              content: `This is an automated message regarding ${subject.toLowerCase()}.`,
+              time: hoursAgo < 24 ? `${hoursAgo} hours ago` : `${Math.floor(hoursAgo/24)} days ago`,
+              type: 'received'
+            }
+          ]
+        });
+      }
+
+      return newMessages;
+    }
+
+    // Refresh messages
+    function refreshMessages() {
+      const refreshBtn = event.target.closest('button');
+      const originalHTML = refreshBtn.innerHTML;
+
+      refreshBtn.disabled = true;
+      refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Refreshing...';
+
+      setTimeout(() => {
+        // Simulate refresh by re-rendering messages
+        renderMessages();
+        updateStats();
+
+        refreshBtn.disabled = false;
+        refreshBtn.innerHTML = originalHTML;
+
+        showToast('Messages refreshed successfully', 'success');
+      }, 1000);
+    }
+
+    // Toggle view mode between list and compact
+    function toggleViewMode() {
+      const viewBtn = document.getElementById('viewModeBtn');
+      const icon = viewBtn.querySelector('i');
+
+      if (viewMode === 'list') {
+        viewMode = 'compact';
+        icon.className = 'fas fa-th';
+        viewBtn.title = 'Switch to List View';
+        showToast('Switched to Compact View', 'info');
+      } else {
+        viewMode = 'list';
+        icon.className = 'fas fa-th-list';
+        viewBtn.title = 'Switch to Compact View';
+        showToast('Switched to List View', 'info');
+      }
+
+      // Re-render messages with new view mode
+      renderMessages();
+    }
+
+    // Show bulk actions panel
+    function showBulkActions() {
+      // Create bulk actions overlay
+      const bulkActions = document.createElement('div');
+      bulkActions.id = 'bulkActions';
+      bulkActions.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+      bulkActions.innerHTML = `
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4">
+          <div class="flex justify-between items-center p-6 border-b border-gray-200">
+            <h3 class="text-xl font-semibold text-gray-900">Bulk Actions</h3>
+            <button onclick="closeBulkActions()" class="p-2 rounded-lg hover:bg-gray-100">
+              <i class="fas fa-times text-gray-600"></i>
+            </button>
+          </div>
+          <div class="p-6 space-y-4">
+            <div class="flex items-center gap-3">
+              <input type="checkbox" id="selectAll" onchange="toggleSelectAll()" class="w-4 h-4 text-purple-600 rounded focus:ring-purple-500">
+              <label for="selectAll" class="text-sm font-medium text-gray-700">Select All Messages</label>
+            </div>
+            <div class="text-sm text-gray-600">
+              <span id="selectedCount">0</span> messages selected
+            </div>
+            <div class="space-y-2">
+              <button onclick="bulkMarkAsRead()" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-left">
+                <i class="fas fa-check mr-2"></i>Mark as Read
+              </button>
+              <button onclick="bulkArchive()" class="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-left">
+                <i class="fas fa-archive mr-2"></i>Archive Selected
+              </button>
+              <button onclick="bulkDelete()" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-left">
+                <i class="fas fa-trash mr-2"></i>Delete Selected
+              </button>
+              <button onclick="bulkMarkAsUnread()" class="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-left">
+                <i class="fas fa-envelope mr-2"></i>Mark as Unread
+              </button>
+            </div>
+          </div>
+          <div class="flex justify-end gap-3 p-6 border-t border-gray-200">
+            <button onclick="closeBulkActions()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+              Cancel
+            </button>
+            <button onclick="clearSelection()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+              Clear Selection
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(bulkActions);
+
+      // Add checkboxes to message cards
+      addSelectionCheckboxes();
+    }
+
+    // Close bulk actions
+    function closeBulkActions() {
+      const bulkActions = document.getElementById('bulkActions');
+      if (bulkActions) {
+        bulkActions.remove();
+      }
+      removeSelectionCheckboxes();
+      selectedMessages.clear();
+    }
+
+    // Add selection checkboxes to message cards
+    function addSelectionCheckboxes() {
+      const messageCards = document.querySelectorAll('.message-card');
+      messageCards.forEach(card => {
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'message-checkbox w-4 h-4 text-purple-600 rounded focus:ring-purple-500 mr-3';
+        checkbox.onchange = () => toggleMessageSelection(card.dataset.id);
+
+        const cardContent = card.querySelector('.flex.items-start.gap-4');
+        cardContent.insertBefore(checkbox, cardContent.firstChild);
+      });
+    }
+
+    // Remove selection checkboxes
+    function removeSelectionCheckboxes() {
+      const checkboxes = document.querySelectorAll('.message-checkbox');
+      checkboxes.forEach(checkbox => checkbox.remove());
+    }
+
+    // Toggle message selection
+    function toggleMessageSelection(messageId) {
+      if (selectedMessages.has(messageId)) {
+        selectedMessages.delete(messageId);
+      } else {
+        selectedMessages.add(messageId);
+      }
+      updateSelectedCount();
+    }
+
+    // Toggle select all
+    function toggleSelectAll() {
+      const selectAllCheckbox = document.getElementById('selectAll');
+      const checkboxes = document.querySelectorAll('.message-checkbox');
+
+      if (selectAllCheckbox.checked) {
+        checkboxes.forEach(checkbox => {
+          checkbox.checked = true;
+          selectedMessages.add(checkbox.closest('.message-card').dataset.id);
+        });
+      } else {
+        checkboxes.forEach(checkbox => checkbox.checked = false);
+        selectedMessages.clear();
+      }
+
+      updateSelectedCount();
+    }
+
+    // Update selected count display
+    function updateSelectedCount() {
+      const countElement = document.getElementById('selectedCount');
+      if (countElement) {
+        countElement.textContent = selectedMessages.size;
+      }
+    }
+
+    // Bulk operations
+    function bulkMarkAsRead() {
+      selectedMessages.forEach(id => {
+        const message = messages.find(m => m.id == id);
+        if (message && !message.read) {
+          message.read = true;
+        }
+      });
+
+      updateStats();
+      renderMessages();
+      showToast(`${selectedMessages.size} messages marked as read`, 'success');
+      closeBulkActions();
+    }
+
+    function bulkArchive() {
+      selectedMessages.forEach(id => {
+        const index = messages.findIndex(m => m.id == id);
+        if (index > -1) {
+          messages.splice(index, 1);
+        }
+      });
+
+      updateStats();
+      renderMessages();
+      showToast(`${selectedMessages.size} messages archived`, 'info');
+      closeBulkActions();
+    }
+
+    function bulkDelete() {
+      selectedMessages.forEach(id => {
+        const index = messages.findIndex(m => m.id == id);
+        if (index > -1) {
+          messages.splice(index, 1);
+        }
+      });
+
+      updateStats();
+      renderMessages();
+      showToast(`${selectedMessages.size} messages deleted`, 'error');
+      closeBulkActions();
+    }
+
+    function bulkMarkAsUnread() {
+      selectedMessages.forEach(id => {
+        const message = messages.find(m => m.id == id);
+        if (message) {
+          message.read = false;
+        }
+      });
+
+      updateStats();
+      renderMessages();
+      showToast(`${selectedMessages.size} messages marked as unread`, 'info');
+      closeBulkActions();
+    }
+
+    function clearSelection() {
+      selectedMessages.clear();
+      const checkboxes = document.querySelectorAll('.message-checkbox');
+      checkboxes.forEach(checkbox => checkbox.checked = false);
+      updateSelectedCount();
+    }
+
+    // Quick compose functionality
+    function openQuickCompose() {
+      if (!selectedMessageId) {
+        showToast('Please select a message to reply to', 'warning');
+        return;
+      }
+
+      const message = messages.find(m => m.id === selectedMessageId);
+      if (!message) return;
+
+      // Create quick compose modal
+      const quickCompose = document.createElement('div');
+      quickCompose.id = 'quickCompose';
+      quickCompose.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+      quickCompose.innerHTML = `
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-hidden">
+          <div class="flex justify-between items-center p-6 border-b border-gray-200">
+            <h3 class="text-xl font-semibold text-gray-900">Quick Reply</h3>
+            <button onclick="closeQuickCompose()" class="p-2 rounded-lg hover:bg-gray-100">
+              <i class="fas fa-times text-gray-600"></i>
+            </button>
+          </div>
+          <div class="p-6">
+            <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+              <div class="flex items-center gap-3 mb-2">
+                <div class="avatar bg-gradient-to-r ${message.senderColor}">
+                  ${message.senderInitials}
+                </div>
+                <div>
+                  <p class="font-medium text-gray-900">${message.sender}</p>
+                  <p class="text-sm text-gray-600">${message.subject}</p>
+                </div>
+              </div>
+              <p class="text-sm text-gray-700">${message.content}</p>
+            </div>
+            <form onsubmit="sendQuickReply(event)">
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Your Reply</label>
+                  <textarea id="quickReplyText" rows="6" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none" placeholder="Type your reply here..." required></textarea>
+                </div>
+                <div class="flex items-center gap-4">
+                  <label class="flex items-center">
+                    <input type="checkbox" id="quickReplyPriority" class="mr-2">
+                    <span class="text-sm text-gray-600">High Priority</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input type="checkbox" id="quickReplyCopy" class="mr-2">
+                    <span class="text-sm text-gray-600">Send me a copy</span>
+                  </label>
+                </div>
+              </div>
+              <div class="flex justify-end gap-3 mt-6">
+                <button type="button" onclick="closeQuickCompose()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                  Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                  <i class="fas fa-paper-plane mr-2"></i>Send Reply
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(quickCompose);
+    }
+
+    function closeQuickCompose() {
+      const quickCompose = document.getElementById('quickCompose');
+      if (quickCompose) {
+        quickCompose.remove();
+      }
+    }
+
+    function sendQuickReply(event) {
+      event.preventDefault();
+
+      const replyText = document.getElementById('quickReplyText').value;
+      const isPriority = document.getElementById('quickReplyPriority').checked;
+
+      if (!replyText.trim()) {
+        showToast('Please enter a reply message', 'warning');
+        return;
+      }
+
+      // Add reply to message thread
+      const message = messages.find(m => m.id === selectedMessageId);
+      if (message) {
+        message.thread.push({
+          sender: 'You',
+          content: replyText,
+          time: 'Just now',
+          type: 'sent'
+        });
+        message.replied = true;
+        message.read = true;
+
+        // Update message display
+        openMessage(selectedMessageId);
+        updateStats();
+        renderMessages();
+      }
+
+      showToast('Reply sent successfully!', 'success');
+      closeQuickCompose();
+    }
+
+    // Message templates functionality
+    function showTemplates() {
+      const templates = [
+        {
+          name: 'Order Confirmation',
+          subject: 'Order Confirmation - PO-{number}',
+          content: 'Dear {buyer},\n\nThank you for your order. We have received and confirmed your purchase order #{number}. Our team will begin processing your order immediately.\n\nOrder Details:\n- PO Number: {number}\n- Expected Delivery: {date}\n\nPlease let us know if you need any additional information.\n\nBest regards,\nVendor Team'
+        },
+        {
+          name: 'Payment Reminder',
+          subject: 'Payment Reminder - Invoice #{number}',
+          content: 'Dear {buyer},\n\nThis is a friendly reminder that invoice #{number} is due on {date}.\n\nInvoice Details:\n- Invoice Number: {number}\n- Amount Due: {amount}\n- Due Date: {date}\n\nPlease process the payment at your earliest convenience to avoid any delays.\n\nThank you for your business.\n\nBest regards,\nAccounts Team'
+        },
+        {
+          name: 'Shipping Update',
+          subject: 'Shipping Update - Order #{number}',
+          content: 'Dear {buyer},\n\nWe are pleased to inform you that your order #{number} has been shipped.\n\nShipping Details:\n- Tracking Number: {tracking}\n- Carrier: {carrier}\n- Estimated Delivery: {date}\n\nYou can track your shipment using the tracking number above.\n\nThank you for choosing our services.\n\nBest regards,\nLogistics Team'
+        },
+        {
+          name: 'Quality Assurance',
+          subject: 'Quality Inspection Results - Batch {batch}',
+          content: 'Dear {buyer},\n\nQuality inspection for batch {batch} has been completed successfully.\n\nInspection Results:\n- All parameters meet specifications\n- Certificate of Analysis attached\n- Ready for delivery\n\nPlease let us know if you require any additional documentation.\n\nBest regards,\nQuality Team'
+        },
+        {
+          name: 'Meeting Request',
+          subject: 'Meeting Request - {topic}',
+          content: 'Dear {buyer},\n\nI would like to schedule a meeting to discuss {topic}.\n\nProposed Time: {time}\nProposed Date: {date}\nDuration: {duration}\n\nPlease let me know your availability or suggest alternative times that work for you.\n\nBest regards,\nVendor Team'
+        }
+      ];
+
+      const templatesModal = document.createElement('div');
+      templatesModal.id = 'templatesModal';
+      templatesModal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+      templatesModal.innerHTML = `
+        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full mx-4 max-h-[80vh] overflow-hidden">
+          <div class="flex justify-between items-center p-6 border-b border-gray-200">
+            <h3 class="text-xl font-semibold text-gray-900">Message Templates</h3>
+            <button onclick="closeTemplates()" class="p-2 rounded-lg hover:bg-gray-100">
+              <i class="fas fa-times text-gray-600"></i>
+            </button>
+          </div>
+          <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              ${templates.map((template, index) => `
+                <div class="border border-gray-200 rounded-lg p-4 hover:border-purple-300 hover:shadow-md transition-all cursor-pointer" onclick="useTemplate(${index})">
+                  <div class="flex items-center gap-3 mb-2">
+                    <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-white text-sm font-bold">
+                      ${index + 1}
+                    </div>
+                    <h4 class="font-medium text-gray-900">${template.name}</h4>
+                  </div>
+                  <p class="text-sm text-gray-600 mb-2">${template.subject}</p>
+                  <p class="text-xs text-gray-500 line-clamp-3">${template.content.substring(0, 100)}...</p>
+                </div>
+              `).join('')}
+            </div>
+            <div class="text-center">
+              <button onclick="createCustomTemplate()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                <i class="fas fa-plus mr-2"></i>Create Custom Template
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(templatesModal);
+    }
+
+    function closeTemplates() {
+      const templatesModal = document.getElementById('templatesModal');
+      if (templatesModal) {
+        templatesModal.remove();
+      }
+    }
+
+    function useTemplate(index) {
+      const templates = [
+        {
+          name: 'Order Confirmation',
+          subject: 'Order Confirmation - PO-{number}',
+          content: 'Dear {buyer},\n\nThank you for your order. We have received and confirmed your purchase order #{number}. Our team will begin processing your order immediately.\n\nOrder Details:\n- PO Number: {number}\n- Expected Delivery: {date}\n\nPlease let us know if you need any additional information.\n\nBest regards,\nVendor Team'
+        },
+        {
+          name: 'Payment Reminder',
+          subject: 'Payment Reminder - Invoice #{number}',
+          content: 'Dear {buyer},\n\nThis is a friendly reminder that invoice #{number} is due on {date}.\n\nInvoice Details:\n- Invoice Number: {number}\n- Amount Due: {amount}\n- Due Date: {date}\n\nPlease process the payment at your earliest convenience to avoid any delays.\n\nThank you for your business.\n\nBest regards,\nAccounts Team'
+        },
+        {
+          name: 'Shipping Update',
+          subject: 'Shipping Update - Order #{number}',
+          content: 'Dear {buyer},\n\nWe are pleased to inform you that your order #{number} has been shipped.\n\nShipping Details:\n- Tracking Number: {tracking}\n- Carrier: {carrier}\n- Estimated Delivery: {date}\n\nYou can track your shipment using the tracking number above.\n\nThank you for choosing our services.\n\nBest regards,\nLogistics Team'
+        },
+        {
+          name: 'Quality Assurance',
+          subject: 'Quality Inspection Results - Batch {batch}',
+          content: 'Dear {buyer},\n\nQuality inspection for batch {batch} has been completed successfully.\n\nInspection Results:\n- All parameters meet specifications\n- Certificate of Analysis attached\n- Ready for delivery\n\nPlease let us know if you require any additional documentation.\n\nBest regards,\nQuality Team'
+        },
+        {
+          name: 'Meeting Request',
+          subject: 'Meeting Request - {topic}',
+          content: 'Dear {buyer},\n\nI would like to schedule a meeting to discuss {topic}.\n\nProposed Time: {time}\nProposed Date: {date}\nDuration: {duration}\n\nPlease let me know your availability or suggest alternative times that work for you.\n\nBest regards,\nVendor Team'
+        }
+      ];
+
+      const template = templates[index];
+      closeTemplates();
+      openComposeModal();
+
+      // Pre-fill compose modal with template
+      setTimeout(() => {
+        const subjectInput = document.querySelector('#composeModal input[type="text"]');
+        const messageTextarea = document.querySelector('#composeModal textarea');
+
+        subjectInput.value = template.subject;
+        messageTextarea.value = template.content;
+
+        showToast(`Template "${template.name}" loaded`, 'success');
+      }, 100);
+    }
+
+    function createCustomTemplate() {
+      closeTemplates();
+      showToast('Custom template creation coming soon!', 'info');
+    }
+  </script>
+</body>
+</html>

@@ -540,62 +540,62 @@
     </div>
 
     <script>
+        // Backend API Configuration
+        const API_BASE_URL = 'http://localhost:3000/api/prs';
+
         // Global variables
         let currentPRId = null;
         let prItemCounter = 1;
         let isEditMode = false;
-        
-        // Sample PR data for management
-        const samplePRs = [
-            {
-                id: 'PR-2025-001234',
-                title: 'IT Equipment Procurement',
-                department: 'IT',
-                requestor: 'John Smith',
-                amount: 245000,
-                status: 'Draft',
-                date: '2025-08-24',
-                priority: 'Medium',
-                items: [
-                    { description: 'Dell Laptops', category: 'IT Hardware', quantity: 10, unit: 'Each', unitPrice: 45000, total: 450000 }
-                ]
-            },
-            {
-                id: 'PR-2025-001235',
-                title: 'Office Furniture Upgrade',
-                department: 'HR',
-                requestor: 'Sarah Wilson',
-                amount: 125000,
-                status: 'Submitted',
-                date: '2025-08-23',
-                priority: 'Low',
-                items: []
-            },
-            {
-                id: 'PR-2025-001236',
-                title: 'Marketing Campaign Software',
-                department: 'Marketing',
-                requestor: 'Michael Chen',
-                amount: 85000,
-                status: 'Approved',
-                date: '2025-08-22',
-                priority: 'High',
-                items: []
-            },
-            {
-                id: 'PR-2025-001237',
-                title: 'Server Maintenance Contract',
-                department: 'IT',
-                requestor: 'David Johnson',
-                amount: 350000,
-                status: 'Rejected',
-                date: '2025-08-21',
-                priority: 'Urgent',
-                items: []
-            }
-        ];
 
-        // Navigation Functions
+        // API Helper Functions
+        async function apiRequest(method, endpoint, data = null) {
+            try {
+                const config = {
+                    method,
+                    url: `${API_BASE_URL}${endpoint}`,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                };
+
+                if (data) {
+                    config.data = JSON.stringify(data);
+                }
+
+                const response = await fetch(config.url, config);
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || `HTTP error! status: ${response.status}`);
+                }
+
+                return result;
+            } catch (error) {
+                console.error(`API Error (${method} ${endpoint}):`, error);
+                throw error;
+            }
+        }
+
+        // Load dashboard statistics
+        async function loadDashboardStats() {
+            try {
+                const response = await apiRequest('GET', '/stats/overview');
+
+                if (response.success) {
+                    const stats = response.data;
+
+                    // Update metrics cards
+                    document.querySelector('.animate-counter:nth-child(1) .text-3xl').textContent = stats.totalPRs || 0;
+                    document.querySelector('.animate-counter:nth-child(2) .text-3xl').textContent = stats.draftPRs || 0;
+                    document.querySelector('.animate-counter:nth-child(3) .text-3xl').textContent = stats.submittedPRs || 0;
+                    document.querySelector('.animate-counter:nth-child(4) .text-3xl').textContent = `₹${(stats.totalValue || 0).toLocaleString('en-IN')}`;
+                }
+            } catch (error) {
+                console.error('Error loading dashboard stats:', error);
+                // Keep default values if API fails
+            }
+        }        // Navigation Functions
         function navigateToBuyerDashboard() {
             try {
                 if (hasUnsavedChanges()) {
@@ -799,37 +799,135 @@
             if (!validateBasicFields()) {
                 return;
             }
-            
+
             const prData = collectFormData();
             prData.status = 'Draft';
-            
-            // Simulate saving to backend
-            localStorage.setItem(`pr_draft_${prData.prNumber}`, JSON.stringify(prData));
-            
-            showNotification('PR saved as draft successfully!', 'success');
-            updatePRStatus('Draft');
+
+            // Show loading state
+            const saveBtn = document.getElementById('saveDraftBtn');
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
+            saveBtn.disabled = true;
+
+            try {
+                if (isEditMode && currentPRId) {
+                    // Update existing PR
+                    apiRequest('PUT', `/${currentPRId}`, prData).then(result => {
+                        if (result.success) {
+                            showNotification('PR draft updated successfully!', 'success');
+                            updatePRStatus('Draft');
+                        } else {
+                            showNotification('Failed to update PR draft', 'error');
+                        }
+                    }).catch(error => {
+                        showNotification(`Error updating PR: ${error.message}`, 'error');
+                    });
+                } else {
+                    // Create new PR
+                    apiRequest('POST', '/', prData).then(result => {
+                        if (result.success) {
+                            currentPRId = result.data._id;
+                            document.getElementById('prNumber').value = result.data.prNumber;
+                            isEditMode = true;
+                            showNotification('PR draft saved successfully!', 'success');
+                            updatePRStatus('Draft');
+                        } else {
+                            showNotification('Failed to save PR draft', 'error');
+                        }
+                    }).catch(error => {
+                        showNotification(`Error saving PR: ${error.message}`, 'error');
+                    });
+                }
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            } finally {
+                // Reset button state
+                setTimeout(() => {
+                    saveBtn.innerHTML = originalText;
+                    saveBtn.disabled = false;
+                }, 1000);
+            }
         }
 
         function submitPR() {
             if (!validatePRForm()) {
                 return;
             }
-            
+
             const prData = collectFormData();
             prData.status = 'Submitted';
-            prData.submittedDate = new Date().toISOString().split('T')[0];
-            
-            // Simulate submission to backend
-            localStorage.setItem(`pr_${prData.prNumber}`, JSON.stringify(prData));
-            
-            showNotification('PR submitted successfully for approval!', 'success');
-            updatePRStatus('Submitted');
-            
-            // Add success animation
-            document.getElementById('prForm').classList.add('success-animation');
-            setTimeout(() => {
-                document.getElementById('prForm').classList.remove('success-animation');
-            }, 600);
+
+            // Show loading state
+            const submitBtn = document.getElementById('submitPRBtn');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Submitting...';
+            submitBtn.disabled = true;
+
+            try {
+                if (isEditMode && currentPRId) {
+                    // Update and submit existing PR
+                    apiRequest('PUT', `/${currentPRId}`, prData).then(result => {
+                        if (result.success) {
+                            // Submit for approval
+                            return apiRequest('POST', `/${currentPRId}/submit`);
+                        } else {
+                            throw new Error('Failed to update PR');
+                        }
+                    }).then(result => {
+                        if (result.success) {
+                            showNotification('PR submitted successfully for approval!', 'success');
+                            updatePRStatus('Submitted');
+
+                            // Add success animation
+                            document.getElementById('prForm').classList.add('success-animation');
+                            setTimeout(() => {
+                                document.getElementById('prForm').classList.remove('success-animation');
+                            }, 600);
+                        } else {
+                            showNotification('Failed to submit PR', 'error');
+                        }
+                    }).catch(error => {
+                        showNotification(`Error submitting PR: ${error.message}`, 'error');
+                    });
+                } else {
+                    // Create and submit new PR
+                    apiRequest('POST', '/', prData).then(result => {
+                        if (result.success) {
+                            currentPRId = result.data._id;
+                            document.getElementById('prNumber').value = result.data.prNumber;
+                            isEditMode = true;
+
+                            // Submit for approval
+                            return apiRequest('POST', `/${currentPRId}/submit`);
+                        } else {
+                            throw new Error('Failed to create PR');
+                        }
+                    }).then(result => {
+                        if (result.success) {
+                            showNotification('PR created and submitted successfully for approval!', 'success');
+                            updatePRStatus('Submitted');
+
+                            // Add success animation
+                            document.getElementById('prForm').classList.add('success-animation');
+                            setTimeout(() => {
+                                document.getElementById('prForm').classList.remove('success-animation');
+                            }, 600);
+                        } else {
+                            showNotification('PR created but failed to submit', 'warning');
+                        }
+                    }).catch(error => {
+                        showNotification(`Error: ${error.message}`, 'error');
+                    });
+                }
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            } finally {
+                // Reset button state
+                setTimeout(() => {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }, 1000);
+            }
         }
 
         function validateBasicFields() {
@@ -848,7 +946,6 @@
 
         function collectFormData() {
             const formData = {
-                prNumber: document.getElementById('prNumber').value,
                 title: document.getElementById('prTitle').value,
                 department: document.getElementById('department').value,
                 requestor: document.getElementById('requestor').value,
@@ -862,30 +959,54 @@
                 vendorContact: document.getElementById('vendorContact').value,
                 vendorEmail: document.getElementById('vendorEmail').value,
                 vendorPhone: document.getElementById('vendorPhone').value,
-                vendorNotes: document.getElementById('vendorNotes').value,
                 directManager: document.getElementById('directManager').value,
                 financeApprover: document.getElementById('financeApprover').value,
                 approverInstructions: document.getElementById('approverInstructions').value,
                 items: [],
-                createdDate: new Date().toISOString().split('T')[0]
+                attachments: [],
+                approvals: []
             };
-            
+
             // Collect items
-            document.querySelectorAll('#prItemsTable tr[data-item]').forEach(row => {
+            document.querySelectorAll('#prItemsTable tr[data-item]').forEach((row, index) => {
                 const item = {
                     description: row.querySelector('.item-description').value,
                     category: row.querySelector('.item-category').value,
                     quantity: parseFloat(row.querySelector('.item-quantity').value) || 0,
                     unit: row.querySelector('.item-unit').value,
                     unitPrice: parseFloat(row.querySelector('.item-unitprice').value) || 0,
-                    total: parseFloat(row.querySelector('.item-total').textContent.replace('₹', '').replace(',', '')) || 0
+                    supplier: 'To be determined', // Default supplier
+                    notes: `Item ${index + 1}`
                 };
-                
-                if (item.description) {
+
+                if (item.description && item.quantity > 0 && item.unitPrice > 0) {
                     formData.items.push(item);
                 }
             });
-            
+
+            // Add default approvals if manager is specified
+            if (formData.directManager) {
+                formData.approvals.push({
+                    levelName: 'Manager',
+                    approver: formData.directManager,
+                    approverEmail: `${formData.directManager.toLowerCase().replace(' ', '.')}@company.com`,
+                    approverDepartment: formData.department,
+                    dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
+                    comments: 'Please review and approve this purchase request'
+                });
+            }
+
+            if (formData.financeApprover && formData.financeApprover !== 'Auto-Assign') {
+                formData.approvals.push({
+                    levelName: 'Finance',
+                    approver: formData.financeApprover,
+                    approverEmail: `${formData.financeApprover.toLowerCase().replace(' ', '.')}@company.com`,
+                    approverDepartment: 'Finance',
+                    dueDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 10 days from now
+                    comments: 'Please verify budget allocation and financial approval'
+                });
+            }
+
             return formData;
         }
 
@@ -953,44 +1074,66 @@
         }
 
         // PR Management Functions
-        function loadPRList() {
-            const tbody = document.getElementById('prListTable');
-            tbody.innerHTML = '';
-            
-            samplePRs.forEach(pr => {
-                const row = document.createElement('tr');
-                row.className = 'hover:bg-gray-50';
-                
-                row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${pr.id}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${pr.title}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${pr.department}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${pr.requestor}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹${pr.amount.toLocaleString('en-IN')}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(pr.status)}">
-                            ${pr.status}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(pr.date).toLocaleDateString('en-IN')}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button onclick="editPR('${pr.id}')" class="text-blue-600 hover:text-blue-900 mr-2" ${pr.status === 'Approved' ? 'disabled title="Cannot edit approved PR"' : ''}>
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button onclick="viewPR('${pr.id}')" class="text-green-600 hover:text-green-900 mr-2">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button onclick="duplicatePR('${pr.id}')" class="text-purple-600 hover:text-purple-900 mr-2">
-                            <i class="fas fa-copy"></i>
-                        </button>
-                        <button onclick="deletePR('${pr.id}')" class="text-red-600 hover:text-red-900" ${pr.status === 'Submitted' || pr.status === 'Approved' ? 'disabled title="Cannot delete submitted/approved PR"' : ''}>
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                `;
-                
-                tbody.appendChild(row);
-            });
+        async function loadPRList() {
+            try {
+                const tbody = document.getElementById('prListTable');
+                tbody.innerHTML = '<tr><td colspan="8" class="px-6 py-4 text-center text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i>Loading PRs...</td></tr>';
+
+                const response = await apiRequest('GET', '/?page=1&limit=20');
+
+                if (response.success) {
+                    tbody.innerHTML = '';
+
+                    if (response.data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="8" class="px-6 py-4 text-center text-gray-500">No PRs found</td></tr>';
+                        return;
+                    }
+
+                    response.data.forEach(pr => {
+                        const row = document.createElement('tr');
+                        row.className = 'hover:bg-gray-50';
+
+                        const totalAmount = pr.items ? pr.items.reduce((sum, item) => sum + (item.total || 0), 0) : 0;
+
+                        row.innerHTML = `
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${pr.prNumber}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${pr.title}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${pr.department}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${pr.requestor}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹${totalAmount.toLocaleString('en-IN')}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(pr.status)}">
+                                    ${pr.status}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(pr.createdDate).toLocaleDateString('en-IN')}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <button onclick="editPR('${pr._id}')" class="text-blue-600 hover:text-blue-900 mr-2" ${pr.status === 'Approved' ? 'disabled title="Cannot edit approved PR"' : ''}>
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="viewPR('${pr._id}')" class="text-green-600 hover:text-green-900 mr-2">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button onclick="duplicatePR('${pr._id}')" class="text-purple-600 hover:text-purple-900 mr-2">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                <button onclick="deletePR('${pr._id}')" class="text-red-600 hover:text-red-900" ${pr.status === 'Submitted' || pr.status === 'Approved' ? 'disabled title="Cannot delete submitted/approved PR"' : ''}>
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        `;
+
+                        tbody.appendChild(row);
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="8" class="px-6 py-4 text-center text-red-500">Failed to load PRs</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error loading PRs:', error);
+                const tbody = document.getElementById('prListTable');
+                tbody.innerHTML = '<tr><td colspan="8" class="px-6 py-4 text-center text-red-500">Error loading PRs</td></tr>';
+                showNotification(`Error loading PRs: ${error.message}`, 'error');
+            }
         }
 
         function getStatusClass(status) {
@@ -1003,132 +1146,264 @@
             }
         }
 
-        function editPR(prId) {
-            const pr = samplePRs.find(p => p.id === prId);
-            if (!pr) return;
-            
-            if (pr.status === 'Approved') {
-                showNotification('Cannot edit approved PR', 'warning');
-                return;
-            }
-            
-            // Load PR data into form
-            document.getElementById('prNumber').value = pr.id;
-            document.getElementById('prTitle').value = pr.title;
-            document.getElementById('department').value = pr.department;
-            document.getElementById('requestor').value = pr.requestor;
-            document.getElementById('priority').value = pr.priority;
-            document.getElementById('estimatedBudget').value = pr.amount;
-            
-            // Switch to create tab
-            switchTab('create');
-            
-            // Update form state
-            currentPRId = prId;
-            isEditMode = true;
-            updatePRStatus(pr.status);
-            
-            showNotification(`Loaded PR ${prId} for editing`, 'info');
-        }
+        async function editPR(prId) {
+            try {
+                const response = await apiRequest('GET', `/${prId}`);
 
-        function viewPR(prId) {
-            const pr = samplePRs.find(p => p.id === prId);
-            if (!pr) return;
-            
-            const viewHTML = `
-                <div class="max-w-4xl mx-auto">
-                    <div class="bg-white p-6">
-                        <div class="flex items-center justify-between mb-6">
-                            <h3 class="text-xl font-semibold text-gray-900">${pr.title}</h3>
-                            <span class="px-3 py-1 rounded-full text-sm font-medium ${getStatusClass(pr.status)}">
-                                ${pr.status}
-                            </span>
-                        </div>
-                        
-                        <div class="grid grid-cols-2 gap-6 mb-6">
-                            <div>
-                                <h4 class="font-medium text-gray-900 mb-3">PR Details</h4>
-                                <div class="space-y-2 text-sm">
-                                    <div><strong>PR Number:</strong> ${pr.id}</div>
-                                    <div><strong>Department:</strong> ${pr.department}</div>
-                                    <div><strong>Requestor:</strong> ${pr.requestor}</div>
-                                    <div><strong>Priority:</strong> ${pr.priority}</div>
-                                    <div><strong>Date Created:</strong> ${new Date(pr.date).toLocaleDateString('en-IN')}</div>
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <h4 class="font-medium text-gray-900 mb-3">Financial Information</h4>
-                                <div class="space-y-2 text-sm">
-                                    <div><strong>Total Amount:</strong> ₹${pr.amount.toLocaleString('en-IN')}</div>
-                                    <div><strong>Currency:</strong> INR</div>
-                                    <div><strong>Status:</strong> ${pr.status}</div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="border-t pt-4">
-                            <div class="flex justify-end space-x-3">
-                                <button onclick="editPR('${pr.id}')" class="px-4 py-2 gradient-blue text-white rounded-lg hover:opacity-90">
-                                    <i class="fas fa-edit mr-2"></i>Edit PR
-                                </button>
-                                <button onclick="duplicatePR('${pr.id}')" class="px-4 py-2 gradient-purple text-white rounded-lg hover:opacity-90">
-                                    <i class="fas fa-copy mr-2"></i>Duplicate
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            showModal(`PR Details - ${pr.id}`, viewHTML);
-        }
+                if (response.success) {
+                    const pr = response.data;
 
-        function duplicatePR(prId) {
-            const pr = samplePRs.find(p => p.id === prId);
-            if (!pr) return;
-            
-            if (confirm(`Create a copy of PR ${prId}?`)) {
-                // Generate new PR number
-                const newPRNumber = `PR-2025-${String(Date.now()).slice(-6)}`;
-                
-                // Load PR data into form with new PR number
-                document.getElementById('prNumber').value = newPRNumber;
-                document.getElementById('prTitle').value = `Copy of ${pr.title}`;
-                document.getElementById('department').value = pr.department;
-                document.getElementById('requestor').value = pr.requestor;
-                document.getElementById('priority').value = pr.priority;
-                document.getElementById('estimatedBudget').value = pr.amount;
-                
-                // Switch to create tab
-                switchTab('create');
-                
-                // Reset form state
-                currentPRId = null;
-                isEditMode = false;
-                updatePRStatus('Draft');
-                
-                showNotification(`Created copy of PR ${prId}`, 'success');
-            }
-        }
+                    if (pr.status === 'Approved') {
+                        showNotification('Cannot edit approved PR', 'warning');
+                        return;
+                    }
 
-        function deletePR(prId) {
-            const pr = samplePRs.find(p => p.id === prId);
-            if (!pr) return;
-            
-            if (pr.status === 'Submitted' || pr.status === 'Approved') {
-                showNotification('Cannot delete submitted or approved PR', 'warning');
-                return;
-            }
-            
-            if (confirm(`Delete PR ${prId}? This action cannot be undone.`)) {
-                // Remove from sample data
-                const index = samplePRs.findIndex(p => p.id === prId);
-                if (index > -1) {
-                    samplePRs.splice(index, 1);
-                    loadPRList();
-                    showNotification(`PR ${prId} deleted successfully`, 'success');
+                    // Load PR data into form
+                    document.getElementById('prNumber').value = pr.prNumber;
+                    document.getElementById('prTitle').value = pr.title;
+                    document.getElementById('department').value = pr.department;
+                    document.getElementById('requestor').value = pr.requestor;
+                    document.getElementById('costCenter').value = pr.costCenter;
+                    document.getElementById('priority').value = pr.priority;
+                    document.getElementById('requiredDate').value = pr.requiredDate;
+                    document.getElementById('estimatedBudget').value = pr.estimatedBudget;
+                    document.getElementById('currency').value = pr.currency;
+                    document.getElementById('businessJustification').value = pr.businessJustification;
+                    document.getElementById('preferredVendor').value = pr.preferredVendor;
+                    document.getElementById('vendorContact').value = pr.vendorContact;
+                    document.getElementById('vendorEmail').value = pr.vendorEmail;
+                    document.getElementById('vendorPhone').value = pr.vendorPhone;
+                    document.getElementById('directManager').value = pr.directManager;
+                    document.getElementById('financeApprover').value = pr.financeApprover;
+                    document.getElementById('approverInstructions').value = pr.approverInstructions;
+
+                    // Load items
+                    if (pr.items && pr.items.length > 0) {
+                        // Clear existing items except first row
+                        const tbody = document.getElementById('prItemsTable');
+                        const existingRows = tbody.querySelectorAll('tr[data-item]');
+                        for (let i = 1; i < existingRows.length; i++) {
+                            existingRows[i].remove();
+                        }
+
+                        // Load first item
+                        if (pr.items[0]) {
+                            const firstRow = existingRows[0];
+                            firstRow.querySelector('.item-description').value = pr.items[0].description || '';
+                            firstRow.querySelector('.item-category').value = pr.items[0].category || '';
+                            firstRow.querySelector('.item-quantity').value = pr.items[0].quantity || '';
+                            firstRow.querySelector('.item-unit').value = pr.items[0].unit || '';
+                            firstRow.querySelector('.item-unitprice').value = pr.items[0].unitPrice || '';
+                            calculateItemTotal(firstRow.querySelector('.item-quantity'));
+                        }
+
+                        // Add additional items
+                        for (let i = 1; i < pr.items.length; i++) {
+                            addPRItem();
+                            const newRow = tbody.querySelectorAll('tr[data-item]')[i];
+                            if (newRow && pr.items[i]) {
+                                newRow.querySelector('.item-description').value = pr.items[i].description || '';
+                                newRow.querySelector('.item-category').value = pr.items[i].category || '';
+                                newRow.querySelector('.item-quantity').value = pr.items[i].quantity || '';
+                                newRow.querySelector('.item-unit').value = pr.items[i].unit || '';
+                                newRow.querySelector('.item-unitprice').value = pr.items[i].unitPrice || '';
+                                calculateItemTotal(newRow.querySelector('.item-quantity'));
+                            }
+                        }
+                    }
+
+                    // Switch to create tab
+                    switchTab('create');
+
+                    // Update form state
+                    currentPRId = prId;
+                    isEditMode = true;
+                    updatePRStatus(pr.status);
+
+                    showNotification(`Loaded PR ${pr.prNumber} for editing`, 'info');
+                } else {
+                    showNotification('Failed to load PR details', 'error');
                 }
+            } catch (error) {
+                console.error('Error loading PR:', error);
+                showNotification(`Error loading PR: ${error.message}`, 'error');
+            }
+        }
+
+        async function viewPR(prId) {
+            try {
+                const response = await apiRequest('GET', `/${prId}`);
+
+                if (response.success) {
+                    const pr = response.data;
+                    const totalAmount = pr.items ? pr.items.reduce((sum, item) => sum + (item.total || 0), 0) : 0;
+
+                    const viewHTML = `
+                        <div class="max-w-4xl mx-auto">
+                            <div class="bg-white p-6">
+                                <div class="flex items-center justify-between mb-6">
+                                    <h3 class="text-xl font-semibold text-gray-900">${pr.title}</h3>
+                                    <span class="px-3 py-1 rounded-full text-sm font-medium ${getStatusClass(pr.status)}">
+                                        ${pr.status}
+                                    </span>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-6 mb-6">
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 mb-3">PR Details</h4>
+                                        <div class="space-y-2 text-sm">
+                                            <div><strong>PR Number:</strong> ${pr.prNumber}</div>
+                                            <div><strong>Department:</strong> ${pr.department}</div>
+                                            <div><strong>Requestor:</strong> ${pr.requestor}</div>
+                                            <div><strong>Priority:</strong> ${pr.priority}</div>
+                                            <div><strong>Date Created:</strong> ${new Date(pr.createdDate).toLocaleDateString('en-IN')}</div>
+                                            <div><strong>Required Date:</strong> ${new Date(pr.requiredDate).toLocaleDateString('en-IN')}</div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 mb-3">Financial Information</h4>
+                                        <div class="space-y-2 text-sm">
+                                            <div><strong>Total Amount:</strong> ₹${totalAmount.toLocaleString('en-IN')}</div>
+                                            <div><strong>Currency:</strong> ${pr.currency}</div>
+                                            <div><strong>Status:</strong> ${pr.status}</div>
+                                            <div><strong>Cost Center:</strong> ${pr.costCenter}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                ${pr.businessJustification ? `
+                                <div class="mb-6">
+                                    <h4 class="font-medium text-gray-900 mb-2">Business Justification</h4>
+                                    <p class="text-sm text-gray-600 bg-gray-50 p-3 rounded">${pr.businessJustification}</p>
+                                </div>
+                                ` : ''}
+
+                                ${pr.items && pr.items.length > 0 ? `
+                                <div class="mb-6">
+                                    <h4 class="font-medium text-gray-900 mb-3">Items</h4>
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-sm">
+                                            <thead class="bg-gray-50">
+                                                <tr>
+                                                    <th class="px-3 py-2 text-left">Description</th>
+                                                    <th class="px-3 py-2 text-left">Category</th>
+                                                    <th class="px-3 py-2 text-left">Qty</th>
+                                                    <th class="px-3 py-2 text-left">Unit</th>
+                                                    <th class="px-3 py-2 text-left">Unit Price</th>
+                                                    <th class="px-3 py-2 text-left">Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                ${pr.items.map(item => `
+                                                    <tr class="border-b">
+                                                        <td class="px-3 py-2">${item.description}</td>
+                                                        <td class="px-3 py-2">${item.category}</td>
+                                                        <td class="px-3 py-2">${item.quantity}</td>
+                                                        <td class="px-3 py-2">${item.unit}</td>
+                                                        <td class="px-3 py-2">₹${item.unitPrice.toLocaleString('en-IN')}</td>
+                                                        <td class="px-3 py-2">₹${item.total.toLocaleString('en-IN')}</td>
+                                                    </tr>
+                                                `).join('')}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                ` : ''}
+
+                                <div class="border-t pt-4">
+                                    <div class="flex justify-end space-x-3">
+                                        <button onclick="editPR('${pr._id}')" class="px-4 py-2 gradient-blue text-white rounded-lg hover:opacity-90">
+                                            <i class="fas fa-edit mr-2"></i>Edit PR
+                                        </button>
+                                        <button onclick="duplicatePR('${pr._id}')" class="px-4 py-2 gradient-purple text-white rounded-lg hover:opacity-90">
+                                            <i class="fas fa-copy mr-2"></i>Duplicate
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    showModal(`PR Details - ${pr.prNumber}`, viewHTML);
+                } else {
+                    showNotification('Failed to load PR details', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading PR:', error);
+                showNotification(`Error loading PR: ${error.message}`, 'error');
+            }
+        }
+
+        async function duplicatePR(prId) {
+            try {
+                const response = await apiRequest('GET', `/${prId}`);
+
+                if (response.success) {
+                    const pr = response.data;
+
+                    if (confirm(`Create a copy of PR ${pr.prNumber}?`)) {
+                        // Create a copy with new title
+                        const duplicateData = {
+                            ...pr,
+                            title: `Copy of ${pr.title}`,
+                            status: 'Draft',
+                            prNumber: undefined, // Let backend generate new PR number
+                            _id: undefined,
+                            createdDate: undefined,
+                            submittedDate: undefined,
+                            approvedDate: undefined,
+                            rejectedDate: undefined
+                        };
+
+                        const createResponse = await apiRequest('POST', '/', duplicateData);
+
+                        if (createResponse.success) {
+                            showNotification(`Created copy of PR ${pr.prNumber}`, 'success');
+                            // Optionally switch to edit mode with the new PR
+                            editPR(createResponse.data._id);
+                        } else {
+                            showNotification('Failed to duplicate PR', 'error');
+                        }
+                    }
+                } else {
+                    showNotification('Failed to load PR details', 'error');
+                }
+            } catch (error) {
+                console.error('Error duplicating PR:', error);
+                showNotification(`Error duplicating PR: ${error.message}`, 'error');
+            }
+        }
+
+        async function deletePR(prId) {
+            try {
+                // First get PR details to check status
+                const response = await apiRequest('GET', `/${prId}`);
+
+                if (response.success) {
+                    const pr = response.data;
+
+                    if (pr.status === 'Submitted' || pr.status === 'Approved') {
+                        showNotification('Cannot delete submitted or approved PR', 'warning');
+                        return;
+                    }
+
+                    if (confirm(`Delete PR ${pr.prNumber}? This action cannot be undone.`)) {
+                        const deleteResponse = await apiRequest('DELETE', `/${prId}`);
+
+                        if (deleteResponse.success) {
+                            showNotification(`PR ${pr.prNumber} deleted successfully`, 'success');
+                            loadPRList(); // Refresh the list
+                        } else {
+                            showNotification('Failed to delete PR', 'error');
+                        }
+                    }
+                } else {
+                    showNotification('Failed to load PR details', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting PR:', error);
+                showNotification(`Error deleting PR: ${error.message}`, 'error');
             }
         }
 
@@ -1217,6 +1492,9 @@
             // Set minimum date to today
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('requiredDate').min = today;
+
+            // Load dashboard statistics
+            loadDashboardStats();
             
             // Add keyboard shortcuts
             document.addEventListener('keydown', function(e) {

@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAP ME49 - Price Comparison List</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .sap-header {
+            background: linear-gradient(135deg, #003366 0%, #0066cc 100%);
+        }
+        .sap-button {
+            background: #007cba;
+            border: 1px solid #005a9e;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .sap-button:hover {
+            background: #005a9e;
+        }
+        .sap-button-secondary {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            color: #495057;
+        }
+        .sap-button-secondary:hover {
+            background: #e9ecef;
+        }
+        .sap-button-success {
+            background: #28a745;
+            border: 1px solid #1e7e34;
+            color: white;
+        }
+        .sap-button-success:hover {
+            background: #1e7e34;
+        }
+        .sap-input {
+            border: 1px solid #ced4da;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .sap-input:focus {
+            border-color: #007cba;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 124, 186, 0.25);
+        }
+        .sap-select {
+            border: 1px solid #ced4da;
+            padding: 6px 12px;
+            border-radius: 4px;
+            background: white;
+            font-size: 14px;
+        }
+        .sap-card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .comparison-table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 12px;
+        }
+        .comparison-table th,
+        .comparison-table td {
+            border: 1px solid #dee2e6;
+            padding: 6px 8px;
+            text-align: center;
+        }
+        .comparison-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .comparison-table .vendor-header {
+            background: #e9ecef;
+            font-weight: bold;
+        }
+        .comparison-table .item-row {
+            background: #f8f9fa;
+        }
+        .best-price {
+            background: #d4edda !important;
+            font-weight: bold;
+            color: #155724;
+        }
+        .second-best {
+            background: #fff3cd !important;
+            color: #856404;
+        }
+        .worst-price {
+            background: #f8d7da !important;
+            color: #721c24;
+        }
+        .selected-vendor {
+            background: #cce7ff !important;
+            border: 2px solid #007cba !important;
+        }
+        .price-difference {
+            font-size: 10px;
+            color: #6c757d;
+        }
+        .score-high {
+            background: #d4edda;
+            color: #155724;
+        }
+        .score-medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .score-low {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .sticky-column {
+            position: sticky;
+            left: 0;
+            background: white;
+            z-index: 5;
+        }
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .metric-card {
+            transition: transform 0.2s;
+        }
+        .metric-card:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- SAP Header -->
+    <header class="sap-header text-white p-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <i class="fas fa-balance-scale text-2xl"></i>
+                <div>
+                    <h1 class="text-xl font-bold">SAP ME49 - Price Comparison List</h1>
+                    <p class="text-sm opacity-90">Comprehensive Quotation Analysis and Comparison</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-sm">User: BUYER01</span>
+                <span class="text-sm">Company: 1000</span>
+                <button class="sap-button-secondary" onclick="logout()">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="flex">
+        <!-- Sidebar Navigation -->
+        <nav class="w-64 bg-white border-r border-gray-200 min-h-screen">
+            <div class="p-4">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">Price Comparison</h2>
+                <ul class="space-y-2">
+                    <li>
+                        <button onclick="showTab('rfqList')" class="sap-tab active w-full text-left">
+                            <i class="fas fa-list mr-2"></i>All RFQs
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="showTab('overview')" class="sap-tab w-full text-left">
+                            <i class="fas fa-chart-line mr-2"></i>Overview
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="showTab('comparison')" class="sap-tab w-full text-left">
+                            <i class="fas fa-table mr-2"></i>Detailed Comparison
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="showTab('awarded')" class="sap-tab w-full text-left">
+                            <i class="fas fa-trophy mr-2"></i>Awarded Vendors
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="showTab('analysis')" class="sap-tab w-full text-left">
+                            <i class="fas fa-chart-bar mr-2"></i>Analysis & Scoring
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="showTab('recommendations')" class="sap-tab w-full text-left">
+                            <i class="fas fa-lightbulb mr-2"></i>Recommendations
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="showTab('reports')" class="sap-tab w-full text-left">
+                            <i class="fas fa-file-pdf mr-2"></i>Reports
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 p-6">
+            <!-- RFQ Selection -->
+            <div class="sap-card p-6 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Select RFQ for Price Comparison</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">RFQ Number</label>
+                        <select id="rfqSelect" class="sap-select w-full" onchange="loadRFQData()">
+                            <option value="">Choose RFQ...</option>
+                            <!-- RFQ options will be loaded here -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Comparison Type</label>
+                        <select id="comparisonType" class="sap-select w-full">
+                            <option value="all">All Quotations</option>
+                            <option value="valid">Valid Only</option>
+                            <option value="shortlisted">Shortlisted</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                        <select id="sortBy" class="sap-select w-full" onchange="sortComparison()">
+                            <option value="vendor">Vendor Name</option>
+                            <option value="total">Total Price</option>
+                            <option value="score">Overall Score</option>
+                            <option value="delivery">Delivery Date</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="refreshComparison()" class="sap-button w-full">
+                            <i class="fas fa-sync-alt mr-2"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RFQ List Tab -->
+            <div id="rfqListTab" class="tab-content">
+                <div class="sap-card p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-gray-800">All RFQs Received</h3>
+                        <div class="flex space-x-2">
+                            <select id="rfqStatusFilter" class="sap-select" onchange="filterRFQs()">
+                                <option value="all">All Status</option>
+                                <option value="open">Open</option>
+                                <option value="closed">Closed</option>
+                                <option value="awarded">Awarded</option>
+                            </select>
+                            <button onclick="refreshRFQList()" class="sap-button">
+                                <i class="fas fa-sync-alt mr-2"></i>Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>RFQ Number</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th>Quotations</th>
+                                    <th>Best Price</th>
+                                    <th>Deadline</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rfqListTable">
+                                <!-- RFQ list will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Overview Tab -->
+            <div id="overviewTab" class="tab-content">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                    <!-- Summary Metrics -->
+                    <div class="summary-card p-6 rounded-lg metric-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm opacity-90">Total Quotations</p>
+                                <p class="text-2xl font-bold" id="totalQuotes">0</p>
+                            </div>
+                            <i class="fas fa-file-invoice-dollar text-3xl opacity-80"></i>
+                        </div>
+                    </div>
+
+                    <div class="summary-card p-6 rounded-lg metric-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm opacity-90">Price Range</p>
+                                <p class="text-2xl font-bold" id="priceRange">₹0</p>
+                            </div>
+                            <i class="fas fa-tags text-3xl opacity-80"></i>
+                        </div>
+                    </div>
+
+                    <div class="summary-card p-6 rounded-lg metric-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm opacity-90">Best Price</p>
+                                <p class="text-2xl font-bold" id="bestPrice">₹0</p>
+                            </div>
+                            <i class="fas fa-trophy text-3xl opacity-80"></i>
+                        </div>
+                    </div>
+
+                    <div class="summary-card p-6 rounded-lg metric-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm opacity-90">Avg. Savings</p>
+                                <p class="text-2xl font-bold" id="avgSavings">0%</p>
+                            </div>
+                            <i class="fas fa-percentage text-3xl opacity-80"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RFQ Summary -->
+                <div class="sap-card p-6 mb-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">RFQ Summary</h3>
+                    <div id="rfqSummary" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- RFQ summary will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Quick Comparison Chart -->
+                <div class="sap-card p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Price Overview</h3>
+                    <div id="priceChart" class="h-64 flex items-end justify-center space-x-4">
+                        <!-- Price chart will be generated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Comparison Tab -->
+            <div id="comparisonTab" class="tab-content hidden">
+                <div class="sap-card p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-gray-800">Detailed Price Comparison</h3>
+                        <div class="space-x-2">
+                            <button onclick="highlightBestPrices()" class="sap-button-secondary">
+                                <i class="fas fa-star mr-2"></i>Highlight Best
+                            </button>
+                            <button onclick="exportComparison()" class="sap-button">
+                                <i class="fas fa-download mr-2"></i>Export
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table id="detailedComparisonTable" class="comparison-table">
+                            <!-- Detailed comparison table will be generated here -->
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analysis & Scoring Tab -->
+            <div id="analysisTab" class="tab-content hidden">
+                <div class="sap-card p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6">Analysis & Scoring</h3>
+
+                    <!-- Scoring Criteria -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Price Weight (%)</label>
+                            <input type="number" id="priceWeight" class="sap-input w-full" value="50" min="0" max="100" onchange="recalculateScores()">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Quality Weight (%)</label>
+                            <input type="number" id="qualityWeight" class="sap-input w-full" value="25" min="0" max="100" onchange="recalculateScores()">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Delivery Weight (%)</label>
+                            <input type="number" id="deliveryWeight" class="sap-input w-full" value="15" min="0" max="100" onchange="recalculateScores()">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Service Weight (%)</label>
+                            <input type="number" id="serviceWeight" class="sap-input w-full" value="10" min="0" max="100" onchange="recalculateScores()">
+                        </div>
+                    </div>
+
+                    <!-- Scoring Results -->
+                    <div id="scoringResults" class="space-y-4">
+                        <!-- Scoring results will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recommendations Tab -->
+            <div id="recommendationsTab" class="tab-content hidden">
+                <div class="sap-card p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6">Award Recommendations</h3>
+
+                    <!-- Auto Selection Summary -->
+                    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+                        <div class="flex items-center">
+                            <i class="fas fa-robot text-blue-600 mr-3"></i>
+                            <div>
+                                <h4 class="text-blue-800 font-semibold">Automatic Best Vendor Selection</h4>
+                                <p class="text-blue-600 text-sm">System has automatically selected the best vendor based on price, quality, delivery, and service criteria.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recommendation Engine -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div class="sap-card p-4">
+                            <h4 class="font-semibold mb-3 text-green-600">
+                                <i class="fas fa-trophy mr-2"></i>Recommended Winner
+                            </h4>
+                            <div id="recommendedWinner" class="space-y-2">
+                                <!-- Recommended winner will be shown here -->
+                            </div>
+                        </div>
+
+                        <div class="sap-card p-4">
+                            <h4 class="font-semibold mb-3 text-blue-600">
+                                <i class="fas fa-users mr-2"></i>Alternative Options
+                            </h4>
+                            <div id="alternativeOptions" class="space-y-2">
+                                <!-- Alternative options will be shown here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Award Actions -->
+                    <div class="flex justify-between items-center">
+                        <div class="flex space-x-4">
+                            <button onclick="awardVendor()" class="sap-button-success">
+                                <i class="fas fa-award mr-2"></i>Award Selected Vendor
+                            </button>
+                            <button onclick="sendNotifications()" class="sap-button">
+                                <i class="fas fa-envelope mr-2"></i>Send Notifications
+                            </button>
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Awarding will notify all vendors automatically
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Awarded Vendors Tab -->
+            <div id="awardedTab" class="tab-content hidden">
+                <div class="sap-card p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-gray-800">Awarded Vendors</h3>
+                        <div class="flex space-x-2">
+                            <select id="awardFilter" class="sap-select" onchange="filterAwarded()">
+                                <option value="all">All Awards</option>
+                                <option value="recent">Recent (30 days)</option>
+                                <option value="thisMonth">This Month</option>
+                                <option value="thisYear">This Year</option>
+                            </select>
+                            <button onclick="exportAwarded()" class="sap-button">
+                                <i class="fas fa-download mr-2"></i>Export
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="awardedVendorsList" class="space-y-4">
+                        <!-- Awarded vendors will be displayed here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Global variables
+        let currentRFQ = null;
+        let selectedWinner = null;
+        let quotations = [
+            {
+                id: 'QTN001',
+                rfqNumber: 'RFQ2025001',
+                vendorId: 'SUP001',
+                vendorName: 'ABC Manufacturing Ltd',
+                vendorRating: 4.5,
+                status: 'pending',
+                submittedDate: '2025-09-12',
+                validUntil: '2025-10-12',
+                currency: 'INR',
+                totalValue: 1450000,
+                qualityScore: 85,
+                deliveryScore: 90,
+                serviceScore: 80,
+                items: [
+                    {
+                        itemNumber: '00010',
+                        materialCode: 'MAT001',
+                        description: 'Industrial Pump Assembly',
+                        quantity: 5,
+                        unit: 'EA',
+                        unitPrice: 280000,
+                        totalPrice: 1400000,
+                        deliveryDate: '2025-11-15',
+                        deliveryTerms: 'FOB'
+                    },
+                    {
+                        itemNumber: '00020',
+                        materialCode: 'MAT002',
+                        description: 'Spare Parts Kit',
+                        quantity: 10,
+                        unit: 'BOX',
+                        unitPrice: 5000,
+                        totalPrice: 50000,
+                        deliveryDate: '2025-11-10',
+                        deliveryTerms: 'DDP'
+                    }
+                ],
+                terms: {
+                    paymentTerms: '0002',
+                    incoterms: 'FOB',
+                    deliveryLocation: '1000'
+                },
+                notes: 'Standard warranty applies. Technical support included.'
+            },
+            {
+                id: 'QTN002',
+                rfqNumber: 'RFQ2025001',
+                vendorId: 'SUP002',
+                vendorName: 'XYZ Supplies Inc',
+                vendorRating: 4.2,
+                status: 'pending',
+                submittedDate: '2025-09-13',
+                validUntil: '2025-10-15',
+                currency: 'INR',
+                totalValue: 1520000,
+                qualityScore: 88,
+                deliveryScore: 85,
+                serviceScore: 75,
+                items: [
+                    {
+                        itemNumber: '00010',
+                        materialCode: 'MAT001',
+                        description: 'Industrial Pump Assembly',
+                        quantity: 5,
+                        unit: 'EA',
+                        unitPrice: 295000,
+                        totalPrice: 1475000,
+                        deliveryDate: '2025-11-20',
+                        deliveryTerms: 'CIF'
+                    },
+                    {
+                        itemNumber: '00020',
+                        materialCode: 'MAT002',
+                        description: 'Spare Parts Kit',
+                        quantity: 10,
+                        unit: 'BOX',
+                        unitPrice: 4500,
+                        totalPrice: 45000,
+                        deliveryDate: '2025-11-12',
+                        deliveryTerms: 'DDP'
+                    }
+                ],
+                terms: {
+                    paymentTerms: '0003',
+                    incoterms: 'CIF',
+                    deliveryLocation: '1000'
+                },
+                notes: 'Extended warranty available. On-site installation included.'
+            },
+            {
+                id: 'QTN003',
+                rfqNumber: 'RFQ2025001',
+                vendorId: 'SUP003',
+                vendorName: 'Global Tech Solutions',
+                vendorRating: 4.8,
+                status: 'accepted',
+                submittedDate: '2025-09-14',
+                validUntil: '2025-10-20',
+                currency: 'INR',
+                totalValue: 1380000,
+                qualityScore: 92,
+                deliveryScore: 95,
+                serviceScore: 90,
+                items: [
+                    {
+                        itemNumber: '00010',
+                        materialCode: 'MAT001',
+                        description: 'Industrial Pump Assembly',
+                        quantity: 5,
+                        unit: 'EA',
+                        unitPrice: 265000,
+                        totalPrice: 1325000,
+                        deliveryDate: '2025-11-12',
+                        deliveryTerms: 'FOB'
+                    },
+                    {
+                        itemNumber: '00020',
+                        materialCode: 'MAT002',
+                        description: 'Spare Parts Kit',
+                        quantity: 10,
+                        unit: 'BOX',
+                        unitPrice: 5500,
+                        totalPrice: 55000,
+                        deliveryDate: '2025-11-08',
+                        deliveryTerms: 'DDP'
+                    }
+                ],
+                terms: {
+                    paymentTerms: '0002',
+                    incoterms: 'FOB',
+                    deliveryLocation: '1000'
+                },
+                notes: 'Best value proposition. Fastest delivery available.'
+            },
+            {
+                id: 'QTN004',
+                rfqNumber: 'RFQ2025001',
+                vendorId: 'SUP004',
+                vendorName: 'Quality Parts Co',
+                vendorRating: 4.1,
+                status: 'pending',
+                submittedDate: '2025-09-15',
+                validUntil: '2025-10-18',
+                currency: 'INR',
+                totalValue: 1580000,
+                qualityScore: 78,
+                deliveryScore: 80,
+                serviceScore: 70,
+                items: [
+                    {
+                        itemNumber: '00010',
+                        materialCode: 'MAT001',
+                        description: 'Industrial Pump Assembly',
+                        quantity: 5,
+                        unit: 'EA',
+                        unitPrice: 305000,
+                        totalPrice: 1525000,
+                        deliveryDate: '2025-11-25',
+                        deliveryTerms: 'FOB'
+                    },
+                    {
+                        itemNumber: '00020',
+                        materialCode: 'MAT002',
+                        description: 'Spare Parts Kit',
+                        quantity: 10,
+                        unit: 'BOX',
+                        unitPrice: 5500,
+                        totalPrice: 55000,
+                        deliveryDate: '2025-11-15',
+                        deliveryTerms: 'DDP'
+                    }
+                ],
+                terms: {
+                    paymentTerms: '0003',
+                    incoterms: 'FOB',
+                    deliveryLocation: '1000'
+                },
+                notes: 'Competitive pricing with good quality standards.'
+            }
+        ];
+
+        let awardedVendors = [
+            {
+                id: 'AW001',
+                rfqNumber: 'RFQ2025001',
+                vendorId: 'SUP003',
+                vendorName: 'Global Tech Solutions',
+                awardedDate: '2025-09-14',
+                awardAmount: 1380000,
+                currency: 'INR',
+                status: 'awarded',
+                poNumber: 'PO20250001',
+                items: [
+                    {
+                        materialCode: 'MAT001',
+                        description: 'Industrial Pump Assembly',
+                        quantity: 5,
+                        unitPrice: 265000,
+                        totalPrice: 1325000
+                    },
+                    {
+                        materialCode: 'MAT002',
+                        description: 'Spare Parts Kit',
+                        quantity: 10,
+                        unitPrice: 5500,
+                        totalPrice: 55000
+                    }
+                ]
+            },
+            {
+                id: 'AW002',
+                rfqNumber: 'RFQ2025002',
+                vendorId: 'SUP005',
+                vendorName: 'Premium Parts Ltd',
+                awardedDate: '2025-09-10',
+                awardAmount: 2850000,
+                currency: 'INR',
+                status: 'awarded',
+                poNumber: 'PO20250002',
+                items: [
+                    {
+                        materialCode: 'MAT003',
+                        description: 'High-Performance Servers',
+                        quantity: 3,
+                        unitPrice: 950000,
+                        totalPrice: 2850000
+                    }
+                ]
+            }
+        ];
+
+        let rfqs = [
+            {
+                number: 'RFQ2025001',
+                description: 'Industrial Pumps Procurement',
+                status: 'open',
+                createdDate: '2025-09-10',
+                deadline: '2025-09-20',
+                totalItems: 2,
+                totalQuantity: 15,
+                estimatedValue: 1500000,
+                currency: 'INR'
+            },
+            {
+                number: 'RFQ2025002',
+                description: 'IT Equipment Tender',
+                status: 'closed',
+                createdDate: '2025-09-08',
+                deadline: '2025-09-18',
+                totalItems: 5,
+                totalQuantity: 50,
+                estimatedValue: 2500000,
+                currency: 'INR'
+            }
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRFQOptions();
+            loadRFQList();
+            showTab('rfqList');
+        });
+
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+
+            // Remove active class from all tabs
+            document.querySelectorAll('.sap-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.remove('hidden');
+
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        // Load RFQ options
+        function loadRFQOptions() {
+            const select = document.getElementById('rfqSelect');
+            select.innerHTML = '<option value="">Choose RFQ...</option>';
+
+            rfqs.forEach(rfq => {
+                const option = document.createElement('option');
+                option.value = rfq.number;
+                option.textContent = `${rfq.number} - ${rfq.description}`;
+                select.appendChild(option);
+            });
+        }
+
+        // Load RFQ data
+        function loadRFQData() {
+            const rfqNumber = document.getElementById('rfqSelect').value;
+            if (!rfqNumber) return;
+
+            currentRFQ = rfqs.find(rfq => rfq.number === rfqNumber);
+            const rfqQuotations = quotations.filter(q => q.rfqNumber === rfqNumber);
+
+            updateOverview(rfqQuotations);
+            generateDetailedComparison(rfqQuotations);
+            calculateScores(rfqQuotations);
+            generateRecommendations(rfqQuotations);
+        }
+
+        // Update overview metrics
+        function updateOverview(quotes) {
+            const totalQuotes = quotes.length;
+            const prices = quotes.map(q => q.totalValue);
+            const minPrice = Math.min(...prices);
+            const maxPrice = Math.max(...prices);
+            const priceRange = maxPrice - minPrice;
+            const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
+            const avgSavings = ((avgPrice - minPrice) / avgPrice * 100).toFixed(1);
+
+            document.getElementById('totalQuotes').textContent = totalQuotes;
+            document.getElementById('priceRange').textContent = `₹${priceRange.toLocaleString()}`;
+            document.getElementById('bestPrice').textContent = `₹${minPrice.toLocaleString()}`;
+            document.getElementById('avgSavings').textContent = `${avgSavings}%`;
+
+            // Update RFQ summary
+            updateRFQSummary();
+
+            // Generate price chart
+            generatePriceChart(quotes);
+        }
+
+        // Update RFQ summary
+        function updateRFQSummary() {
+            if (!currentRFQ) return;
+
+            const summary = document.getElementById('rfqSummary');
+            summary.innerHTML = `
+                <div class="bg-blue-50 p-4 rounded">
+                    <div class="font-semibold text-blue-800">${currentRFQ.description}</div>
+                    <div class="text-sm text-blue-600 mt-1">RFQ: ${currentRFQ.number}</div>
+                </div>
+                <div class="bg-green-50 p-4 rounded">
+                    <div class="font-semibold text-green-800">${currentRFQ.totalItems} Items</div>
+                    <div class="text-sm text-green-600 mt-1">${currentRFQ.totalQuantity} Total Quantity</div>
+                </div>
+                <div class="bg-purple-50 p-4 rounded">
+                    <div class="font-semibold text-purple-800">₹${currentRFQ.estimatedValue.toLocaleString()}</div>
+                    <div class="text-sm text-purple-600 mt-1">Estimated Value</div>
+                </div>
+            `;
+        }
+
+        // Generate price chart
+        function generatePriceChart(quotes) {
+            const chart = document.getElementById('priceChart');
+            chart.innerHTML = '';
+
+            const maxPrice = Math.max(...quotes.map(q => q.totalValue));
+            const minPrice = Math.min(...quotes.map(q => q.totalValue));
+
+            quotes.forEach(quote => {
+                const height = (quote.totalValue / maxPrice) * 200;
+                const isBest = quote.totalValue === minPrice;
+                const barColor = isBest ? 'bg-green-500' : 'bg-blue-500';
+
+                const bar = document.createElement('div');
+                bar.className = 'flex flex-col items-center space-y-2';
+                bar.innerHTML = `
+                    <div class="text-xs font-medium text-center w-20 truncate">${quote.vendorName.split(' ')[0]}</div>
+                    <div class="w-12 ${barColor} rounded-t transition-all duration-300 hover:opacity-80" style="height: ${height}px;"></div>
+                    <div class="text-xs text-gray-600">₹${(quote.totalValue / 100000).toFixed(1)}L</div>
+                `;
+                chart.appendChild(bar);
+            });
+        }
+
+        // Generate detailed comparison table
+        function generateDetailedComparison(quotes) {
+            const table = document.getElementById('detailedComparisonTable');
+
+            if (quotes.length === 0) {
+                table.innerHTML = '<tr><td colspan="10" class="text-center py-8 text-gray-500">No quotations found</td></tr>';
+                return;
+            }
+
+            let html = '<thead><tr>';
+            html += '<th class="sticky-column">Item Details</th>';
+
+            quotes.forEach(quote => {
+                html += `<th class="vendor-header">${quote.vendorName}<br><small>Rating: ${quote.vendorRating}/5</small></th>`;
+            });
+
+            html += '</tr></thead><tbody>';
+
+            // Get all unique items
+            const allItems = [];
+            quotes.forEach(quote => {
+                quote.items.forEach(item => {
+                    if (!allItems.find(i => i.materialCode === item.materialCode)) {
+                        allItems.push(item);
+                    }
+                });
+            });
+
+            // Generate rows for each item
+            allItems.forEach(item => {
+                html += `
+                    <tr class="item-row">
+                        <td class="sticky-column font-medium text-left">
+                            <div class="font-semibold">${item.description}</div>
+                            <div class="text-xs text-gray-600">${item.materialCode} • ${item.quantity} ${item.unit}</div>
+                        </td>
+                `;
+
+                quotes.forEach(quote => {
+                    const quoteItem = quote.items.find(i => i.materialCode === item.materialCode);
+                    if (quoteItem) {
+                        const isBestPrice = isBestPriceForItem(quoteItem, quotes, item.materialCode);
+                        const priceClass = isBestPrice ? 'best-price' : '';
+                        html += `
+                            <td class="${priceClass}">
+                                <div class="font-semibold">₹${quoteItem.unitPrice.toLocaleString()}</div>
+                                <div class="text-xs text-gray-600">₹${quoteItem.totalPrice.toLocaleString()}</div>
+                                <div class="text-xs text-gray-500">${quoteItem.deliveryDate}</div>
+                            </td>
+                        `;
+                    } else {
+                        html += '<td class="text-gray-400">-</td>';
+                    }
+                });
+
+                html += '</tr>';
+            });
+
+            // Total row
+            html += '<tr class="font-bold bg-gray-100"><td class="sticky-column">TOTAL VALUE</td>';
+            quotes.forEach(quote => {
+                const isLowestTotal = isLowestTotalPrice(quote, quotes);
+                const totalClass = isLowestTotal ? 'best-price' : '';
+                html += `<td class="${totalClass}">₹${quote.totalValue.toLocaleString()}</td>`;
+            });
+            html += '</tr>';
+
+            html += '</tbody>';
+            table.innerHTML = html;
+        }
+
+        // Helper functions for price comparison
+        function isBestPriceForItem(item, allQuotes, materialCode) {
+            const prices = allQuotes
+                .map(quote => quote.items.find(i => i.materialCode === materialCode))
+                .filter(quoteItem => quoteItem)
+                .map(quoteItem => quoteItem.unitPrice);
+
+            return item.unitPrice === Math.min(...prices);
+        }
+
+        function isLowestTotalPrice(quote, allQuotes) {
+            const totals = allQuotes.map(q => q.totalValue);
+            return quote.totalValue === Math.min(...totals);
+        }
+
+        // Calculate scores
+        function calculateScores(quotes) {
+            const priceWeight = parseFloat(document.getElementById('priceWeight').value) / 100;
+            const qualityWeight = parseFloat(document.getElementById('qualityWeight').value) / 100;
+            const deliveryWeight = parseFloat(document.getElementById('deliveryWeight').value) / 100;
+            const serviceWeight = parseFloat(document.getElementById('serviceWeight').value) / 100;
+
+            const maxPrice = Math.max(...quotes.map(q => q.totalValue));
+            const minPrice = Math.min(...quotes.map(q => q.totalValue));
+
+            quotes.forEach(quote => {
+                // Price score (lower price = higher score)
+                const priceScore = maxPrice === minPrice ? 100 :
+                    ((maxPrice - quote.totalValue) / (maxPrice - minPrice)) * 100;
+
+                // Overall score calculation
+                quote.overallScore = (
+                    priceScore * priceWeight +
+                    quote.qualityScore * qualityWeight +
+                    quote.deliveryScore * deliveryWeight +
+                    quote.serviceScore * serviceWeight
+                ).toFixed(1);
+            });
+
+            displayScoringResults(quotes);
+        }
+
+        // Display scoring results
+        function displayScoringResults(quotes) {
+            const results = document.getElementById('scoringResults');
+            results.innerHTML = '';
+
+            // Sort by overall score
+            const sortedQuotes = [...quotes].sort((a, b) => parseFloat(b.overallScore) - parseFloat(a.overallScore));
+
+            sortedQuotes.forEach((quote, index) => {
+                const scoreClass = quote.overallScore >= 85 ? 'score-high' :
+                                 quote.overallScore >= 70 ? 'score-medium' : 'score-low';
+
+                const resultCard = document.createElement('div');
+                resultCard.className = `sap-card p-4 ${index === 0 ? 'border-2 border-green-500' : ''}`;
+                resultCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h4 class="font-semibold">${quote.vendorName}</h4>
+                            <p class="text-sm text-gray-600">Rank: ${index + 1}</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl font-bold ${scoreClass}">${quote.overallScore}</div>
+                            <div class="text-sm text-gray-600">Overall Score</div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-600">Price Score:</span>
+                            <div class="font-medium">${calculatePriceScore(quote, quotes).toFixed(1)}</div>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Quality:</span>
+                            <div class="font-medium">${quote.qualityScore}</div>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Delivery:</span>
+                            <div class="font-medium">${quote.deliveryScore}</div>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Service:</span>
+                            <div class="font-medium">${quote.serviceScore}</div>
+                        </div>
+                    </div>
+                `;
+                results.appendChild(resultCard);
+            });
+        }
+
+        function calculatePriceScore(quote, allQuotes) {
+            const maxPrice = Math.max(...allQuotes.map(q => q.totalValue));
+            const minPrice = Math.min(...allQuotes.map(q => q.totalValue));
+
+            if (maxPrice === minPrice) return 100;
+
+            return ((maxPrice - quote.totalValue) / (maxPrice - minPrice)) * 100;
+        }
+
+        // Generate recommendations
+        function generateRecommendations(quotes) {
+            const sortedQuotes = [...quotes].sort((a, b) => parseFloat(b.overallScore) - parseFloat(a.overallScore));
+
+            // Set the selected winner
+            selectedWinner = sortedQuotes[0];
+
+            // Recommended winner
+            const winner = sortedQuotes[0];
+            const winnerDiv = document.getElementById('recommendedWinner');
+            winnerDiv.innerHTML = `
+                <div class="bg-green-50 p-4 rounded-lg border-2 border-green-200">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <i class="fas fa-trophy text-green-600 text-xl"></i>
+                        <div>
+                            <div class="font-bold text-green-800">${winner.vendorName}</div>
+                            <div class="text-sm text-green-600">Score: ${winner.overallScore}/100</div>
+                        </div>
+                    </div>
+                    <div class="text-sm text-green-700">
+                        <div>Total Value: ₹${winner.totalValue.toLocaleString()}</div>
+                        <div>Delivery: ${winner.items[0].deliveryDate}</div>
+                        <div>Rating: ${winner.vendorRating}/5</div>
+                    </div>
+                </div>
+            `;
+
+            // Alternative options
+            const alternatives = sortedQuotes.slice(1, 3);
+            const alternativesDiv = document.getElementById('alternativeOptions');
+            alternativesDiv.innerHTML = '';
+
+            alternatives.forEach((alt, index) => {
+                const altDiv = document.createElement('div');
+                altDiv.className = 'bg-blue-50 p-3 rounded border';
+                altDiv.innerHTML = `
+                    <div class="font-medium text-blue-800">${alt.vendorName}</div>
+                    <div class="text-sm text-blue-600">Score: ${alt.overallScore}/100</div>
+                    <div class="text-xs text-blue-500 mt-1">₹${alt.totalValue.toLocaleString()}</div>
+                `;
+                alternativesDiv.appendChild(altDiv);
+            });
+        }
+
+        // Highlight best prices
+        function highlightBestPrices() {
+            const rows = document.querySelectorAll('#detailedComparisonTable tbody tr');
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td:not(.sticky-column)');
+                let bestPrice = Infinity;
+                let bestCell = null;
+
+                cells.forEach(cell => {
+                    const priceText = cell.textContent.split('₹')[1]?.split('<')[0]?.replace(/,/g, '');
+                    if (priceText && !isNaN(priceText)) {
+                        const price = parseFloat(priceText);
+                        if (price < bestPrice) {
+                            bestPrice = price;
+                            bestCell = cell;
+                        }
+                    }
+                });
+
+                if (bestCell) {
+                    bestCell.classList.add('best-price');
+                }
+            });
+        }
+
+        // Recalculate scores when weights change
+        function recalculateScores() {
+            if (currentRFQ) {
+                const rfqQuotations = quotations.filter(q => q.rfqNumber === currentRFQ.number);
+                calculateScores(rfqQuotations);
+                generateRecommendations(rfqQuotations);
+            }
+        }
+
+        // Sort comparison
+        function sortComparison() {
+            if (currentRFQ) {
+                const rfqQuotations = quotations.filter(q => q.rfqNumber === currentRFQ.number);
+                loadRFQData(); // This will regenerate the comparison with current sort
+            }
+        }
+
+        // Export functions
+        function exportComparison() {
+            alert('Comparison data exported successfully!');
+        }
+
+        function refreshComparison() {
+            if (currentRFQ) {
+                loadRFQData();
+            }
+        }
+
+        // Report generation
+        function generateDetailedReport() {
+            alert('Generating detailed comparison report...');
+        }
+
+        function generatePriceAnalysis() {
+            alert('Generating price analysis report...');
+        }
+
+        function generateAwardRecommendation() {
+            alert('Generating award recommendation report...');
+        }
+
+        // Award functions
+        function generateAwardLetter() {
+            alert('Award letter generated successfully!');
+        }
+
+        function createPurchaseOrder() {
+            alert('Purchase order creation initiated!');
+        }
+
+        // New functions for enhanced functionality
+        function loadRFQList() {
+            const tableBody = document.getElementById('rfqListTable');
+            tableBody.innerHTML = '';
+
+            rfqs.forEach(rfq => {
+                const quotations = quotations.filter(q => q.rfqNumber === rfq.number);
+                const bestPrice = quotations.length > 0 ? Math.min(...quotations.map(q => q.totalValue)) : 0;
+                const statusClass = rfq.status === 'awarded' ? 'text-green-600' :
+                                  rfq.status === 'closed' ? 'text-blue-600' : 'text-orange-600';
+
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="font-medium">${rfq.number}</td>
+                    <td>${rfq.description}</td>
+                    <td><span class="px-2 py-1 rounded text-xs font-medium ${statusClass} bg-opacity-20">${rfq.status.toUpperCase()}</span></td>
+                    <td>${quotations.length} quotations</td>
+                    <td class="font-semibold text-green-600">₹${bestPrice.toLocaleString()}</td>
+                    <td>${new Date(rfq.deadline).toLocaleDateString()}</td>
+                    <td>
+                        <button onclick="viewRFQ('${rfq.number}')" class="sap-button-secondary text-xs mr-2">
+                            <i class="fas fa-eye mr-1"></i>View
+                        </button>
+                        <button onclick="compareRFQ('${rfq.number}')" class="sap-button text-xs">
+                            <i class="fas fa-balance-scale mr-1"></i>Compare
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function filterRFQs() {
+            const filter = document.getElementById('rfqStatusFilter').value;
+            const tableBody = document.getElementById('rfqListTable');
+            const rows = tableBody.querySelectorAll('tr');
+
+            rows.forEach(row => {
+                const status = row.cells[2].textContent.toLowerCase();
+                if (filter === 'all' || status.includes(filter)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        function refreshRFQList() {
+            loadRFQList();
+        }
+
+        function viewRFQ(rfqNumber) {
+            document.getElementById('rfqSelect').value = rfqNumber;
+            loadRFQData();
+            showTab('overview');
+        }
+
+        function compareRFQ(rfqNumber) {
+            document.getElementById('rfqSelect').value = rfqNumber;
+            loadRFQData();
+            showTab('comparison');
+        }
+
+        function loadAwardedVendors() {
+            const container = document.getElementById('awardedVendorsList');
+            container.innerHTML = '';
+
+            if (awardedVendors.length === 0) {
+                container.innerHTML = '<div class="text-center py-8 text-gray-500">No awarded vendors yet</div>';
+                return;
+            }
+
+            awardedVendors.forEach(award => {
+                const awardCard = document.createElement('div');
+                awardCard.className = 'sap-card p-6';
+                awardCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h4 class="text-xl font-bold text-green-600">${award.vendorName}</h4>
+                            <p class="text-sm text-gray-600">RFQ: ${award.rfqNumber} • PO: ${award.poNumber}</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl font-bold text-green-600">₹${award.awardAmount.toLocaleString()}</div>
+                            <div class="text-sm text-gray-600">Award Amount</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <span class="text-sm text-gray-600">Award Date:</span>
+                            <div class="font-medium">${new Date(award.awardedDate).toLocaleDateString()}</div>
+                        </div>
+                        <div>
+                            <span class="text-sm text-gray-600">Status:</span>
+                            <span class="px-2 py-1 rounded text-xs font-medium text-green-600 bg-green-100">Awarded</span>
+                        </div>
+                    </div>
+
+                    <div class="border-t pt-4">
+                        <h5 class="font-semibold mb-2">Awarded Items:</h5>
+                        <div class="space-y-2">
+                            ${award.items.map(item => `
+                                <div class="flex justify-between text-sm">
+                                    <span>${item.description} (${item.materialCode})</span>
+                                    <span class="font-medium">₹${item.totalPrice.toLocaleString()}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                container.appendChild(awardCard);
+            });
+        }
+
+        function filterAwarded() {
+            const filter = document.getElementById('awardFilter').value;
+            const cards = document.querySelectorAll('#awardedVendorsList > .sap-card');
+
+            cards.forEach(card => {
+                const awardDate = new Date(card.querySelector('.text-sm').nextElementSibling.textContent);
+                const now = new Date();
+                let show = true;
+
+                switch(filter) {
+                    case 'recent':
+                        const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+                        show = awardDate >= thirtyDaysAgo;
+                        break;
+                    case 'thisMonth':
+                        show = awardDate.getMonth() === now.getMonth() && awardDate.getFullYear() === now.getFullYear();
+                        break;
+                    case 'thisYear':
+                        show = awardDate.getFullYear() === now.getFullYear();
+                        break;
+                }
+
+                card.style.display = show ? '' : 'none';
+            });
+        }
+
+        function exportAwarded() {
+            alert('Awarded vendors data exported successfully!');
+        }
+
+        function awardVendor() {
+            if (!selectedWinner) {
+                alert('Please select a vendor to award first!');
+                return;
+            }
+
+            if (confirm(`Are you sure you want to award the contract to ${selectedWinner.vendorName}? This action cannot be undone.`)) {
+                // Create award record
+                const award = {
+                    id: 'AW' + Date.now(),
+                    rfqNumber: selectedWinner.rfqNumber,
+                    vendorId: selectedWinner.vendorId,
+                    vendorName: selectedWinner.vendorName,
+                    awardedDate: new Date().toISOString().split('T')[0],
+                    awardAmount: selectedWinner.totalValue,
+                    currency: selectedWinner.currency,
+                    status: 'awarded',
+                    poNumber: 'PO' + Date.now(),
+                    items: selectedWinner.items
+                };
+
+                awardedVendors.push(award);
+
+                // Update RFQ status
+                const rfq = rfqs.find(r => r.number === selectedWinner.rfqNumber);
+                if (rfq) {
+                    rfq.status = 'awarded';
+                }
+
+                // Update quotation status
+                selectedWinner.status = 'awarded';
+
+                alert(`Contract awarded to ${selectedWinner.vendorName}!\nPO Number: ${award.poNumber}\nAward Amount: ₹${award.awardAmount.toLocaleString()}`);
+
+                // Refresh displays
+                loadRFQList();
+                loadAwardedVendors();
+                sendNotifications();
+            }
+        }
+
+        function sendNotifications() {
+            const rfqQuotations = quotations.filter(q => q.rfqNumber === selectedWinner.rfqNumber);
+
+            // Send award notification to winner
+            alert(`✅ Award notification sent to ${selectedWinner.vendorName}`);
+
+            // Send rejection notifications to losers
+            const losers = rfqQuotations.filter(q => q.id !== selectedWinner.id);
+            losers.forEach(loser => {
+                alert(`📧 Rejection notification sent to ${loser.vendorName}`);
+            });
+
+            alert('All notifications sent successfully!');
+        }
+
+        // Update tab switching to load awarded vendors
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+
+            // Remove active class from all tabs
+            document.querySelectorAll('.sap-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.remove('hidden');
+
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+
+            // Load data for specific tabs
+            if (tabName === 'awarded') {
+                loadAwardedVendors();
+            }
+        }
+
+        // Utility functions
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                alert('Logged out successfully!');
+            }
+        }
+    </script>
+</body>
+</html>

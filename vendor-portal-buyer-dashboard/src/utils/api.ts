@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://api.vendorportal.com'; // Replace with your actual API base URL
+const API_BASE_URL = 'http://localhost:3000/api';
 
 // Function to fetch purchase orders
 export const fetchPurchaseOrders = async () => {
