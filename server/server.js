@@ -13,7 +13,7 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 // Middleware
 app.use(cors({
   origin: [
-    "http://127.0.0.1:5500",
+    "http://127.0.0.1:5500/index.html",
     "http://localhost:5500",
     "https://omverro.vercel.app",
     "https://https://omverro.vercel.app/index.html#"
