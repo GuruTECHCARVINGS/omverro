@@ -16,11 +16,13 @@ app.use(cors({
     "http://127.0.0.1:5500/index.html",
     "http://localhost:5500",
     "https://omverro.vercel.app",
-    "https://https://omverro.vercel.app/index.html#"
+    "https://omverro.vercel.app/index.html#"
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  credentials: true
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
+app.options("*", cors());
 app.use(express.json({ limit: '50mb' })); // Increased limit for file uploads
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
