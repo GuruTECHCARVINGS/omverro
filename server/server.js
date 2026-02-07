@@ -95,3 +95,5 @@ app.use('*', (req, res) => {
 //   console.log(`Server running at http://localhost:${PORT}`);
 //   console.log(`MongoDB URI: ${process.env.MONGODB_URI || 'mongodb://localhost:27017/vendor_portal'}`);
 // });
+
+module.exports = app; // Export app for testing or serverless deployment
