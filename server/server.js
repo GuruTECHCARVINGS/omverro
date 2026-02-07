@@ -11,17 +11,7 @@ const prRoutes = require('./routes/prRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 
 // Middleware
-app.use(cors({
-  origin: [
-    "http://127.0.0.1:5500/index.html",
-    "http://localhost:5500",
-    "https://omverro.vercel.app",
-    "https://omverro.vercel.app/index.html#"
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization"],
-}));
+app.use(cors());
 app.options("*", cors());
 app.use(express.json({ limit: '50mb' })); // Increased limit for file uploads
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
